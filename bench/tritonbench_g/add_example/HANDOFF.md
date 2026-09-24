@@ -20,10 +20,16 @@ scripts/setup-comparator.sh /tmp/veritile-proof-tools
 export PATH="/tmp/veritile-proof-tools/bin:$PATH"
 lake exe cache get
 lake build VeriTile
-# the changed library modules (manifest `proven` rows are unchanged, so also run the file gate):
+# library gate: replays every `proven` library row of scripts/kernel-manifest.tsv, incl. the new
+# rows check_ok, check_complete, launch_of_frames (the dotted Pre.i32_* lemmas cannot be manifest
+# rows — upstream's theorem_exists greps the last name component — and are replayed as
+# dependencies of the file-gated headlines below)
 python3 scripts/check_comparator.py --library
+# file gates: every theorem declared in each file
 python3 scripts/check_comparator.py --file bench/tritonbench_g/add_example/AddExample.lean --trust
+python3 scripts/check_comparator.py --file bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean --trust
 python3 scripts/check_comparator.py --file bench/tests/Blocked1DLaunchWitnesses.lean --trust
+lake env lean VeriTile/Meta/TrustReport.lean   # regenerated; needs the VeriTileFull build
 ```
 
 Record the result (only if every command exited 0; otherwise record the
@@ -35,6 +41,7 @@ import json, sys; sys.path.insert(0, "scripts")
 import launch_local_check as LC
 json.dump({"exit_code": 0, "commands": ["check_comparator.py --library",
   "check_comparator.py --file AddExample.lean --trust",
+  "check_comparator.py --file VectorAdditionCustom.lean --trust",
   "check_comparator.py --file Blocked1DLaunchWitnesses.lean --trust"],
   "comparator_log_dirs": ["Logs/comparator-check-..."],
   "input_hashes": LC.input_hashes()},
@@ -92,5 +99,16 @@ bitwise equal with intact sentinels) and `launch_evidence/gpu_perf.json`
 run (`TRITON_INTERPRET=1`) is interpreter evidence only and must not be filed
 as `gpu.json`.
 
-No performance claim is made for this change: the contribution adds host
-checks and proofs, not a kernel transformation.
+### B2. Phase-5 candidate (`zeros_like` → `empty_like`)
+
+Correctness: run the B loop through both wrappers (`add_example.py::add_wrapper`
+and `improvement/add_example_empty_like.py::add_wrapper`) and require
+`torch.equal` of the two results for every n (including 0) — the wrapper
+returns exactly `out[0, n)` (W1 holds). Performance: time each *wrapper*
+end-to-end (allocation + fill + launch) with `triton.testing.do_bench`
+(warmup 25, rep 200) at n ∈ {2^10, 2^16, 2^20, 2^24}; report medians and the
+device, and keep first-call compile time separate. Record under
+`gpu_perf.json` → `"phase5_wrapper"`.
+
+No performance claim is made: the fewer-device-fill argument is a structural
+observation only until B2 is run.

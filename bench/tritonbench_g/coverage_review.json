@@ -26,7 +26,7 @@
     {
       "file": "bench/tritonbench_g/add_example/AddExample.lean",
       "python_file": "bench/tritonbench_g/add_example/add_example.py",
-      "lean_sha256": "5814f648d27fba030b6de4869a762347c9a672cef72d6b16bff1a79f64954550",
+      "lean_sha256": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
       "python_sha256": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
       "declarations": [
         {
@@ -40,6 +40,22 @@
             }
           ],
           "scope": "Masked per-program sum for arbitrary element count and block size; disjoint allocations and active-lane bounds are part of the IO contract."
+        },
+        {
+          "declaration": "add_kernel_launch_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "add_kernel",
+              "line": 7
+            },
+            {
+              "name": "add_wrapper",
+              "line": 23
+            }
+          ],
+          "scope": "Whole-grid launch over the host grid c.grid for any configuration accepted by the proved checker Blocked1DLaunch.check (grid rank 1, power-of-two block, coverage, active-lane allocation bounds, i32 offset/n/grid fit, unit stride, f32, output disjoint from inputs): framed LaunchCorrectFramed output, per-program trace safety, i32 agreement. Exact-R model; host metadata binding is adapter-checked (scripts/launch_check.py), not proved. Same-agent review."
         }
       ]
     },
@@ -5710,7 +5726,7 @@
     {
       "file": "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
       "python_file": "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
-      "lean_sha256": "1d4cfbed6c7aa7dda6d7a070216caed28d9eace83bd011a6f7303003e6804a82",
+      "lean_sha256": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
       "python_sha256": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
       "declarations": [
         {
@@ -5724,6 +5740,22 @@
             }
           ],
           "scope": "Masked per-program custom vector addition for arbitrary size/block parameters with the declared IO windows; no host launch or concrete floating claim."
+        },
+        {
+          "declaration": "add_kernel_launch_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "_add_kernel",
+              "line": 7
+            },
+            {
+              "name": "custom_add",
+              "line": 15
+            }
+          ],
+          "scope": "Whole-grid launch over the host grid c.grid for any configuration accepted by the proved checker Blocked1DLaunch.check (same obligations as add_example). Covers out[0,size) only: for inputs of rank > 1 the wrapper's size = c.size(0) leaves the rest of the returned tensor unwritten (adapter obligation W1). Exact-R model. Same-agent review."
         }
       ]
     }

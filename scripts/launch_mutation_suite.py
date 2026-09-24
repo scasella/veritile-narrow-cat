@@ -303,6 +303,18 @@ def pipeline_mutants(scratch: Path):
     record("E7_missing_result", "pipeline", "no official/GPU result files",
            "evidence_rejection" if r.returncode != 0 else "accepted",
            f"rc={r.returncode}: {' | '.join(l for l in r.stdout.splitlines() if 'REQUIRED' in l)}")
+    # E9 edit inside pinned upstream code (additive-only gate), on a scratch copy
+    pin_root = scratch / "pin"
+    for f in LC.ADDITIVE:
+        (pin_root / f).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / f, pin_root / f)
+    comp = pin_root / "VeriTile/Triton/Launch/Composition.lean"
+    comp.write_text(comp.read_text().replace("h_disjoint : Kernel.GridWritesDisjoint frames",
+                                             "h_disjoint : True", 1))
+    probs = LC.pin_integrity(pin_root)
+    record("E9_upstream_pin_edit", "pipeline", "weaken GridLaunchedOrdinary.h_disjoint in pinned code",
+           "evidence_rejection" if probs else "accepted",
+           "; ".join(probs) if probs else "UNDETECTED")
     # E8 unavailable required tool: adapter without lake on PATH
     env = {k: v for k, v in os.environ.items()}
     env["PATH"] = "/usr/bin:/bin"

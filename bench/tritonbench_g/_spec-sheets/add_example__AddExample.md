@@ -85,3 +85,85 @@ def add_kernel
 }
 ```
 </details>
+
+## Public theorem: `add_kernel_launch_correctness`
+
+<details><summary>docstring</summary>
+
+```
+/-- **Whole-launch headline.** For a host configuration accepted by the proved
+launch checker, launching `add_kernel` over the host's grid `c.grid` from any
+state whose input cells `i < n` hold typed real values `xs i`, `ys i`:
+every program terminates and is trace-safe for bounds covering the checked
+capacities; the programs' write sets are pairwise disjoint and compose into
+one final memory (`GridLaunchedOrdinary`) in which `out_ptr[i] = xs i + ys i`
+for every `i < n`, while every other cell is unchanged; and every lane offset
+and mask the launch computes in Triton's `i32` arithmetic equals its ℕ
+counterpart used by the model. -/
+```
+</details>
+
+**Statement:**
+```lean
+specification add_kernel_launch_correctness
+    (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
+    (bx by_ : BufMeta) (hin : c.inputs = [bx, by_])
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+        { dims := c.grid } s
+        (fun i : Nat => if i < c.n then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ bounds : RegionBounds,
+        bx.capacity ≤ bounds in_ptr0 → by_.capacity ≤ bounds in_ptr1 →
+        c.output.capacity ≤ bounds out_ptr →
+        ∀ idx : GridIndex { dims := c.grid },
+          Kernel.TraceSafe bounds
+            ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      ∀ pid j, pid < c.gridX → j < c.block →
+        (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt
+            = ((pid * c.block + j : Nat) : Int) ∧
+        BitVec.slt (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j)
+            (BitVec.ofNat 32 c.n) = decide (pid * c.block + j < c.n)
+```
+
+**Assumptions / layout contracts:**
+- `hc : Blocked1DLaunch.check c = Bool.true`
+- `hin : c.inputs = [bx, by_]`
+- `xs ys : Nat → ℝ`
+- `hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i)`
+- `hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)`
+
+**Closed-form spec defs (transitive):** `add_kernel`
+
+<details><summary><code>add_kernel</code></summary>
+
+```
+/-- Faithful 1:1 transcription of `add_example.py`'s `add_kernel`.
+
+Allowed mechanical Lean-syntax-only changes:
+- Python `BLOCK_SIZE: tl.constexpr` annotation → Lean `Nat` parameter
+  (the `tl.constexpr` is implicit in Lean params).
+
+Everything else is verbatim from the upstream kernel. -/
+```
+```lean
+def add_kernel
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (n_elements BLOCK_SIZE : Nat) :
+    ComputeKernel := triton {
+  pid = tl.program_id(axis=0)
+  block_start = pid * $(BLOCK_SIZE)
+  offsets = block_start + tl.arange(0, $(BLOCK_SIZE))
+  mask = offsets < $(n_elements)
+  x = tl.load(in_ptr0 + offsets, mask=mask)
+  y = tl.load(in_ptr1 + offsets, mask=mask)
+  output = x + y
+  tl.store(out_ptr + offsets, output, mask=mask)
+}
+```
+</details>

@@ -1,6 +1,6 @@
 # Spec-sheet index
 
-- 173 kernels, 345 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
+- 173 kernels, 347 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
 - Ranked by **review-cost** proxy `score = 3·defs + flat_offset_reads + stmt_lines + hyps` (hardest specs to audit first). Documented single-read element accessors (docstring + body = one `readMem`, optionally boundary-masked) are exempt from `flat_offset_reads` and count 1 (not 3) in the `defs` term — they are readability aids, not tax.
 
 | score | kernel | defs | flat-reads | stmt-lines | hyps | flags |
@@ -125,6 +125,8 @@
 | 44 | [cross_entropy2__CrossEntropy2.md](cross_entropy2__CrossEntropy2.md) | 6 | 0 | 21 | 5 |  |
 | 44 | [cross_entropy_ops__CrossEntropyOps.md](cross_entropy_ops__CrossEntropyOps.md) | 6 | 0 | 21 | 5 |  |
 | 41 | [matmul_dequant_int4__MatmulDequantInt4.md](matmul_dequant_int4__MatmulDequantInt4.md) | 8 | 0 | 19 | 0 |  |
+| 40 | [add_example__AddExample.md](add_example__AddExample.md) | 2 | 0 | 29 | 5 |  |
+| 40 | [vector_addition_custom__VectorAdditionCustom.md](vector_addition_custom__VectorAdditionCustom.md) | 2 | 0 | 29 | 5 |  |
 | 37 | [chunk_cumsum_kernel__ChunkCumsumKernel.md](chunk_cumsum_kernel__ChunkCumsumKernel.md) | 4 | 0 | 21 | 4 |  |
 | 36 | [cross_entropy1__CrossEntropy1.md](cross_entropy1__CrossEntropy1.md) | 5 | 0 | 18 | 3 |  |
 | 36 | [matrix_reduction__MatrixReduction.md](matrix_reduction__MatrixReduction.md) | 6 | 0 | 17 | 1 |  |
@@ -167,7 +169,6 @@
 | 13 | [mul_exponent_compensator__MulExponentCompensator.md](mul_exponent_compensator__MulExponentCompensator.md) | 3 | 0 | 3 | 1 |  |
 | 12 | [relu_triton_kernel__ReluTritonKernel.md](relu_triton_kernel__ReluTritonKernel.md) | 2 | 0 | 5 | 1 |  |
 | 12 | [square_matrix__SquareMatrix.md](square_matrix__SquareMatrix.md) | 2 | 0 | 6 | 0 |  |
-| 11 | [add_example__AddExample.md](add_example__AddExample.md) | 2 | 0 | 5 | 0 |  |
 | 11 | [dropout_triton__DropoutTriton.md](dropout_triton__DropoutTriton.md) | 2 | 0 | 5 | 0 |  |
 | 11 | [kldiv_compute__KldivCompute.md](kldiv_compute__KldivCompute.md) | 2 | 0 | 5 | 0 |  |
 | 11 | [masked_add_cuda__MaskedAddCuda.md](masked_add_cuda__MaskedAddCuda.md) | 2 | 0 | 5 | 0 |  |
@@ -176,5 +177,4 @@
 | 11 | [sin_kernel__SinKernel.md](sin_kernel__SinKernel.md) | 2 | 0 | 5 | 0 |  |
 | 11 | [swiglu_fwd__SwigluFwd.md](swiglu_fwd__SwigluFwd.md) | 2 | 0 | 5 | 0 |  |
 | 11 | [vector_addition__VectorAddition.md](vector_addition__VectorAddition.md) | 2 | 0 | 5 | 0 |  |
-| 11 | [vector_addition_custom__VectorAdditionCustom.md](vector_addition_custom__VectorAdditionCustom.md) | 2 | 0 | 5 | 0 |  |
 | 9 | [cosine_compute__CosineCompute.md](cosine_compute__CosineCompute.md) | 2 | 0 | 3 | 0 |  |

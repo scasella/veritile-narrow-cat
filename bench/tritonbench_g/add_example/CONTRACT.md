@@ -34,11 +34,11 @@ Inputs `x`, `y`; output `out`; `n = n_elements`.
 
 ## 2. Implementation-specific launch preconditions (checked)
 
-Metadata `c : Blocked1DLaunch`: `n`, `block`, `grid : List Nat`, integer
-width `indexBits` (= 32), and for each buffer (`x`, `y`, `out`): `base`
+Metadata `c : Blocked1DLaunch`: `n`, `block`, `grid : List Nat`, and for
+each buffer (`x`, `y`, `out`): `base`
 (byte address), `elemBytes`, `stride` (elements, dim 0 of the flattened
 view), `capacity` (elements addressable from `base` inside its allocation),
-`dtype`.
+`dtype`. The integer width is fixed to Triton's i32 (`i32Limit = 2^31`).
 
 `Blocked1DLaunch.Pre c` (Lean, `VeriTile/Triton/Launch/Blocked1DConfig.lean`):
 
@@ -48,9 +48,9 @@ view), `capacity` (elements addressable from `base` inside its allocation),
 | P2 `block_ok` | `∃ k ≤ 20, block = 2^k` | `tl.arange` power-of-two, ≤ TRITON_MAX_TENSOR_NUMEL (TRITON_FACTS §3) |
 | P3 `covers` | `∀ i < n, i / block < g` | the owner program of every output index is launched |
 | P4 `lanes_in_bounds` | `∀ b, ∀ pid < g, ∀ j < block, pid*block+j < n → pid*block+j < b.capacity` | active-lane addresses in every allocation |
-| P5 `offsets_fit` | `∀ pid < g, ∀ j < block, pid*block+j < 2^(indexBits-1)` | i32 offset arithmetic does not wrap |
-| P6 `n_fits` | `n < 2^(indexBits-1)` | `n_elements: tl.int32` is not truncated |
-| P7 `grid_fits` | `g < 2^(indexBits-1)` | grid dim fits the launcher's C `int` |
+| P5 `offsets_fit` | `∀ pid < g, ∀ j < block, pid*block+j < 2^31` | i32 offset arithmetic does not wrap |
+| P6 `n_fits` | `n < 2^31` | `n_elements: tl.int32` is not truncated |
+| P7 `grid_fits` | `g < 2^31` | grid dim fits the launcher's C `int` |
 | P8 `unit_stride` | `∀ b, n ≤ 1 ∨ b.stride = 1` | kernel's `ptr + offsets` addressing matches the tensor layout |
 | P9 `dtype_ok` | every buffer `dtype = f32 ∧ elemBytes = 4` | supported dtype domain v1 |
 | P10 `out_disjoint` | the byte ranges `[base, base + n*elemBytes)` of `out` and of each input do not intersect | non-overlapping output storage |
@@ -65,7 +65,7 @@ either input, even exactly in place (conservative; in-place is a non-goal).
 
 ## 3. Kernel-level whole-launch theorem (region model)
 
-`add_kernel_launch_correct` (in `AddExample.lean`): from `check c = true`,
+`add_kernel_launch_correctness` (in `AddExample.lean`): from `check c = true`,
 region names `in_ptr0 in_ptr1 out_ptr`, and an initial state whose input cells
 `k < n` are **typed real cells** (`s.mem in_ptr0 k = MemCell.real (xs k)`; no
 reliance on totalized reads), the grid `[g]` launch composes (disjoint frames,
@@ -91,6 +91,9 @@ discharges the lane-wise bound hypotheses of the existing flat-memory headline
   (existing upstream structural scan + this project's AST matcher; trusted,
   tested, not proved).
 - IEEE-single-add (numerics), device/driver behavior, and compiler correctness.
+- Wrapper obligation W1 (`n == out.numel()`: the returned tensor is exactly
+  the cells this contract covers) is outside this contract; it is checked by
+  the adapter and recorded separately (SOURCE_LINK.md).
 
 ## 5. Unsupported / non-goals
 

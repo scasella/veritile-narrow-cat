@@ -1,25 +1,25 @@
 {
- "generated": "2026-09-24T23:47:03Z",
- "git_head": "11b1312af1f305d50d017a05b4fbd38a3c8ff6b0",
+ "generated": "2026-09-24T23:59:37Z",
+ "git_head": "a236734b7ca15484df632c0a5d80240673f1740f",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
-  "bench/tritonbench_g/add_example/AddExample.lean": "0911fd245f2e5e7c84f976828346b47ed11c844c63531c516b604c904a7838f4",
+  "bench/tritonbench_g/add_example/AddExample.lean": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
   "bench/tests/Blocked1DLaunchWitnesses.lean": "1a8f82f8a9e6b9a1b01b83445a336c152783e08d26c91dc113f6bc8d1af97ef8",
   "VeriTile/Triton/Launch.lean": "7604496333658faefa002a70c6dd423a017fd7cdb28768f5be9d5863d4d1d34f",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
-  "bench/tritonbench_g/add_example/CONTRACT.md": "8d1085fcdbd849a68477afbca67005f02f60004dd3ae8972cc4beec7dab3256f",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "0fbb5505921f969c1739a49ae31539bbad084744fb3893b4523b01251dc9c6b5",
   "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
   "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
   "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
   "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "36ea0d7f6125567d0d546e1dc90d3c2bce321096d178ee1285151c6069c1291c",
   "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8",
-  "scripts/launch_local_check.py": "7a2ac13c8b0cca8565261f9f9d234ff37127a712639126d9d1c9f51181cf8603",
+  "scripts/launch_local_check.py": "7ed1faafc2d71ddaaa52c0fa39bbb119c8ec41ac8a9516214f5791c2a17b7030",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
-  "scripts/launch_mutation_suite.py": "f121993d1c71ebd4e48ad1c4589e5866ac8e5673f564231f17acf5ae06bdb553",
+  "scripts/launch_mutation_suite.py": "6d38d85f0c6a486ffa371fcf991a95598265821f7fdc97ff916a25fb0c0ebb59",
   "scripts/test_launch_check.py": "e1f4917e10d2b9459489d391820b218859a1d45618aa9e44d2419c69e37ddb07",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
@@ -29,17 +29,17 @@
   "model_proof": {
    "status": "passed",
    "scope": "add_kernel whole-grid launch in VeriTile's exact-ℝ region model",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log"
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log"
   },
   "checker_soundness": {
    "status": "passed",
    "scope": "check_ok / check_complete / i32 lemmas (Lean)",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log"
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log"
   },
   "source_correspondence": {
    "status": "passed",
    "level": "tested-but-trusted (AST recognizer + statement match); not proved",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/adapter_results.json"
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json"
   },
   "local_trust_checks": {
    "status": "passed",
@@ -47,7 +47,7 @@
   },
   "frozen_contract": {
    "status": "passed",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/frozen"
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen"
   },
   "official_comparator": {
    "status": "not_run",
@@ -81,15 +81,15 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 0.9
+   "elapsed_s": 3.8
   },
   "build": {
    "status": "passed",
    "scope": "lake build in working tree (incremental; use --fresh for final evidence)",
    "assumptions": "",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
    "reason": "rc=0",
-   "elapsed_s": 138.9
+   "elapsed_s": 155.7
   },
   "placeholder_scan": {
    "status": "passed",
@@ -99,31 +99,68 @@
    "reason": "no sorry/admit/native_decide/axiom",
    "elapsed_s": 0.0
   },
+  "upstream_pin_unchanged": {
+   "status": "passed",
+   "scope": "working tree vs Lizn-zn/VeriTile@95a01f59: only declared paths change; pinned code in modified Lean files is verbatim",
+   "assumptions": "",
+   "evidence": "git diff vs pin",
+   "reason": "no undeclared or non-additive changes",
+   "elapsed_s": 0.1,
+   "worktree_clean": false
+  },
+  "upstream_static_gates": {
+   "status": "failed",
+   "scope": "bench/check_proof_gap_manifest.py; check-artifact.sh's kernel-manifest validator; committed spec sheets current",
+   "assumptions": "",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
+   "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0, uncommitted sheet changes: M bench/tritonbench_g/_spec-sheets/INDEX.md\n M bench/tritonbench_g/_spec-sheets/add_example__AddExample.md\n M bench/tritonbench_g/_spec-sheets/vector_addition_custom__VectorAdditionCustom.md",
+   "elapsed_s": 6.1
+  },
   "kernel_file_axioms": {
    "status": "passed",
    "scope": "AddExample.lean, VectorAdditionCustom.lean, Blocked1DLaunchWitnesses.lean elaborate; listed theorems' axioms ⊆ {propext, Classical.choice, Quot.sound}; headline inventory",
    "assumptions": "",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
    "reason": "3 files, axiom-clean 23 theorems",
-   "elapsed_s": 37.8,
+   "elapsed_s": 37.6,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
      "missing": [],
      "inventory": "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correct,\n VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness,\n VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
-     "ok": true
+     "ok": true,
+     "statement_surfaces": {
+      "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness": "VeriTile.Bench.TritonBenchG.AddExample.add_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.withGridIndex, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.grid, VeriTile.Triton.Blocked1DLaunch.gridX, VeriTile.Triton.Blocked1DLaunch.inputs, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.Blocked1DLaunch.output, VeriTile.Triton.BufMeta, VeriTile.Triton.BufMeta.capacity, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Grid.mk, VeriTile.Triton.GridIndex, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable": "VeriTile.Bench.TritonBenchG.AddExample.addIO, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.gridX, VeriTile.Triton.Blocked1DLaunch.inputs, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.Blocked1DLaunch.output, VeriTile.Triton.BufMeta, VeriTile.Triton.BufMeta.capacity, VeriTile.Triton.FlatAlloc, VeriTile.Triton.FlatAlloc.extent, VeriTile.Triton.MaskedKernelIO₂, VeriTile.Triton.MaskedKernelIO₂.B, VeriTile.Triton.MaskedKernelIO₂.in1, VeriTile.Triton.MaskedKernelIO₂.in2, VeriTile.Triton.MaskedKernelIO₂.mask, VeriTile.Triton.MaskedKernelIO₂.out, VeriTile.Triton.MaskedKernelIO₂.read1, VeriTile.Triton.MaskedKernelIO₂.read2, VeriTile.Triton.MaskedKernelIO₂.write, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_traceSafe": "VeriTile.Bench.TritonBenchG.AddExample.add_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.withGridIndex, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.grid, VeriTile.Triton.Blocked1DLaunch.inputs, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.Blocked1DLaunch.output, VeriTile.Triton.BufMeta, VeriTile.Triton.BufMeta.capacity, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Grid.mk, VeriTile.Triton.GridIndex, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness": "VeriTile.Bench.TritonBenchG.AddExample.addIO, VeriTile.Triton.MaskedKernelIO₂.B, VeriTile.Triton.MaskedKernelIO₂.Implements, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant": "VeriTile.Bench.TritonBenchG.AddExample.add_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.mk, VeriTile.Triton.BlockState.numPids, VeriTile.Triton.BlockState.pids, VeriTile.Triton.BlockState.regs, VeriTile.Triton.BlockState.undef, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.grid, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Grid.mk, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionName, VeriTile.Triton.TileDType.real, VeriTile.Triton.instDecidableEqRegion"
+     }
     },
     "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": {
      "rc": 0,
      "missing": [],
      "inventory": "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_correct,\n VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_correctness,\n VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_launch_correctness",
-     "ok": true
+     "ok": true,
+     "statement_surfaces": {
+      "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_correctness": "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.addCustomIO, VeriTile.Triton.MaskedKernelIO₂.B, VeriTile.Triton.MaskedKernelIO₂.Implements, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_launch_correctness": "VeriTile.Bench.TritonBenchG.VectorAdditionCustom._add_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.withGridIndex, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.grid, VeriTile.Triton.Blocked1DLaunch.gridX, VeriTile.Triton.Blocked1DLaunch.inputs, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.Blocked1DLaunch.output, VeriTile.Triton.BufMeta, VeriTile.Triton.BufMeta.capacity, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Grid.mk, VeriTile.Triton.GridIndex, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName",
+      "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_launch_applicable": "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.addCustomIO, VeriTile.Triton.Blocked1DLaunch, VeriTile.Triton.Blocked1DLaunch.block, VeriTile.Triton.Blocked1DLaunch.check, VeriTile.Triton.Blocked1DLaunch.gridX, VeriTile.Triton.Blocked1DLaunch.inputs, VeriTile.Triton.Blocked1DLaunch.n, VeriTile.Triton.Blocked1DLaunch.output, VeriTile.Triton.BufMeta, VeriTile.Triton.BufMeta.capacity, VeriTile.Triton.FlatAlloc, VeriTile.Triton.FlatAlloc.extent, VeriTile.Triton.MaskedKernelIO₂, VeriTile.Triton.MaskedKernelIO₂.B, VeriTile.Triton.MaskedKernelIO₂.in1, VeriTile.Triton.MaskedKernelIO₂.in2, VeriTile.Triton.MaskedKernelIO₂.mask, VeriTile.Triton.MaskedKernelIO₂.out, VeriTile.Triton.MaskedKernelIO₂.read1, VeriTile.Triton.MaskedKernelIO₂.read2, VeriTile.Triton.MaskedKernelIO₂.write, VeriTile.Triton.RegionName"
+     }
     },
     "bench/tests/Blocked1DLaunchWitnesses.lean": {
      "rc": 0,
      "missing": [],
      "inventory": "",
-     "ok": true
+     "ok": true,
+     "statement_surfaces": {
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.testCase1_pre": "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.testCase1, VeriTile.Triton.Blocked1DLaunch.Pre",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.emptyCase_pre": "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.emptyCase, VeriTile.Triton.Blocked1DLaunch.Pre",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.i32_n_truncated": "",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.i32_offset_wraps": "",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.unmasked_store_frame_violation": "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.addNoStoreMask, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.mk, VeriTile.Triton.BlockState.numPids, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.BlockState.regs, VeriTile.Triton.BlockState.undef, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.RegionName, VeriTile.Triton.exec",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.offbyone_mask_frame_violation": "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.addOffByOneMask, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.mk, VeriTile.Triton.BlockState.numPids, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.BlockState.regs, VeriTile.Triton.BlockState.undef, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.RegionName, VeriTile.Triton.exec"
+     }
     }
    }
   },
@@ -131,25 +168,25 @@
    "status": "passed",
    "scope": "elaborated protected definitions + headline statements vs frozen snapshot; CONTRACT.md and checker surface hashes",
    "assumptions": "",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/frozen",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 10.6
+   "elapsed_s": 10.3
   },
   "source_link_adapter": {
    "status": "passed",
    "scope": "actual source + wrapper + Lean transcription + real CPU tensor metadata -> kernel-checked checker verdicts",
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "3 manifests, 36 cases, 26 accepted, all verdicts kernel-checked",
-   "elapsed_s": 7.9
+   "elapsed_s": 7.1
   },
   "adapter_tests": {
    "status": "passed",
    "scope": "scripts/test_launch_check.py (parser/metadata/Lean-verdict regressions)",
    "assumptions": "",
-   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 2.8
+   "elapsed_s": 2.5
   },
   "official_comparator": {
    "status": "not_run",
@@ -176,5 +213,10 @@
    "elapsed_s": 0.0
   }
  },
- "fresh_workspace": false
+ "fresh_workspace": false,
+ "full_library_build": {
+  "status": "not_run",
+  "reason": "only the lite subset needed by these files is built (VeriTile.Triton + audit/common modules); default `lake build` / VeriTileFull (TrustReport, ApproxGeLU) not run"
+ },
+ "note": "adapter_results.json records per-run torch data_ptr bases; they differ run to run"
 }
