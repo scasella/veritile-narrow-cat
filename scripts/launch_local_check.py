@@ -42,7 +42,13 @@ FROZEN = EVID / "frozen"
 NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Blocked1D.lean",
             "VeriTile/Triton/Launch/Composition.lean",
-            "bench/tritonbench_g/add_example/AddExample.lean"]
+            "bench/tritonbench_g/add_example/AddExample.lean",
+            "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
+            "bench/tests/Blocked1DLaunchWitnesses.lean"]
+VAC = "VeriTile.Bench.TritonBenchG.VectorAdditionCustom"
+WIT = "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses"
+# (file, namespace for the inventory, theorems that must be axiom-clean, required inventory)
+AUDIT_TARGETS = None  # filled after HEADLINES
 PINNED_TOOLCHAIN = "leanprover/lean4:v4.29.0"
 PINNED_MATHLIB = "8a178386ffc0f5fef0b77738bb5449d50efeea95"
 HEADLINES = ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
@@ -57,6 +63,19 @@ HEADLINES = ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctne
              "VeriTile.Triton.Blocked1DLaunch.Pre.i32_mask_eq",
              "VeriTile.Triton.Blocked1DLaunch.Pre.offset_injective"]
 
+AUDIT_TARGETS = [
+    ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
+     HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"],
+     ["add_kernel_correctness", "add_kernel_launch_correctness"]),
+    ("bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean", VAC,
+     [f"{VAC}.add_kernel_correctness", f"{VAC}.add_kernel_launch_correctness",
+      f"{VAC}.add_kernel_launch_applicable"],
+     ["add_kernel_correctness", "add_kernel_launch_correctness"]),
+    ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
+     [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
+                            "unmasked_store_frame_violation", "offbyone_mask_frame_violation"]], []),
+]
+
 # Protected surface: printed from the elaborated environment and compared
 # byte-for-byte with the frozen snapshot.
 SURFACE_PRINTS = [
@@ -70,7 +89,16 @@ SURFACE_PRINTS = [
     "#print VeriTile.Triton.MaskedKernelIO₂.Implements",
     "#print VeriTile.Bench.TritonBenchG.AddExample.add_kernel",
     "#print VeriTile.Bench.TritonBenchG.AddExample.addIO",
-] + [f"#check @{h}" for h in HEADLINES]
+] + [f"#check @{h}" for h in HEADLINES] + [
+    "#check @VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
+VAC_SURFACE_PRINTS = [
+    f"#print {VAC}._add_kernel", f"#print {VAC}.addCustomIO",
+    f"#check @{VAC}.add_kernel_correctness", f"#check @{VAC}.add_kernel_launch_correctness",
+    f"#check @{VAC}.add_kernel_launch_applicable", f"#check @{VAC}.add_kernel_launch_traceSafe"]
+# (frozen snapshot name, file, prints)
+SURFACES = [("launch_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean", SURFACE_PRINTS),
+            ("vac_surface.txt", "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
+             VAC_SURFACE_PRINTS)]
 
 
 def sha(p: Path) -> str:
@@ -78,10 +106,17 @@ def sha(p: Path) -> str:
 
 
 def input_hashes(root: Path = REPO) -> dict:
-    files = NEW_LEAN + ["bench/tritonbench_g/add_example/add_example.py",
+    files = NEW_LEAN + ["VeriTile/Triton/Launch.lean",
+                        "bench/tritonbench_g/add_example/add_example.py",
                         "bench/tritonbench_g/add_example/CONTRACT.md",
                         "bench/tritonbench_g/add_example/launch_manifest.json",
+                        "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py",
+                        "bench/tritonbench_g/add_example/improvement/launch_manifest.json",
+                        "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
+                        "bench/tritonbench_g/vector_addition_custom/launch_manifest.json",
                         "scripts/launch_check.py", "scripts/launch_local_check.py",
+                        "scripts/launch_emulate.py", "scripts/launch_mutation_suite.py",
+                        "scripts/test_launch_check.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
     return {f: sha(root / f) for f in files if (root / f).exists()}
 
@@ -187,13 +222,87 @@ AUDIT_IMPORT = "import VeriTile.Meta.StatementAudit\n"
 MARK = "SURFACE-BEGIN-7f3a"
 
 
-def audit_file(root: Path) -> str:
-    """AddExample.lean + appended audit commands (a temp copy; the source is untouched)."""
-    body = (root / "bench/tritonbench_g/add_example/AddExample.lean").read_text()
-    lines = ["", "open VeriTile.Meta"]
-    lines += [f"#axiomsClean {h}" for h in HEADLINES]
-    lines += ["namespace VeriTile.Bench.TritonBenchG.AddExample", "#auditModuleAxioms",
-              "end VeriTile.Bench.TritonBenchG.AddExample"]
+def audit_file(root: Path, rel: str, ns: str, thms: list[str]) -> str:
+    """A Lean file + appended audit commands (a temp copy; the source is untouched)."""
+    body = (root / rel).read_text()
+    lines = ["", "open VeriTile.Meta"] + [f"#axiomsClean {h}" for h in thms]
+    lines += [f"namespace {ns}", "#auditModuleAxioms", f"end {ns}"]
+    return AUDIT_IMPORT + body + "\n".join(lines) + "\n"
+
+
+def surface_file(root: Path, rel: str, prints: list[str]) -> str:
+    body = (root / rel).read_text()
+    lines = ["", "set_option pp.proofs false", f'#eval IO.println "{MARK}"'] + prints
+    return body + "\n".join(lines) + "\n"
+
+
+def print_surface(root: Path, logs: Path, timeout: int, rel: str, prints: list[str]):
+    tmp = (root / rel).parent / ".launch_surface_tmp.lean"
+    tmp.write_text(surface_file(root, rel, prints))
+    try:
+        rc, out = run(["lake", "env", "lean", str(tmp)], root, timeout,
+                      logs / f"surface_{Path(rel).stem}.log")
+    finally:
+        tmp.unlink(missing_ok=True)
+    if rc != 0 or MARK not in out:
+        return rc or 1, ""
+    return rc, out.split(MARK, 1)[1].strip("\n") + "\n"
+
+
+def sequential_build(root: Path, roots: list[str], timeout: int, log: Path):
+    """`lake build` one module at a time in import order: Lake 5.0 has no job
+    cap, so this bounds concurrency to one Lean process (LEAN_NUM_THREADS=2)."""
+    imp = re.compile(r"^\s*(?:public\s+)?import\s+(\S+)", re.M)
+    order, seen = [], set()
+    def visit(m):
+        f = root / (m.replace(".", "/") + ".lean")
+        if m in seen or not f.exists():
+            return
+        seen.add(m)
+        for d in imp.findall(f.read_text()):
+            if d.startswith("VeriTile"):
+                visit(d)
+        order.append(m)
+    for r in roots:
+        visit(r)
+    t0, lines = time.time(), []
+    for m in order:
+        left = timeout - (time.time() - t0)
+        if left <= 0:
+            lines.append(f"TIMEOUT before {m}")
+            rc = 124
+            break
+        rc, out = run(["lake", "build", m], root, int(left))
+        lines.append(f"{m} rc={rc}")
+        if rc != 0:
+            lines.append(out[-4000:])
+            break
+    else:
+        rc = 0
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(f"# sequential build of {len(order)} modules in {root} "
+                   f"({time.time()-t0:.0f}s)\n" + "\n".join(lines) + "\n")
+    return rc, "\n".join(lines)
+
+
+def placeholder_scan(root: Path) -> list[str]:
+    bad = []
+    for f in NEW_LEAN:
+        code = audit_source.strip_lean_comments((root / f).read_text())
+        for m in re.finditer(r"\b(sorry|admit|native_decide|ofReduceBool)\b|^\s*axiom\s", code, re.M):
+            bad.append(f"{f}: {m.group(0).strip()}")
+    return bad
+
+
+AUDIT_IMPORT = "import VeriTile.Meta.StatementAudit\n"
+MARK = "SURFACE-BEGIN-7f3a"
+
+
+def audit_file(root: Path, rel: str, ns: str, thms: list[str]) -> str:
+    """A Lean file + appended audit commands (a temp copy; the source is untouched)."""
+    body = (root / rel).read_text()
+    lines = ["", "open VeriTile.Meta"] + [f"#axiomsClean {h}" for h in thms]
+    lines += [f"namespace {ns}", "#auditModuleAxioms", f"end {ns}"]
     return AUDIT_IMPORT + body + "\n".join(lines) + "\n"
 
 
@@ -241,20 +350,28 @@ def external_steps(hashes: dict) -> dict:
 
 
 def freeze(a) -> int:
-    """Write the frozen protected-surface snapshot. Run only on the reviewed
-    statement (sorry) state before proof search, or after a recorded review."""
+    """Write frozen protected-surface snapshots (all, or only `--freeze-only NAME`).
+    Run only on the reviewed statement (sorry) state before proof search, or
+    after a recorded review."""
     logs = EVID / "logs"
-    rc, surface = print_surface(REPO, logs, a.timeout)
-    cfg_rc, cfg_out = run(["lake", "env", "lean", str(FROZEN / "print_config_surface.lean")],
-                          REPO, 600)
-    if rc != 0 or cfg_rc != 0:
-        print(f"FREEZE_FAILED rc={rc} cfg_rc={cfg_rc}")
-        return 1
     FROZEN.mkdir(parents=True, exist_ok=True)
-    (FROZEN / "launch_surface.txt").write_text(surface)
-    (FROZEN / "config_surface.txt").write_text(cfg_out)
-    (FROZEN / "contract.sha256").write_text(sha(KDIR / "CONTRACT.md") + "\n")
-    print(f"FROZEN: {len(surface.splitlines())} surface lines, contract {sha(KDIR / 'CONTRACT.md')[:12]}")
+    for name, rel, prints in SURFACES:
+        if a.freeze_only and name != a.freeze_only:
+            continue
+        rc, surface = print_surface(REPO, logs, a.timeout, rel, prints)
+        if rc != 0:
+            print(f"FREEZE_FAILED {name} rc={rc}")
+            return 1
+        (FROZEN / name).write_text(surface)
+        print(f"FROZEN {name}: {len(surface.splitlines())} lines")
+    if not a.freeze_only:
+        cfg_rc, cfg_out = run(["lake", "env", "lean", str(FROZEN / "print_config_surface.lean")],
+                              REPO, 600)
+        if cfg_rc != 0:
+            print("FREEZE_FAILED config")
+            return 1
+        (FROZEN / "config_surface.txt").write_text(cfg_out)
+        (FROZEN / "contract.sha256").write_text(sha(KDIR / "CONTRACT.md") + "\n")
     return 0
 
 
@@ -282,6 +399,7 @@ def main(argv=None) -> int:
     ap.add_argument("--freeze", action="store_true",
                     help="write the frozen surface snapshot (review-gated; records who/why)")
     ap.add_argument("--timeout", type=int, default=1800)
+    ap.add_argument("--freeze-only", default=None, help="with --freeze: one snapshot name")
     ap.add_argument("--external-only", action="store_true",
                     help="only evaluate official/GPU evidence against current hashes")
     ap.add_argument("--evidence-dir", type=Path, default=None,
@@ -316,6 +434,7 @@ def main(argv=None) -> int:
              "lake build in working tree (incremental; use --fresh for final evidence)")
     if a.fresh:
         root = fresh_workspace(logs)
+        os.environ["VERITILE_LEAN_ROOT"] = str(root)
     rc, out = sequential_build(root, ["VeriTile.Triton", "VeriTile.Meta.StatementAudit",
                                       "VeriTile.Examples.Common"], a.timeout, logs / "build.log")
     steps[s.key] = s.done("passed" if rc == 0 else "failed", str(logs / "build.log"),
@@ -327,37 +446,45 @@ def main(argv=None) -> int:
     steps[s.key] = s.done("failed" if bad else "passed", "; ".join(bad) or "none",
                           f"{len(bad)} hits" if bad else "no sorry/admit/native_decide/axiom")
 
-    # L3 kernel file + axioms + inventory + surface ----------------------
-    s = Step("kernel_file_axioms", "AddExample.lean elaborates; every listed theorem's axioms "
-             "⊆ {propext, Classical.choice, Quot.sound}; headline inventory")
-    tmp = root / "bench/tritonbench_g/add_example/.launch_audit_tmp.lean"
-    tmp.write_text(audit_file(root))
-    try:
-        rc, out = run(["lake", "env", "lean", str(tmp)], root, a.timeout, logs / "audit.log")
-    finally:
-        tmp.unlink(missing_ok=True)
-    clean = sorted(set(re.findall(r"(\S+): axiom footprint ⊆ standard base ✓", out)))
-    inv = re.search(r"Axiom audit: headlines=(\d+)\nheadlines: \[(.*?)\]", out, re.S)
-    missing = [h for h in HEADLINES if h not in clean]
-    inv_names = inv.group(2) if inv else ""
-    inv_ok = inv is not None and all(n in inv_names for n in
-                                     ["add_kernel_correctness", "add_kernel_launch_correctness"])
-    ok = rc == 0 and not missing and inv_ok
-    steps[s.key] = s.done("passed" if ok else "failed", str(logs / "audit.log"),
-                          f"rc={rc}, axiom-clean {len(clean)}/{len(HEADLINES)}, "
-                          f"inventory={'ok' if inv_ok else 'MISSING'}"
-                          + (f", missing={missing}" if missing else ""),
-                          axiom_clean=clean, inventory=inv_names)
+    # L3 kernel files + axioms + inventory ------------------------------
+    s = Step("kernel_file_axioms", "AddExample.lean, VectorAdditionCustom.lean, Blocked1DLaunchWitnesses.lean "
+             "elaborate; listed theorems' axioms ⊆ {propext, Classical.choice, Quot.sound}; "
+             "headline inventory")
+    per, all_ok, all_clean = {}, True, []
+    for rel, ns, thms, inv_req in AUDIT_TARGETS:
+        tmp = (root / rel).parent / ".launch_audit_tmp.lean"
+        tmp.write_text(audit_file(root, rel, ns, thms))
+        try:
+            rc, out = run(["lake", "env", "lean", str(tmp)], root, a.timeout,
+                          logs / f"audit_{Path(rel).stem}.log")
+        finally:
+            tmp.unlink(missing_ok=True)
+        clean = sorted(set(re.findall(r"(\S+): axiom footprint ⊆ standard base ✓", out)))
+        inv = re.search(r"Axiom audit: headlines=(\d+)\nheadlines: \[(.*?)\]", out, re.S)
+        missing = [h for h in thms if h not in clean]
+        inv_names = inv.group(2) if inv else ""
+        inv_ok = inv is not None and all(
+            re.search(rf"\.{re.escape(n)}\b", inv_names) for n in inv_req)
+        ok = rc == 0 and not missing and inv_ok
+        all_ok &= ok
+        all_clean += clean
+        per[rel] = {"rc": rc, "missing": missing, "inventory": inv_names, "ok": ok}
+    steps[s.key] = s.done("passed" if all_ok else "failed", str(logs / "audit_*.log"),
+                          f"{len(AUDIT_TARGETS)} files, axiom-clean {len(set(all_clean))} theorems"
+                          + ("" if all_ok else f", problems={ {k: v for k, v in per.items() if not v['ok']} }"),
+                          files=per)
 
     # L4 frozen contract ---------------------------------------------------
     s = Step("frozen_contract", "elaborated protected definitions + headline statements "
              "vs frozen snapshot; CONTRACT.md and checker surface hashes")
-    srf_rc, surface = print_surface(root, logs, a.timeout)
+    diffs, surfaces = [], {}
+    for name, rel, prints in SURFACES:
+        srf_rc, surface = print_surface(root, logs, a.timeout, rel, prints)
+        surfaces[name] = surface
+        if srf_rc != 0 or surface != (FROZEN / name).read_text():
+            diffs.append(name)
     cfg_rc, cfg_out = run(["lake", "env", "lean", str(FROZEN / "print_config_surface.lean")],
                           root, 600)
-    diffs = []
-    if srf_rc != 0 or surface != (FROZEN / "launch_surface.txt").read_text():
-        diffs.append("launch_surface")
     if cfg_rc != 0 or cfg_out != (FROZEN / "config_surface.txt").read_text():
         diffs.append("config_surface")
     if sha(KDIR / "CONTRACT.md") != (FROZEN / "contract.sha256").read_text().strip():
@@ -365,15 +492,17 @@ def main(argv=None) -> int:
     steps[s.key] = s.done("failed" if diffs else "passed", str(FROZEN),
                           f"CONTRACT_CHANGED: {diffs} (requires recorded review + refreeze)"
                           if diffs else "surface identical to frozen snapshot")
-    if diffs:
-        (logs / "surface.current.txt").write_text(surface)
+    for name in diffs:
+        if name in surfaces:
+            (logs / f"{name}.current").write_text(surfaces[name])
 
     # L5 adapter on manifests -------------------------------------------
     s = Step("source_link_adapter", "actual source + wrapper + Lean transcription + real CPU "
              "tensor metadata -> kernel-checked checker verdicts",
              "adapter recognition and torch metadata are trusted (tested, not proved)")
     results = {}
-    manifests = sorted(REPO.glob("bench/tritonbench_g/*/launch_manifest.json"))
+    manifests = sorted(m for m in REPO.glob("bench/tritonbench_g/**/launch_manifest.json")
+                       if "/." not in str(m.relative_to(REPO)))
     all_ok = True
     for m in manifests:
         try:
@@ -403,7 +532,7 @@ def main(argv=None) -> int:
                           out.strip().splitlines()[-1] if out.strip() else f"rc={rc}")
 
     local_ok = all(st.status == "passed" for st in steps.values())
-    hashes = input_hashes()
+    hashes = input_hashes(root)  # hashes of the copy that was actually verified
 
     steps.update(external_steps(hashes))
 
@@ -438,6 +567,8 @@ def main(argv=None) -> int:
     a.ledger.parent.mkdir(parents=True, exist_ok=True)
     a.ledger.write_text(json.dumps(ledger, indent=1, ensure_ascii=False) + "\n")
     if a.fresh and root != REPO:
+        ledger["fresh_workspace_matches_repo"] = hashes == input_hashes(REPO)
+        a.ledger.write_text(json.dumps(ledger, indent=1, ensure_ascii=False) + "\n")
         shutil.rmtree(root, ignore_errors=True)
 
     rc = 0

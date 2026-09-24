@@ -385,6 +385,8 @@ def build_tensors(spec: dict, launch: LaunchSummary) -> dict[str, dict]:
         size = (off + max(numel - 1, 0) * step + 1 if numel else off) + s.get("pad", 0)
         base = torch.randn(size, dtype=torch.float32).to(dtype)
         t = base[off:][::step][:numel] if numel else base[off:off]
+        if "shape" in s:
+            t = t.reshape(s["shape"])
         tens[name] = t
         keep.append(base)
     for name, s in spec.items():
@@ -444,7 +446,8 @@ def run_lean(text: str, timeout: int = 600) -> subprocess.CompletedProcess:
         f.write(text)
         path = f.name
     try:
-        return subprocess.run(["lake", "env", "lean", path], cwd=REPO, capture_output=True,
+        root = os.environ.get("VERITILE_LEAN_ROOT", str(REPO))  # fresh-workspace override
+        return subprocess.run(["lake", "env", "lean", path], cwd=root, capture_output=True,
                               text=True, timeout=timeout)
     finally:
         os.unlink(path)
@@ -521,7 +524,7 @@ def analyze(manifest_path: Path) -> dict:
                         "statements": kern.body_statements, "lean_match": True}
     result["launch"] = {"block": launch.block, "grid_kind": launch.grid_kind,
                         "binding": launch.arg_binding, "out_alloc": list(launch.out_alloc)}
-    configs, provenance = {}, {}
+    configs, provenance, wrapper_ob = {}, {}, {}
     for case in man["cases"]:
         if "tensors" in case:
             metas = build_tensors(case["tensors"], launch)
@@ -530,16 +533,25 @@ def analyze(manifest_path: Path) -> dict:
             metas = case["meta"]
             provenance[case["name"]] = "supplied-metadata (trusted as supplied)"
         configs[case["name"]] = make_config(launch, kern, metas, case.get("grid"))
+        out_meta = metas[launch.arg_binding[kern.out_param]]
+        wrapper_ob[case["name"]] = {
+            # W1 (adapter-checked, NOT part of the Lean contract): the wrapper returns the
+            # whole output tensor, so every element of it must be one the kernel writes.
+            "W1 output_fully_written": configs[case["name"]]["n"] == out_meta["numel"]}
     verdicts = lean_verdicts(configs)
     for case in man["cases"]:
         n = case["name"]
         v = verdicts[n]
         exp = case.get("expect")
+        wfail = sorted(k for k, ok in wrapper_ob[n].items() if not ok)
         result["cases"][n] = {"config": configs[n], "metadata": provenance[n], **v,
+                              "wrapper_obligations": wrapper_ob[n],
+                              "wrapper_failures": wfail,
                               "expected": exp,
-                              "matches_expectation": exp is None or exp == ("accept" if v["accepted"] else "reject")
+                              "matches_expectation": (exp is None or exp == ("accept" if v["accepted"] else "reject"))
                               and set(case.get("expect_failures", v["failed_obligations"]))
-                              == set(v["failed_obligations"])}
+                              == set(v["failed_obligations"])
+                              and set(case.get("expect_wrapper_failures", [])) == set(wfail)}
     result["hashes"] = {str(p.relative_to(REPO)): sha256(p) for p in
                         [py, lean, REPO / "VeriTile/Triton/Launch/Blocked1DConfig.lean",
                          Path(__file__).resolve(), manifest_path.resolve()]}

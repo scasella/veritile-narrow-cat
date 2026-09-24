@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-24T23:25:59Z",
- "git_head": "95a01f598e2cd1cac4052e5e5ff9145c658e18db",
+ "generated": "2026-09-24T23:42:21Z",
+ "git_head": "4fc5e0c18c99c814f931f83ef293f45ab1736a4d",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -9,8 +9,8 @@
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "8d1085fcdbd849a68477afbca67005f02f60004dd3ae8972cc4beec7dab3256f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
-  "scripts/launch_check.py": "c798c9e4df628c6a1df3d0df2a6b1e0a78bee36ff9081d9a7d2a92d7ef9bf2ce",
-  "scripts/launch_local_check.py": "edfca49bc9923cfaab4eeb7040c2d8d678e196ad3506e3777f552be5e6902fd2",
+  "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8",
+  "scripts/launch_local_check.py": "fcb7b9726c91b2dcf6a6bc665fa34f51e789552fc51e7dd3d0dfed7d73057b2f",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
@@ -71,15 +71,15 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 0.7
+   "elapsed_s": 1.1
   },
   "build": {
    "status": "passed",
-   "scope": "lake build in working tree (incremental; use --fresh for final evidence)",
+   "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0",
-   "elapsed_s": 3.5
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-tsglwvbi",
+   "elapsed_s": 654.0
   },
   "placeholder_scan": {
    "status": "passed",
@@ -95,7 +95,7 @@
    "assumptions": "",
    "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit.log",
    "reason": "rc=0, axiom-clean 12/11, inventory=ok",
-   "elapsed_s": 18.0,
+   "elapsed_s": 23.0,
    "axiom_clean": [
     "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correct",
     "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness",
@@ -118,15 +118,15 @@
    "assumptions": "",
    "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 6.4
+   "elapsed_s": 12.2
   },
   "source_link_adapter": {
    "status": "passed",
    "scope": "actual source + wrapper + Lean transcription + real CPU tensor metadata -> kernel-checked checker verdicts",
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
-   "reason": "1 manifests, 19 cases, 10 accepted, all verdicts kernel-checked",
-   "elapsed_s": 3.7
+   "reason": "2 manifests, 26 cases, 16 accepted, all verdicts kernel-checked",
+   "elapsed_s": 6.1
   },
   "adapter_tests": {
    "status": "passed",
@@ -134,7 +134,7 @@
    "assumptions": "",
    "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 3.1
+   "elapsed_s": 3.0
   },
   "official_comparator": {
    "status": "not_run",
@@ -161,5 +161,5 @@
    "elapsed_s": 0.0
   }
  },
- "fresh_workspace": false
+ "fresh_workspace": true
 }

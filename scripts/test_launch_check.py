@@ -122,6 +122,23 @@ class WrapperRecognition(unittest.TestCase):
         self.assertEqual((w.block, w.grid_kind, w.n_source), (16, "cdiv", "c#dim0"))
 
 
+class WrapperObligations(unittest.TestCase):
+    def test_empty_like_variant_recognized(self):
+        src = (REPO / "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py").read_text()
+        k = L.parse_kernel(src, "add_kernel")
+        self.assertEqual(L.lean_body_statements(ADD_LEAN, "add_kernel"), k.body_statements)
+        self.assertEqual(L.parse_launch(src, "add_wrapper", k).out_alloc, ("out", "x"))
+
+    def test_w1_detects_partial_output(self):
+        src = (REPO / "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py").read_text()
+        k = L.parse_kernel(src, "_add_kernel")
+        w = L.parse_launch(src, "custom_add", k)
+        metas = L.build_tensors({"a": {"numel": 32, "dtype": "float32", "shape": [4, 8]},
+                                 "b": {"numel": 32, "dtype": "float32", "shape": [4, 8]}}, w)
+        cfg = L.make_config(w, k, metas)
+        self.assertEqual((cfg["n"], metas["c"]["numel"]), (4, 32))
+
+
 class Metadata(unittest.TestCase):
     def test_torch_metadata(self):
         import torch

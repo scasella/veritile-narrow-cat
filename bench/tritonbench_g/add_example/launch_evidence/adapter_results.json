@@ -10,14 +10,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 15,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 2
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -26,7 +26,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -50,14 +50,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 16,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 12,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -66,7 +66,7 @@
      ],
      "n": 16,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 16,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -90,14 +90,14 @@
      ],
      "inputs": [
       {
-       "base": 536892176256,
+       "base": 505463286912,
        "capacity": 18,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536892162560,
+       "base": 505463286784,
        "capacity": 18,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -106,7 +106,7 @@
      ],
      "n": 18,
      "output": {
-      "base": 536892176384,
+      "base": 505463287040,
       "capacity": 18,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -171,14 +171,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 16,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 16,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -187,7 +187,7 @@
      ],
      "n": 16,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 16,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -211,14 +211,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 9,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -227,7 +227,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796965060,
+      "base": 505463262084,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -251,14 +251,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -267,7 +267,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796965056,
+      "base": 505463262080,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -291,14 +291,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965120,
+       "base": 505463262144,
        "capacity": 8,
        "dtype": ".f16",
        "elemBytes": 2,
@@ -307,7 +307,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796964992,
+      "base": 505463261952,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -332,14 +332,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965120,
+       "base": 505463262144,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -348,7 +348,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796964992,
+      "base": 505463261952,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -410,14 +410,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 16,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 16,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -426,7 +426,7 @@
      ],
      "n": 16,
      "output": {
-      "base": 536796965120,
+      "base": 505505670784,
       "capacity": 16,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -448,14 +448,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 8,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -464,7 +464,7 @@
      ],
      "n": 8,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 8,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -486,14 +486,14 @@
      ],
      "inputs": [
       {
-       "base": 536892162560,
+       "base": 505463286784,
        "capacity": 32,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536892176256,
+       "base": 505463286912,
        "capacity": 32,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -502,7 +502,7 @@
      ],
      "n": 32,
      "output": {
-      "base": 536892176384,
+      "base": 505463287040,
       "capacity": 32,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -562,14 +562,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 3,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 3,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -578,7 +578,7 @@
      ],
      "n": 3,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 3,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -600,14 +600,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 4,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 4,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -616,7 +616,7 @@
      ],
      "n": 4,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 4,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -638,14 +638,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 5,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 5,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -654,7 +654,7 @@
      ],
      "n": 5,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 5,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -676,14 +676,14 @@
      ],
      "inputs": [
       {
-       "base": 536796965056,
+       "base": 505463262080,
        "capacity": 5,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 5,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -692,7 +692,7 @@
      ],
      "n": 5,
      "output": {
-      "base": 536796965120,
+      "base": 505463262144,
       "capacity": 5,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -714,14 +714,14 @@
      ],
      "inputs": [
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 9,
        "dtype": ".f32",
        "elemBytes": 4,
        "stride": 1
       },
       {
-       "base": 536796964992,
+       "base": 505463261952,
        "capacity": 9,
        "dtype": ".f32",
        "elemBytes": 4,
@@ -730,7 +730,7 @@
      ],
      "n": 9,
      "output": {
-      "base": 536796965056,
+      "base": 505463262080,
       "capacity": 9,
       "dtype": ".f32",
       "elemBytes": 4,
@@ -749,7 +749,7 @@
    "bench/tritonbench_g/add_example/AddExample.lean": "4cbc4032abfe6a4c87634bd91994e07b923fcb9739680161fba5fff1d8a1e638",
    "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
    "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
-   "scripts/launch_check.py": "c798c9e4df628c6a1df3d0df2a6b1e0a78bee36ff9081d9a7d2a92d7ef9bf2ce"
+   "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8"
   },
   "kernel": {
    "block_param": "BLOCK_SIZE",
@@ -788,6 +788,320 @@
    ]
   },
   "manifest": "bench/tritonbench_g/add_example/launch_manifest.json",
+  "status": "ok"
+ },
+ "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": {
+  "cases": {
+   "F1_2d_input_partial_output": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      2
+     ],
+     "inputs": [
+      {
+       "base": 505463286784,
+       "capacity": 32,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463286912,
+       "capacity": 32,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 32,
+     "output": {
+      "base": 505463287040,
+      "capacity": 32,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "M1_b_shorter": {
+    "accepted": false,
+    "config": {
+     "block": 16,
+     "grid": [
+      1
+     ],
+     "inputs": [
+      {
+       "base": 505463262080,
+       "capacity": 16,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463262144,
+       "capacity": 10,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 16,
+     "output": {
+      "base": 505463261952,
+      "capacity": 16,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "reject",
+    "failed_obligations": [
+     "P4 lanes_in_bounds"
+    ],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "V1_test_case_1_n16": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      1
+     ],
+     "inputs": [
+      {
+       "base": 505463262080,
+       "capacity": 16,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463262144,
+       "capacity": 16,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 16,
+     "output": {
+      "base": 505463261952,
+      "capacity": 16,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "V2_test_case_2_n8": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      1
+     ],
+     "inputs": [
+      {
+       "base": 505463262144,
+       "capacity": 8,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463262080,
+       "capacity": 8,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 8,
+     "output": {
+      "base": 505463261952,
+      "capacity": 8,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "V3_test_case_3_n32": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      2
+     ],
+     "inputs": [
+      {
+       "base": 505463286784,
+       "capacity": 32,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463286912,
+       "capacity": 32,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 32,
+     "output": {
+      "base": 505463287040,
+      "capacity": 32,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "V4_test_case_4_empty": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      0
+     ],
+     "inputs": [
+      {
+       "base": 0,
+       "capacity": 0,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 0,
+       "capacity": 0,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 0,
+     "output": {
+      "base": 0,
+      "capacity": 0,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   },
+   "V5_n17_two_programs": {
+    "accepted": true,
+    "config": {
+     "block": 16,
+     "grid": [
+      2
+     ],
+     "inputs": [
+      {
+       "base": 505463286912,
+       "capacity": 17,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      },
+      {
+       "base": 505463286784,
+       "capacity": 17,
+       "dtype": ".f32",
+       "elemBytes": 4,
+       "stride": 1
+      }
+     ],
+     "n": 17,
+     "output": {
+      "base": 505463287040,
+      "capacity": 17,
+      "dtype": ".f32",
+      "elemBytes": 4,
+      "stride": 1
+     }
+    },
+    "expected": "accept",
+    "failed_obligations": [],
+    "kernel_checked": true,
+    "matches_expectation": true,
+    "metadata": "torch-cpu-tensors"
+   }
+  },
+  "hashes": {
+   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "1d4cfbed6c7aa7dda6d7a070216caed28d9eace83bd011a6f7303003e6804a82",
+   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "36ea0d7f6125567d0d546e1dc90d3c2bce321096d178ee1285151c6069c1291c",
+   "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+   "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8"
+  },
+  "kernel": {
+   "block_param": "BLOCK",
+   "lean_match": true,
+   "n_param": "size",
+   "name": "_add_kernel",
+   "out": "C",
+   "ptr_params": [
+    "A",
+    "B"
+   ],
+   "statements": [
+    "prog_id=tl.program_id(0)",
+    "offs=prog_id*BLOCK+tl.arange(0,BLOCK)",
+    "a=tl.load(A+offs,mask=offs<size)",
+    "b=tl.load(B+offs,mask=offs<size)",
+    "tl.store(C+offs,a+b,mask=offs<size)"
+   ]
+  },
+  "launch": {
+   "binding": {
+    "A": "a",
+    "B": "b",
+    "BLOCK": "BLOCK",
+    "C": "c",
+    "size": "size"
+   },
+   "block": 16,
+   "grid_kind": "cdiv",
+   "out_alloc": [
+    "c",
+    "a"
+   ]
+  },
+  "manifest": "bench/tritonbench_g/vector_addition_custom/launch_manifest.json",
   "status": "ok"
  }
 }

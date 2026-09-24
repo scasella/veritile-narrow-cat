@@ -1,0 +1,131 @@
+{
+ "kernel": "_add_kernel",
+ "wrapper": "custom_add",
+ "source": "vector_addition_custom.py",
+ "lean": "VectorAdditionCustom.lean",
+ "lean_kernel": "_add_kernel",
+ "lean_theorems": [
+  "VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_launch_correctness"
+ ],
+ "cases": [
+  {
+   "name": "V1_test_case_1_n16",
+   "kind": "valid",
+   "tensors": {
+    "a": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 16,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V2_test_case_2_n8",
+   "kind": "valid",
+   "tensors": {
+    "a": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 8,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V3_test_case_3_n32",
+   "kind": "valid",
+   "tensors": {
+    "a": {
+     "numel": 32,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 32,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V4_test_case_4_empty",
+   "kind": "valid-empty",
+   "tensors": {
+    "a": {
+     "numel": 0,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 0,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V5_n17_two_programs",
+   "kind": "valid-boundary",
+   "tensors": {
+    "a": {
+     "numel": 17,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 17,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "F1_2d_input_partial_output",
+   "kind": "wrapper-fault",
+   "tensors": {
+    "a": {
+     "numel": 32,
+     "dtype": "float32",
+     "shape": [
+      4,
+      8
+     ]
+    },
+    "b": {
+     "numel": 32,
+     "dtype": "float32",
+     "shape": [
+      4,
+      8
+     ]
+    }
+   },
+   "expect": "accept",
+   "expect_wrapper_failures": [
+    "W1 output_fully_written"
+   ]
+  },
+  {
+   "name": "M1_b_shorter",
+   "kind": "fault",
+   "tensors": {
+    "a": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "b": {
+     "numel": 10,
+     "dtype": "float32"
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P4 lanes_in_bounds"
+   ]
+  }
+ ]
+}
