@@ -1,0 +1,345 @@
+{
+ "generated": "2026-09-24T23:30:14Z",
+ "elapsed_s": 94.7,
+ "counts": {
+  "accepted": 12,
+  "violated_obligation": 11,
+  "concrete_witness": 8,
+  "unsupported_input": 5,
+  "evidence_rejection": 7,
+  "infrastructure_failure": 1
+ },
+ "undetected": [],
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "4cbc4032abfe6a4c87634bd91994e07b923fcb9739680161fba5fff1d8a1e638",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "8d1085fcdbd849a68477afbca67005f02f60004dd3ae8972cc4beec7dab3256f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
+  "scripts/launch_check.py": "c798c9e4df628c6a1df3d0df2a6b1e0a78bee36ff9081d9a7d2a92d7ef9bf2ce",
+  "scripts/launch_local_check.py": "edfca49bc9923cfaab4eeb7040c2d8d678e196ad3506e3777f552be5e6902fd2",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ },
+ "results": [
+  {
+   "id": "V1_test_case_1_n16",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=16 grid=[4]; Pre proved via check_ok"
+  },
+  {
+   "id": "V2_test_case_2_n8",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=8 grid=[2]; Pre proved via check_ok"
+  },
+  {
+   "id": "V3_test_case_3_n32",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=32 grid=[8]; Pre proved via check_ok"
+  },
+  {
+   "id": "V4_test_case_4_empty",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=0 grid=[0]; Pre proved via check_ok"
+  },
+  {
+   "id": "V5_n3_below_block",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=3 grid=[1]; Pre proved via check_ok"
+  },
+  {
+   "id": "V6_n4_eq_block",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=4 grid=[1]; Pre proved via check_ok"
+  },
+  {
+   "id": "V7_n5_tail",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=5 grid=[2]; Pre proved via check_ok"
+  },
+  {
+   "id": "V8_n5_overprovisioned_grid3",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=5 grid=[3]; Pre proved via check_ok"
+  },
+  {
+   "id": "V9_x_y_alias_readonly",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=9 grid=[3]; Pre proved via check_ok"
+  },
+  {
+   "id": "V10_n_max_i32",
+   "category": "valid-control",
+   "mutation": "none",
+   "outcome": "accepted",
+   "detail": "n=2147483647 grid=[536870912]; Pre proved via check_ok"
+  },
+  {
+   "id": "M1_wrong_stride_x_step2",
+   "category": "config-fault",
+   "mutation": "M1_wrong_stride_x_step2",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P8 unit_stride']"
+  },
+  {
+   "id": "M2_y_shorter_than_x",
+   "category": "config-fault",
+   "mutation": "M2_y_shorter_than_x",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P4 lanes_in_bounds']"
+  },
+  {
+   "id": "M3_insufficient_grid_floor",
+   "category": "config-fault",
+   "mutation": "M3_insufficient_grid_floor",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P3 covers']"
+  },
+  {
+   "id": "M4_n_exceeds_i32",
+   "category": "config-fault",
+   "mutation": "M4_n_exceeds_i32",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P5 offsets_fit', 'P6 n_fits']"
+  },
+  {
+   "id": "M5_grid_offsets_overflow",
+   "category": "config-fault",
+   "mutation": "M5_grid_offsets_overflow",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P5 offsets_fit']"
+  },
+  {
+   "id": "M6_out_overlaps_x_shift1",
+   "category": "config-fault",
+   "mutation": "M6_out_overlaps_x_shift1",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P10 out_disjoint']"
+  },
+  {
+   "id": "M7_out_is_x_inplace",
+   "category": "config-fault",
+   "mutation": "M7_out_is_x_inplace",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P10 out_disjoint']"
+  },
+  {
+   "id": "M8_y_float16",
+   "category": "config-fault",
+   "mutation": "M8_y_float16",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P9 dtype_ok']"
+  },
+  {
+   "id": "M9_grid_rank2",
+   "category": "config-fault",
+   "mutation": "M9_grid_rank2",
+   "outcome": "violated_obligation",
+   "detail": "¬Pre kernel-checked; failed ['P1 grid_rank']"
+  },
+  {
+   "id": "W_M1_stride",
+   "category": "witness",
+   "mutation": "x = base[::2]",
+   "outcome": "concrete_witness",
+   "detail": "emulator: 7/8 outputs differ from reference (kernel ignores stride)",
+   "semantic_witness": "emulator-only"
+  },
+  {
+   "id": "W_M2_short_y",
+   "category": "witness",
+   "mutation": "y.numel()=12 < n=16",
+   "outcome": "concrete_witness",
+   "detail": "emulator: 4 out-of-allocation reads: ['OOB read y[12] (pid 3)', 'OOB read y[13] (pid 3)']",
+   "semantic_witness": "emulator-only"
+  },
+  {
+   "id": "W_M3_short_grid",
+   "category": "witness",
+   "mutation": "grid=(18//4,)",
+   "outcome": "concrete_witness",
+   "detail": "emulator: out[16:18]=[0.0, 0.0] ≠ ref [-2.5230441093444824, -0.33304473757743835]",
+   "semantic_witness": "emulator-only"
+  },
+  {
+   "id": "W_M6_overlap_race",
+   "category": "witness",
+   "mutation": "out = x shifted by 1 element",
+   "outcome": "concrete_witness",
+   "detail": "emulator: result depends on program order (asc≠desc: True)",
+   "semantic_witness": "emulator-only"
+  },
+  {
+   "id": "W_i32_n_truncated",
+   "category": "witness",
+   "mutation": "M4: n=3·2^30 as i32 is negative ⇒ every lane masked off",
+   "outcome": "concrete_witness",
+   "detail": "Lean-checked theorem, axiom-clean",
+   "semantic_witness": "lean-checked"
+  },
+  {
+   "id": "W_i32_offset_wraps",
+   "category": "witness",
+   "mutation": "M5: pid=2^29, BLOCK=4 ⇒ offset wraps to -2^31 and passes mask",
+   "outcome": "concrete_witness",
+   "detail": "Lean-checked theorem, axiom-clean",
+   "semantic_witness": "lean-checked"
+  },
+  {
+   "id": "W_unmasked_store_frame_violation",
+   "category": "witness",
+   "mutation": "K1: store without mask writes out[7] with n=5 (frame clause false)",
+   "outcome": "concrete_witness",
+   "detail": "Lean-checked theorem, axiom-clean",
+   "semantic_witness": "lean-checked"
+  },
+  {
+   "id": "W_offbyone_mask_frame_violation",
+   "category": "witness",
+   "mutation": "K2: mask `offsets <= n` writes out[n] (frame clause false)",
+   "outcome": "concrete_witness",
+   "detail": "Lean-checked theorem, axiom-clean",
+   "semantic_witness": "lean-checked"
+  },
+  {
+   "id": "S1_floor_grid",
+   "category": "source-mutant",
+   "mutation": "num_blocks = n_elements // BLOCK_SIZE",
+   "outcome": "violated_obligation",
+   "detail": "verdicts {'n16': (True, []), 'n18': (False, ['P3 covers'])}"
+  },
+  {
+   "id": "S2_block_6",
+   "category": "source-mutant",
+   "mutation": "BLOCK_SIZE = 6",
+   "outcome": "violated_obligation",
+   "detail": "verdicts {'n16': (False, ['P2 block_ok']), 'n18': (False, ['P2 block_ok'])}"
+  },
+  {
+   "id": "S3_missing_store_mask",
+   "category": "source-mutant",
+   "mutation": "tl.store(out_ptr + offsets, output)",
+   "outcome": "unsupported_input",
+   "detail": "tl.store must be tl.store(ptr + offsets, value, mask=mask)"
+  },
+  {
+   "id": "S4_offbyone_mask",
+   "category": "source-mutant",
+   "mutation": "mask = offsets <= n_elements",
+   "outcome": "unsupported_input",
+   "detail": "unmodelled comparison: offsets <= n_elements"
+  },
+  {
+   "id": "S5_load_other_kwarg",
+   "category": "source-mutant",
+   "mutation": "x = tl.load(in_ptr0 + offsets, mask=mask, other=0.0)",
+   "outcome": "unsupported_input",
+   "detail": "tl.load must be tl.load(ptr + offsets, mask=mask) (no other=, no extra kwargs)"
+  },
+  {
+   "id": "S6_helper_call",
+   "category": "source-mutant",
+   "mutation": "output = my_add(x, y)",
+   "outcome": "unsupported_input",
+   "detail": "unmodelled call: my_add"
+  },
+  {
+   "id": "S7_launch_option",
+   "category": "source-mutant",
+   "mutation": "add_kernel[(num_blocks,)](x, y, out, n_elements, BLOCK_SIZE, num_warps=8)",
+   "outcome": "unsupported_input",
+   "detail": "launch keyword 'num_warps' is not a kernel parameter (launch options are not modelled)"
+  },
+  {
+   "id": "B1_comment_only_edit",
+   "category": "benign",
+   "mutation": "comment edit in wrapper",
+   "outcome": "accepted",
+   "detail": "verdicts unchanged; add_example.py hash changes → ledger/external evidence STALE"
+  },
+  {
+   "id": "B2_python_only_rename",
+   "category": "benign",
+   "mutation": "rename in Python only (Lean not updated)",
+   "outcome": "evidence_rejection",
+   "detail": "transcription drift detected: Lean transcription differs from the Python kernel body:"
+  },
+  {
+   "id": "E1_weakened_contract",
+   "category": "pipeline",
+   "mutation": "Covers: `<` → `≤` (proofs still compile: no)",
+   "outcome": "evidence_rejection",
+   "detail": "frozen-contract diff: CONTRACT_CHANGED"
+  },
+  {
+   "id": "E2_unapproved_axiom",
+   "category": "pipeline",
+   "mutation": "check_ok proved from a new axiom",
+   "outcome": "evidence_rejection",
+   "detail": "axiom footprint contains cheat_pre (placeholder scan also flags `axiom`)"
+  },
+  {
+   "id": "E3_sorry",
+   "category": "pipeline",
+   "mutation": "check_complete := sorry",
+   "outcome": "evidence_rejection",
+   "detail": "sorryAx in axioms; placeholder scan flags `sorry`"
+  },
+  {
+   "id": "E4_omitted_target",
+   "category": "pipeline",
+   "mutation": "delete add_kernel_launch_correctness",
+   "outcome": "evidence_rejection",
+   "detail": "control rc=0; mutant rc=1: unknown constant at the axiom/inventory gate"
+  },
+  {
+   "id": "E5_stale_source_hash",
+   "category": "pipeline",
+   "mutation": "official evidence recorded for other add_example.py",
+   "outcome": "evidence_rejection",
+   "detail": "--require-official rc=2: OFFICIAL_AUDIT_REQUIRED_BUT_FAILED"
+  },
+  {
+   "id": "E6_fresh_evidence_control",
+   "category": "pipeline",
+   "mutation": "synthetic fresh evidence file (test only)",
+   "outcome": "accepted",
+   "detail": "rc=0"
+  },
+  {
+   "id": "E7_missing_result",
+   "category": "pipeline",
+   "mutation": "no official/GPU result files",
+   "outcome": "evidence_rejection",
+   "detail": "rc=2: OFFICIAL_AUDIT_REQUIRED_BUT_NOT_RUN | GPU_EVIDENCE_REQUIRED_BUT_MISSING_OR_FAILED"
+  },
+  {
+   "id": "E8_tool_unavailable",
+   "category": "pipeline",
+   "mutation": "PATH without lake/lean",
+   "outcome": "infrastructure_failure",
+   "detail": "adapter status=infrastructure_failure, rc=1 (no verdict produced)"
+  }
+ ]
+}

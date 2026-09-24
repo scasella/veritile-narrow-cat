@@ -138,6 +138,42 @@ def fresh_workspace(logs: Path) -> Path:
     return ws
 
 
+def sequential_build(root: Path, roots: list[str], timeout: int, log: Path):
+    """`lake build` one module at a time in import order: Lake 5.0 has no job
+    cap, so this bounds concurrency to one Lean process (LEAN_NUM_THREADS=2)."""
+    imp = re.compile(r"^\s*(?:public\s+)?import\s+(\S+)", re.M)
+    order, seen = [], set()
+    def visit(m):
+        f = root / (m.replace(".", "/") + ".lean")
+        if m in seen or not f.exists():
+            return
+        seen.add(m)
+        for d in imp.findall(f.read_text()):
+            if d.startswith("VeriTile"):
+                visit(d)
+        order.append(m)
+    for r in roots:
+        visit(r)
+    t0, lines = time.time(), []
+    for m in order:
+        left = timeout - (time.time() - t0)
+        if left <= 0:
+            lines.append(f"TIMEOUT before {m}")
+            rc = 124
+            break
+        rc, out = run(["lake", "build", m], root, int(left))
+        lines.append(f"{m} rc={rc}")
+        if rc != 0:
+            lines.append(out[-4000:])
+            break
+    else:
+        rc = 0
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(f"# sequential build of {len(order)} modules in {root} "
+                   f"({time.time()-t0:.0f}s)\n" + "\n".join(lines) + "\n")
+    return rc, "\n".join(lines)
+
+
 def placeholder_scan(root: Path) -> list[str]:
     bad = []
     for f in NEW_LEAN:
@@ -280,9 +316,8 @@ def main(argv=None) -> int:
              "lake build in working tree (incremental; use --fresh for final evidence)")
     if a.fresh:
         root = fresh_workspace(logs)
-    rc, out = run(["lake", "build", "VeriTile.Triton.Launch.Blocked1D", "VeriTile.Triton",
-                   "VeriTile.Meta.StatementAudit", "VeriTile.Examples.Common"],
-                  root, a.timeout, logs / "build.log")
+    rc, out = sequential_build(root, ["VeriTile.Triton", "VeriTile.Meta.StatementAudit",
+                                      "VeriTile.Examples.Common"], a.timeout, logs / "build.log")
     steps[s.key] = s.done("passed" if rc == 0 else "failed", str(logs / "build.log"),
                           f"rc={rc}" + (f" workspace={root}" if a.fresh else ""))
 

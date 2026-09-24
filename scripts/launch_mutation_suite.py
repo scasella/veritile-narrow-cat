@@ -270,11 +270,15 @@ def pipeline_mutants(scratch: Path):
     ex = (KDIR / "AddExample.lean").read_text()
     cut = ex.index("/-- **Whole-launch headline.**")
     end = ex.index("end VeriTile.Bench.TritonBenchG.AddExample")
-    rc, out = lean(ex[:cut] + ex[end:] + "\nopen VeriTile.Meta\n"
-                   "#axiomsClean VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness\n")
+    gate = ("\nopen VeriTile.Meta\n"
+            "#axiomsClean VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness\n")
+    rc0, _ = lean(LC.AUDIT_IMPORT + ex + gate)            # control: intact file passes the gate
+    rc, out = lean(LC.AUDIT_IMPORT + ex[:cut] + ex[end:] + gate)
+    detected = rc0 == 0 and rc != 0 and "unknown" in out.lower()
     record("E4_omitted_target", "pipeline", "delete add_kernel_launch_correctness",
-           "evidence_rejection" if rc != 0 else "accepted",
-           "inventory/axiom gate fails: unknown constant" if rc != 0 else "UNDETECTED")
+           "evidence_rejection" if detected else ("accepted" if rc == 0 else "infrastructure_failure"),
+           f"control rc={rc0}; mutant rc={rc}: unknown constant at the axiom/inventory gate"
+           if detected else f"UNDETECTED (control rc={rc0}, mutant rc={rc})")
     # E5 stale source hash vs external evidence
     ev = scratch / "evid"; ev.mkdir(exist_ok=True)
     h = LC.input_hashes()
