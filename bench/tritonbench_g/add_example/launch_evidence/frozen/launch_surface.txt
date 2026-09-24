@@ -216,3 +216,21 @@ VeriTile.Triton.Blocked1DLaunch.check_complete : ∀ (c : VeriTile.Triton.Blocke
             decide (pid * c.block + j < c.n)
 @VeriTile.Triton.Blocked1DLaunch.Pre.offset_injective : ∀ {c : VeriTile.Triton.Blocked1DLaunch},
   c.Pre → ∀ {p₁ p₂ j₁ j₂ : ℕ}, j₁ < c.block → j₂ < c.block → p₁ * c.block + j₁ = p₂ * c.block + j₂ → p₁ = p₂ ∧ j₁ = j₂
+VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant : ∀
+  (c : VeriTile.Triton.Blocked1DLaunch),
+  c.check = «true» →
+    ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName),
+      out_ptr ≠ in_ptr0 →
+        out_ptr ≠ in_ptr1 →
+          ∀ (s : VeriTile.Triton.BlockState) (init : ℕ → VeriTile.Triton.MemCell) (xs ys : ℕ → ℝ),
+            (∀ i < c.n, s.mem in_ptr0 i = VeriTile.Triton.MemCell.real (xs i)) →
+              (∀ i < c.n, s.mem in_ptr1 i = VeriTile.Triton.MemCell.real (ys i)) →
+                (VeriTile.Triton.Kernel.LaunchCorrectFramed
+                    (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel
+                    { dims := c.grid } s (fun i => if i < c.n then some (out_ptr, i) else none) fun i => xs i + ys i) ∧
+                  VeriTile.Triton.Kernel.LaunchCorrectFramed
+                    (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel
+                    { dims := c.grid }
+                    { mem := fun r o => if r = out_ptr then init o else s.mem r o, regs := s.regs, pids := s.pids,
+                      undef := s.undef, numPids := s.numPids }
+                    (fun i => if i < c.n then some (out_ptr, i) else none) fun i => xs i + ys i

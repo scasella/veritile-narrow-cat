@@ -368,18 +368,10 @@ theorem add_kernel_launch_applicable
     show pid * c.block + j.val < A.extent out_ptr
     have := hpre.lanes_in_bounds c.output hbo' pid hpid j.val j.isLt hj; omega
 
-/-- **Whole-launch headline.** For a host configuration accepted by the proved
-launch checker, launching `add_kernel` over the host's grid `c.grid` from any
-state whose input cells `i < n` hold typed real values `xs i`, `ys i`:
-every program terminates and is trace-safe for bounds covering the checked
-capacities; the programs' write sets are pairwise disjoint and compose into
-one final memory (`GridLaunchedOrdinary`) in which `out_ptr[i] = xs i + ys i`
-for every `i < n`, while every other cell is unchanged; and every lane offset
-and mask the launch computes in Triton's `i32` arithmetic equals its ℕ
-counterpart used by the model. -/
-specification add_kernel_launch_correctness
+/-- The framed whole-grid launch of a checked configuration (the first
+conjunct of `add_kernel_launch_correctness`; needs no input-buffer binding). -/
+theorem add_kernel_launch_framed
     (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
-    (bx by_ : BufMeta) (hin : c.inputs = [bx, by_])
     (in_ptr0 in_ptr1 out_ptr : RegionName)
     (s : BlockState) (xs ys : Nat → ℝ)
     (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
@@ -388,24 +380,9 @@ specification add_kernel_launch_correctness
         ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
         { dims := c.grid } s
         (fun i : Nat => if i < c.n then some (out_ptr, i) else none)
-        (fun i => xs i + ys i) ∧
-      (∀ bounds : RegionBounds,
-        bx.capacity ≤ bounds in_ptr0 → by_.capacity ≤ bounds in_ptr1 →
-        c.output.capacity ≤ bounds out_ptr →
-        ∀ idx : GridIndex { dims := c.grid },
-          Kernel.TraceSafe bounds
-            ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
-            (s.withGridIndex idx)) ∧
-      ∀ pid j, pid < c.gridX → j < c.block →
-        (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt
-            = ((pid * c.block + j : Nat) : Int) ∧
-        BitVec.slt (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j)
-            (BitVec.ofNat 32 c.n) = decide (pid * c.block + j < c.n) := by
+        (fun i => xs i + ys i) := by
   have hpre := Blocked1DLaunch.check_ok c hc
   have hB := hpre.block_pos
-  refine ⟨?_, fun bounds h1 h2 h3 => add_kernel_launch_traceSafe c hc bx by_ hin
-      in_ptr0 in_ptr1 out_ptr bounds h1 h2 h3 s,
-    fun pid j hp hj => ⟨hpre.i32_offset_toInt hp hj, hpre.i32_mask_eq hp hj⟩⟩
   have hcov : c.n ≤ c.gridX * c.block :=
     of_decide_eq_true ((Blocked1DLaunch.coversB_iff c hB).2 hpre.covers)
   rw [hpre.grid_eq]
@@ -455,5 +432,80 @@ specification add_kernel_launch_correctness
     simp only at hr ho
     subst hr
     exact hno o (by simp [ho])
+
+/-- **The output's initial contents are dead** — justification for allocating
+`out` with `torch.empty_like(x)` instead of `torch.zeros_like(x)` in
+`add_wrapper`. For a checked configuration and output region distinct from
+both input regions (P10 + TA-region), launching from `s` or from `s` with the
+output buffer overwritten by arbitrary cells `init` (e.g. zeros) yields, in
+both cases, a framed whole-grid launch realizing the same values
+`xs i + ys i` at every output cell `i < n`. -/
+theorem add_kernel_launch_initial_output_irrelevant
+    (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (h0 : out_ptr ≠ in_ptr0) (h1 : out_ptr ≠ in_ptr1)
+    (s : BlockState) (init : Nat → MemCell) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+        { dims := c.grid } s
+        (fun i : Nat => if i < c.n then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) ∧
+      Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+        { dims := c.grid }
+        { s with mem := fun r o => if r = out_ptr then init o else s.mem r o }
+        (fun i : Nat => if i < c.n then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) := by
+  have hx' : ∀ i, i < c.n →
+      ({ s with mem := fun r o => if r = out_ptr then init o else s.mem r o } : BlockState).mem
+        in_ptr0 i = MemCell.real (xs i) := by
+    intro i hi; simp [Ne.symm h0, hx i hi]
+  have hy' : ∀ i, i < c.n →
+      ({ s with mem := fun r o => if r = out_ptr then init o else s.mem r o } : BlockState).mem
+        in_ptr1 i = MemCell.real (ys i) := by
+    intro i hi; simp [Ne.symm h1, hy i hi]
+  exact ⟨add_kernel_launch_framed c hc in_ptr0 in_ptr1 out_ptr s xs ys hx hy,
+    add_kernel_launch_framed c hc in_ptr0 in_ptr1 out_ptr _ xs ys hx' hy'⟩
+
+/-- **Whole-launch headline.** For a host configuration accepted by the proved
+launch checker, launching `add_kernel` over the host's grid `c.grid` from any
+state whose input cells `i < n` hold typed real values `xs i`, `ys i`:
+every program terminates and is trace-safe for bounds covering the checked
+capacities; the programs' write sets are pairwise disjoint and compose into
+one final memory (`GridLaunchedOrdinary`) in which `out_ptr[i] = xs i + ys i`
+for every `i < n`, while every other cell is unchanged; and every lane offset
+and mask the launch computes in Triton's `i32` arithmetic equals its ℕ
+counterpart used by the model. -/
+specification add_kernel_launch_correctness
+    (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
+    (bx by_ : BufMeta) (hin : c.inputs = [bx, by_])
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+        { dims := c.grid } s
+        (fun i : Nat => if i < c.n then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ bounds : RegionBounds,
+        bx.capacity ≤ bounds in_ptr0 → by_.capacity ≤ bounds in_ptr1 →
+        c.output.capacity ≤ bounds out_ptr →
+        ∀ idx : GridIndex { dims := c.grid },
+          Kernel.TraceSafe bounds
+            ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      ∀ pid j, pid < c.gridX → j < c.block →
+        (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt
+            = ((pid * c.block + j : Nat) : Int) ∧
+        BitVec.slt (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j)
+            (BitVec.ofNat 32 c.n) = decide (pid * c.block + j < c.n) := by
+  have hpre := Blocked1DLaunch.check_ok c hc
+  exact ⟨add_kernel_launch_framed c hc in_ptr0 in_ptr1 out_ptr s xs ys hx hy,
+    fun bounds h1 h2 h3 => add_kernel_launch_traceSafe c hc bx by_ hin
+      in_ptr0 in_ptr1 out_ptr bounds h1 h2 h3 s,
+    fun pid j hp hj => ⟨hpre.i32_offset_toInt hp hj, hpre.i32_mask_eq hp hj⟩⟩
 
 end VeriTile.Bench.TritonBenchG.AddExample
