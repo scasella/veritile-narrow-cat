@@ -11,11 +11,12 @@ stores to `out_ptr`, masked by `offsets < n_elements`.
 ## Scope
 
 This file verifies **the Triton kernel itself** — the per-program `@triton.jit`
-body. The host launch (`add_kernel[(num_blocks,)](...)`, the grid size
-`cdiv(n_elements, BLOCK_SIZE)`, and how the runtime composes per-program writes
-into one buffer) is the *trusted boundary*, not a proof obligation here. Because
-`pid` is universally quantified, the per-program statement covers every program
-of the grid.
+body. Because `pid` is universally quantified, the per-program statement
+covers every program of the grid. The host launch (`add_kernel[(num_blocks,)](...)`,
+the grid, the allocation sizes, strides, `i32` widths, aliasing, and the
+composition of per-program writes into one buffer) is discharged in the
+final section from a configuration accepted by the proved checker
+`Blocked1DLaunch.check` (see `CONTRACT.md`, `SOURCE_LINK.md`).
 
 ## Proof architecture
 
@@ -26,6 +27,18 @@ add_kernel_correctness                        ← TOP THEOREM (addIO ⊨ pointwi
   └─ add_kernel_region_run                    region-model masked Hoare triple
        ├─ add_kernel_correct                  algorithm-layer readback per lane
        └─ add_kernel_frame                    masked scatter-store cell frame
+
+add_kernel_launch_correctness                 ← LAUNCH HEADLINE (checked config c)
+  ├─ add_kernel_launch_framed                 LaunchCorrectFramed over c.grid
+  │    ├─ Blocked1DLaunch.check_ok            host obligations P1–P10
+  │    ├─ Blocked1D.launch_of_frames          disjoint whole-grid composition
+  │    ├─ addLaunchFrame                      per-program ExecFrame
+  │    │    (add_kernel_exec_isSome, add_kernel_frame)
+  │    └─ add_kernel_region_run               per-program values
+  ├─ add_kernel_launch_traceSafe              every program trace-safe
+  └─ Blocked1DLaunch.Pre.i32_offset_toInt / i32_mask_eq
+add_kernel_launch_applicable                  lane hypotheses of `⊨`, per launched pid
+add_kernel_launch_initial_output_irrelevant   zero-fill of `out` is dead
 ```
 
 The headline is stated on the kernel's masked **IO signature** `addIO`

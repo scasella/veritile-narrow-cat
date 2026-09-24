@@ -26,7 +26,7 @@ Machine-readable counterpart: `launch_manifest.json` (cases) and
    upstream helper `bench/audit_source.lean_first_triton_body`, unwraps `$(x)`
    antiquotations, and the normalized statement lists must be identical.
    Trust: the recognizer, the normalizer, and the upstream `triton { }` macro
-   (DSL → AST) are trusted. Evidence: 20 unit tests incl. drift and rejection
+   (DSL → AST) are trusted. Evidence: 22 unit tests incl. drift and rejection
    cases; statement match recorded per run.
 2. **Wrapper ↔ `Blocked1DLaunch`** — `parse_launch` binds kernel parameters to
    wrapper expressions: `BLOCK_SIZE` must be an integer literal, `n_elements`
@@ -79,3 +79,24 @@ the manifest, `CONTRACT.md`, the toolchain pin or `lake-manifest.json`
 changes the ledger `input_hashes`; external evidence carrying other hashes is
 reported `STALE` and fails any `--require-*` invocation. Changes to protected
 definitions or headline statements fail the frozen-contract step.
+
+## Wrapper obligation outside the Lean contract (W1)
+
+The Lean contract speaks about `out[0, n)` where `n` is the `n_elements`
+argument. Whether the wrapper *returns* exactly those cells is a separate,
+adapter-checked obligation — **W1 `output_fully_written`: `n == out.numel()`**
+(Python, trusted, reported as `wrapper_failures`, not part of `Pre`). It holds
+for `add_wrapper` (`n = x.numel()`, `out = zeros_like(x)`), and it fails for
+`vector_addition_custom.custom_add` on 2-D inputs: `size = c.size(0)`, so a
+`(4, 8)` input computes 4 of 32 outputs and returns 28 uninitialized
+`empty_like` entries (manifest case `F1_2d_input_partial_output`; emulator
+witness in REPORT). The kernel checker correctly *accepts* that launch — it is
+memory-safe and correct on `out[0, n)` — which is exactly why W1 is recorded
+separately.
+
+## Additional consumers
+
+| Case | Files | Status |
+|---|---|---|
+| `vector_addition_custom` (`BLOCK = 16`, `triton.cdiv`, `size = c.size(0)`) | `../vector_addition_custom/launch_manifest.json`; whole-launch section in `VectorAdditionCustom.lean` (mechanical port) | same checker, same composition lemma; proofs unchanged after renaming |
+| `add_example` with `out = torch.empty_like(x)` (Phase 5 candidate) | `improvement/add_example_empty_like.py`, `improvement/launch_manifest.json` | identical kernel statements; justified by `add_kernel_launch_initial_output_irrelevant` |
