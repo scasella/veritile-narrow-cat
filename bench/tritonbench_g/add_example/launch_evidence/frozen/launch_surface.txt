@@ -1,0 +1,218 @@
+def VeriTile.Triton.Kernel.LaunchCorrectFramed : {ι : Type} →
+  VeriTile.Triton.Kernel →
+    VeriTile.Triton.Grid → VeriTile.Triton.BlockState → (ι → Option VeriTile.Triton.MemCellAddr) → (ι → ℝ) → Prop :=
+fun {ι} k g s write expected =>
+  ∃ sFinal x,
+    (∀ (i : ι) (addr : VeriTile.Triton.MemCellAddr), write i = some addr → sFinal.readMem addr.1 addr.2 = expected i) ∧
+      ∀ (addr : VeriTile.Triton.MemCellAddr),
+        (∀ (i : ι), write i ≠ some addr) → sFinal.mem addr.1 addr.2 = s.mem addr.1 addr.2
+def VeriTile.Triton.Kernel.LaunchCorrect : {ι : Type} →
+  VeriTile.Triton.Kernel →
+    VeriTile.Triton.Grid → VeriTile.Triton.BlockState → (ι → Option VeriTile.Triton.MemCellAddr) → (ι → ℝ) → Prop :=
+fun {ι} k g s write expected =>
+  ∃ sFinal x,
+    ∀ (i : ι) (addr : VeriTile.Triton.MemCellAddr), write i = some addr → sFinal.readMem addr.1 addr.2 = expected i
+structure VeriTile.Triton.Kernel.GridLaunchedOrdinary (k : VeriTile.Triton.Kernel) (g : VeriTile.Triton.Grid)
+  (s sFinal : VeriTile.Triton.BlockState) : Type
+number of parameters: 4
+fields:
+  VeriTile.Triton.Kernel.GridLaunchedOrdinary.frames : k.GridFrames g s
+  VeriTile.Triton.Kernel.GridLaunchedOrdinary.h_disjoint : VeriTile.Triton.Kernel.GridWritesDisjoint self.frames
+  VeriTile.Triton.Kernel.GridLaunchedOrdinary.h_final : sFinal = VeriTile.Triton.Kernel.mergeFrames g s self.frames
+constructor:
+  VeriTile.Triton.Kernel.GridLaunchedOrdinary.mk {k : VeriTile.Triton.Kernel} {g : VeriTile.Triton.Grid}
+    {s sFinal : VeriTile.Triton.BlockState} (frames : k.GridFrames g s)
+    (h_disjoint : VeriTile.Triton.Kernel.GridWritesDisjoint frames)
+    (h_final : sFinal = VeriTile.Triton.Kernel.mergeFrames g s frames) : k.GridLaunchedOrdinary g s sFinal
+def VeriTile.Triton.Kernel.mergeFrames : {k : VeriTile.Triton.Kernel} →
+  (g : VeriTile.Triton.Grid) → (s : VeriTile.Triton.BlockState) → k.GridFrames g s → VeriTile.Triton.BlockState :=
+fun {k} g s frames =>
+  {
+    mem := fun region offset =>
+      if h : ∃ idx, (frames idx).writes (region, offset) then (frames (Classical.choose h)).final.mem region offset
+      else s.mem region offset,
+    regs := s.regs, pids := s.pids, undef := s.undef, numPids := s.numPids }
+@[reducible] def VeriTile.Triton.Blocked1D.line : ℕ → VeriTile.Triton.Grid :=
+fun g => { dims := [g] }
+def VeriTile.Triton.Blocked1D.pidOf : {g : ℕ} → VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g) → ℕ :=
+fun {g} idx => ↑(idx ⟨0, ⋯⟩)
+def VeriTile.Triton.Blocked1D.blockWrites : VeriTile.Triton.RegionName → ℕ → ℕ → ℕ → VeriTile.Triton.WriteFootprint :=
+fun out n B pid =>
+  VeriTile.Triton.WriteFootprint.activeTileImage out (fun i => pid * B + ↑i.1) fun i => pid * B + ↑i.1 < n
+def VeriTile.Triton.MaskedKernelIO₂.Implements : (io : VeriTile.Triton.MaskedKernelIO₂) →
+  ((Fin io.B → ℝ) → (Fin io.B → ℝ) → Fin io.B → ℝ) → Prop :=
+fun io f =>
+  ∀ (A : VeriTile.Triton.FlatAlloc),
+    A.Disjoint →
+      A.regions = [io.in1, io.in2, io.out] ++ List.map Prod.fst io.scratch →
+        (∀ r ∉ A.regions, A.extent r = 0) →
+          ∀ (pid : ℕ),
+            (∀ (j : Fin io.B), io.mask pid j → io.read1 pid + ↑j < A.extent io.in1) →
+              (∀ (j : Fin io.B), io.mask pid j → io.read2 pid + ↑j < A.extent io.in2) →
+                (∀ (j : Fin io.B), io.mask pid j → io.write pid + ↑j < A.extent io.out) →
+                  (∀ p ∈ io.scratch, ∀ (j : Fin io.B), io.mask pid j → p.2 pid + ↑j < A.extent p.1) →
+                    ∀ (xs ys : Fin io.B → ℝ) (s₀ : VeriTile.Triton.BlockState),
+                      s₀.pid = pid →
+                        (s₀.undef = fun x x_1 => 0) →
+                          (∀ (j : Fin io.B), io.mask pid j → s₀.readMem io.in1 (io.read1 pid + ↑j) = xs j) →
+                            (∀ (j : Fin io.B), io.mask pid j → s₀.readMem io.in2 (io.read2 pid + ↑j) = ys j) →
+                              ∃ s',
+                                VeriTile.Triton.exec (A.flattenKernel io.kernel.toAlgKernel) (A.flattenState s₀) =
+                                    some s' ∧
+                                  (∀ (j : Fin io.B),
+                                      io.mask pid j →
+                                        s'.readMem A.flat (A.addr io.out (io.write pid + ↑j)) = f xs ys j) ∧
+                                    ∀ (r' : VeriTile.Triton.RegionName) (o' : ℕ),
+                                      (r' ≠ A.flat ∨
+                                          (∀ (j : Fin io.B), io.mask pid j → o' ≠ A.addr io.out (io.write pid + ↑j)) ∧
+                                            ∀ p ∈ io.scratch,
+                                              ∀ (j : Fin io.B), io.mask pid j → o' ≠ A.addr p.1 (p.2 pid + ↑j)) →
+                                        s'.mem r' o' = (A.flattenState s₀).mem r' o'
+def VeriTile.Bench.TritonBenchG.AddExample.add_kernel : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName → VeriTile.Triton.RegionName → ℕ → ℕ → VeriTile.Triton.ComputeKernel :=
+fun in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE =>
+  VeriTile.Triton.ComputeKernel.mk [in_ptr0, in_ptr1] [out_ptr]
+    [VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "pid"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.programId 0)),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "block_start"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "pid") (VeriTile.Triton.Op.constNat BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarL
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "block_start")
+            (VeriTile.Triton.Op.arange BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets")
+            (VeriTile.Triton.Op.constNat n_elements))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr0
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr1
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.real VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x")
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"))),
+      VeriTile.Triton.ComputeStmt.store VeriTile.Triton.TileDType.real [BLOCK_SIZE]
+        (VeriTile.Triton.MemAccess.region out_ptr
+          (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"))
+        (VeriTile.Triton.MaskOpt.mask (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"))]
+def VeriTile.Bench.TritonBenchG.AddExample.addIO : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName → VeriTile.Triton.RegionName → ℕ → ℕ → VeriTile.Triton.MaskedKernelIO₂ :=
+fun in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE =>
+  { kernel := VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE,
+    projection := ⋯, in1 := in_ptr0, in2 := in_ptr1, out := out_ptr, B := BLOCK_SIZE,
+    read1 := fun pid => pid * BLOCK_SIZE, read2 := fun pid => pid * BLOCK_SIZE, write := fun pid => pid * BLOCK_SIZE,
+    mask := fun pid j => pid * BLOCK_SIZE + ↑j < n_elements }
+VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness : ∀ (c : VeriTile.Triton.Blocked1DLaunch),
+  c.check = «true» →
+    ∀ (bx by_ : VeriTile.Triton.BufMeta),
+      c.inputs = [bx, by_] →
+        ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName) (s : VeriTile.Triton.BlockState) (xs ys : ℕ → ℝ),
+          (∀ i < c.n, s.mem in_ptr0 i = VeriTile.Triton.MemCell.real (xs i)) →
+            (∀ i < c.n, s.mem in_ptr1 i = VeriTile.Triton.MemCell.real (ys i)) →
+              (VeriTile.Triton.Kernel.LaunchCorrectFramed
+                  (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel
+                  { dims := c.grid } s (fun i => if i < c.n then some (out_ptr, i) else none) fun i => xs i + ys i) ∧
+                (∀ (bounds : VeriTile.Triton.RegionBounds),
+                    bx.capacity ≤ bounds in_ptr0 →
+                      by_.capacity ≤ bounds in_ptr1 →
+                        c.output.capacity ≤ bounds out_ptr →
+                          ∀ (idx : VeriTile.Triton.GridIndex { dims := c.grid }),
+                            VeriTile.Triton.Kernel.TraceSafe bounds
+                              (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr c.n
+                                  c.block).toAlgKernel
+                              (s.withGridIndex idx)) ∧
+                  ∀ (pid j : ℕ),
+                    pid < c.gridX →
+                      j < c.block →
+                        (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt =
+                            ↑(pid * c.block + j) ∧
+                          (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).slt
+                              (BitVec.ofNat 32 c.n) =
+                            decide (pid * c.block + j < c.n)
+VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable : ∀ (c : VeriTile.Triton.Blocked1DLaunch),
+  c.check = «true» →
+    ∀ (bx by_ : VeriTile.Triton.BufMeta),
+      c.inputs = [bx, by_] →
+        ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName) (A : VeriTile.Triton.FlatAlloc),
+          bx.capacity ≤ A.extent in_ptr0 →
+            by_.capacity ≤ A.extent in_ptr1 →
+              c.output.capacity ≤ A.extent out_ptr →
+                ∀ pid < c.gridX,
+                  have io := VeriTile.Bench.TritonBenchG.AddExample.addIO in_ptr0 in_ptr1 out_ptr c.n c.block;
+                  (∀ (j : Fin io.B), io.mask pid j → io.read1 pid + ↑j < A.extent io.in1) ∧
+                    (∀ (j : Fin io.B), io.mask pid j → io.read2 pid + ↑j < A.extent io.in2) ∧
+                      ∀ (j : Fin io.B), io.mask pid j → io.write pid + ↑j < A.extent io.out
+VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_traceSafe : ∀ (c : VeriTile.Triton.Blocked1DLaunch),
+  c.check = «true» →
+    ∀ (bx by_ : VeriTile.Triton.BufMeta),
+      c.inputs = [bx, by_] →
+        ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName) (bounds : VeriTile.Triton.RegionBounds),
+          bx.capacity ≤ bounds in_ptr0 →
+            by_.capacity ≤ bounds in_ptr1 →
+              c.output.capacity ≤ bounds out_ptr →
+                ∀ (s : VeriTile.Triton.BlockState) (idx : VeriTile.Triton.GridIndex { dims := c.grid }),
+                  VeriTile.Triton.Kernel.TraceSafe bounds
+                    (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel
+                    (s.withGridIndex idx)
+VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness : ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName)
+  (n_elements BLOCK_SIZE : ℕ),
+  (VeriTile.Bench.TritonBenchG.AddExample.addIO in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE).Implements fun xs ys i =>
+    xs i + ys i
+@VeriTile.Triton.Blocked1D.launch_of_frames : ∀ {k : VeriTile.Triton.Kernel} {g n B : ℕ},
+  0 < B →
+    n ≤ g * B →
+      ∀ {s : VeriTile.Triton.BlockState} {out : VeriTile.Triton.RegionName}
+        (frames : k.GridFrames (VeriTile.Triton.Blocked1D.line g) s),
+        (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)),
+            (frames idx).writes = VeriTile.Triton.Blocked1D.blockWrites out n B (VeriTile.Triton.Blocked1D.pidOf idx)) →
+          ∀ (expected : ℕ → ℝ),
+            (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)),
+                ∀ j < B,
+                  VeriTile.Triton.Blocked1D.pidOf idx * B + j < n →
+                    (frames idx).final.readMem out (VeriTile.Triton.Blocked1D.pidOf idx * B + j) =
+                      expected (VeriTile.Triton.Blocked1D.pidOf idx * B + j)) →
+              ∃ L,
+                L.frames = frames ∧
+                  (∀ i < n,
+                      (VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line g) s frames).readMem out i =
+                        expected i) ∧
+                    ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                      ¬(r = out ∧ o < n) →
+                        (VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line g) s frames).mem r o =
+                          s.mem r o
+@VeriTile.Triton.Kernel.LaunchCorrectFramed.toLaunchCorrect : ∀ {ι : Type} {k : VeriTile.Triton.Kernel}
+  {g : VeriTile.Triton.Grid} {s : VeriTile.Triton.BlockState} {write : ι → Option VeriTile.Triton.MemCellAddr}
+  {expected : ι → ℝ}, k.LaunchCorrectFramed g s write expected → k.LaunchCorrect g s write expected
+VeriTile.Triton.Blocked1DLaunch.check_ok : ∀ (c : VeriTile.Triton.Blocked1DLaunch), c.check = «true» → c.Pre
+VeriTile.Triton.Blocked1DLaunch.check_complete : ∀ (c : VeriTile.Triton.Blocked1DLaunch), c.Pre → c.check = «true»
+@VeriTile.Triton.Blocked1DLaunch.Pre.i32_offset_toInt : ∀ {c : VeriTile.Triton.Blocked1DLaunch},
+  c.Pre →
+    ∀ {pid j : ℕ},
+      pid < c.gridX →
+        j < c.block → (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt = ↑(pid * c.block + j)
+@VeriTile.Triton.Blocked1DLaunch.Pre.i32_mask_eq : ∀ {c : VeriTile.Triton.Blocked1DLaunch},
+  c.Pre →
+    ∀ {pid j : ℕ},
+      pid < c.gridX →
+        j < c.block →
+          (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).slt (BitVec.ofNat 32 c.n) =
+            decide (pid * c.block + j < c.n)
+@VeriTile.Triton.Blocked1DLaunch.Pre.offset_injective : ∀ {c : VeriTile.Triton.Blocked1DLaunch},
+  c.Pre → ∀ {p₁ p₂ j₁ j₂ : ℕ}, j₁ < c.block → j₂ < c.block → p₁ * c.block + j₁ = p₂ * c.block + j₂ → p₁ = p₂ ∧ j₁ = j₂

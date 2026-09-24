@@ -1,0 +1,165 @@
+{
+ "generated": "2026-09-24T23:25:59Z",
+ "git_head": "95a01f598e2cd1cac4052e5e5ff9145c658e18db",
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "4cbc4032abfe6a4c87634bd91994e07b923fcb9739680161fba5fff1d8a1e638",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "8d1085fcdbd849a68477afbca67005f02f60004dd3ae8972cc4beec7dab3256f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
+  "scripts/launch_check.py": "c798c9e4df628c6a1df3d0df2a6b1e0a78bee36ff9081d9a7d2a92d7ef9bf2ce",
+  "scripts/launch_local_check.py": "edfca49bc9923cfaab4eeb7040c2d8d678e196ad3506e3777f552be5e6902fd2",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ },
+ "summary": {
+  "model_proof": {
+   "status": "passed",
+   "scope": "add_kernel whole-grid launch in VeriTile's exact-ℝ region model",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit.log"
+  },
+  "checker_soundness": {
+   "status": "passed",
+   "scope": "check_ok / check_complete / i32 lemmas (Lean)",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit.log"
+  },
+  "source_correspondence": {
+   "status": "passed",
+   "level": "tested-but-trusted (AST recognizer + statement match); not proved",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/adapter_results.json"
+  },
+  "local_trust_checks": {
+   "status": "passed",
+   "scope": "placeholder scan, #axiomsClean, headline inventory"
+  },
+  "frozen_contract": {
+   "status": "passed",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/frozen"
+  },
+  "official_comparator": {
+   "status": "not_run",
+   "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no official_comparator.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  },
+  "gpu_correctness": {
+   "status": "not_run",
+   "scope": "real Triton launch on a supported NVIDIA/AMD GPU",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no gpu.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  },
+  "gpu_performance": {
+   "status": "not_run",
+   "scope": "steady-state timing on a supported GPU",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no gpu_perf.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  }
+ },
+ "steps": {
+  "toolchain_pins": {
+   "status": "passed",
+   "scope": "lean-toolchain, Lean binary, Mathlib revision",
+   "assumptions": "",
+   "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
+   "reason": "",
+   "elapsed_s": 0.7
+  },
+  "build": {
+   "status": "passed",
+   "scope": "lake build in working tree (incremental; use --fresh for final evidence)",
+   "assumptions": "",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
+   "reason": "rc=0",
+   "elapsed_s": 3.5
+  },
+  "placeholder_scan": {
+   "status": "passed",
+   "scope": "comment-stripped changed Lean files",
+   "assumptions": "",
+   "evidence": "none",
+   "reason": "no sorry/admit/native_decide/axiom",
+   "elapsed_s": 0.0
+  },
+  "kernel_file_axioms": {
+   "status": "passed",
+   "scope": "AddExample.lean elaborates; every listed theorem's axioms ⊆ {propext, Classical.choice, Quot.sound}; headline inventory",
+   "assumptions": "",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/audit.log",
+   "reason": "rc=0, axiom-clean 12/11, inventory=ok",
+   "elapsed_s": 18.0,
+   "axiom_clean": [
+    "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correct",
+    "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness",
+    "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable",
+    "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
+    "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_traceSafe",
+    "VeriTile.Triton.Blocked1D.launch_of_frames",
+    "VeriTile.Triton.Blocked1DLaunch.Pre.i32_mask_eq",
+    "VeriTile.Triton.Blocked1DLaunch.Pre.i32_offset_toInt",
+    "VeriTile.Triton.Blocked1DLaunch.Pre.offset_injective",
+    "VeriTile.Triton.Blocked1DLaunch.check_complete",
+    "VeriTile.Triton.Blocked1DLaunch.check_ok",
+    "VeriTile.Triton.Kernel.LaunchCorrectFramed.toLaunchCorrect"
+   ],
+   "inventory": "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correct,\n VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness,\n VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness"
+  },
+  "frozen_contract": {
+   "status": "passed",
+   "scope": "elaborated protected definitions + headline statements vs frozen snapshot; CONTRACT.md and checker surface hashes",
+   "assumptions": "",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/frozen",
+   "reason": "surface identical to frozen snapshot",
+   "elapsed_s": 6.4
+  },
+  "source_link_adapter": {
+   "status": "passed",
+   "scope": "actual source + wrapper + Lean transcription + real CPU tensor metadata -> kernel-checked checker verdicts",
+   "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
+   "reason": "1 manifests, 19 cases, 10 accepted, all verdicts kernel-checked",
+   "elapsed_s": 3.7
+  },
+  "adapter_tests": {
+   "status": "passed",
+   "scope": "scripts/test_launch_check.py (parser/metadata/Lean-verdict regressions)",
+   "assumptions": "",
+   "evidence": "/Users/scasella/Downloads/kernel-claude/VeriTile/bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
+   "reason": "OK",
+   "elapsed_s": 3.1
+  },
+  "official_comparator": {
+   "status": "not_run",
+   "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no official_comparator.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  },
+  "gpu_correctness": {
+   "status": "not_run",
+   "scope": "real Triton launch on a supported NVIDIA/AMD GPU",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no gpu.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  },
+  "gpu_performance": {
+   "status": "not_run",
+   "scope": "steady-state timing on a supported GPU",
+   "assumptions": "",
+   "evidence": "",
+   "reason": "no gpu_perf.json: requires a compatible external environment (see bench/tritonbench_g/add_example/HANDOFF.md)",
+   "elapsed_s": 0.0
+  }
+ },
+ "fresh_workspace": false
+}

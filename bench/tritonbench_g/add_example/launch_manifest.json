@@ -1,0 +1,399 @@
+{
+ "kernel": "add_kernel",
+ "wrapper": "add_wrapper",
+ "source": "add_example.py",
+ "lean": "AddExample.lean",
+ "lean_kernel": "add_kernel",
+ "lean_theorems": [
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable",
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness",
+  "VeriTile.Triton.Blocked1DLaunch.check_ok",
+  "VeriTile.Triton.Blocked1DLaunch.check_complete",
+  "VeriTile.Triton.Blocked1D.launch_of_frames"
+ ],
+ "cases": [
+  {
+   "name": "V1_test_case_1_n16",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 16,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V2_test_case_2_n8",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V3_test_case_3_n32",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 32,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 32,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V4_test_case_4_empty",
+   "kind": "valid-empty",
+   "tensors": {
+    "x": {
+     "numel": 0,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 0,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V5_n3_below_block",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 3,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 3,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V6_n4_eq_block",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 4,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 4,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V7_n5_tail",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 5,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 5,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V8_n5_overprovisioned_grid3",
+   "kind": "valid-config-variant",
+   "tensors": {
+    "x": {
+     "numel": 5,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 5,
+     "dtype": "float32"
+    }
+   },
+   "grid": [
+    3
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "V9_x_y_alias_readonly",
+   "kind": "valid-aliasing",
+   "tensors": {
+    "x": {
+     "numel": 9,
+     "dtype": "float32"
+    },
+    "y": {
+     "alias_of": "x",
+     "numel": 9
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V10_n_max_i32",
+   "kind": "valid-boundary",
+   "meta": {
+    "x": {
+     "base": 0,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    },
+    "y": {
+     "base": 1099511627776,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    },
+    "out": {
+     "base": 2199023255552,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "M1_wrong_stride_x_step2",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32",
+     "step": 2
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P8 unit_stride"
+   ]
+  },
+  {
+   "name": "M2_y_shorter_than_x",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 12,
+     "dtype": "float32"
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P4 lanes_in_bounds"
+   ]
+  },
+  {
+   "name": "M3_insufficient_grid_floor",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 18,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 18,
+     "dtype": "float32"
+    }
+   },
+   "grid": [
+    4
+   ],
+   "expect": "reject",
+   "expect_failures": [
+    "P3 covers"
+   ]
+  },
+  {
+   "name": "M4_n_exceeds_i32",
+   "kind": "fault",
+   "meta": {
+    "x": {
+     "base": 0,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 3221225472,
+     "dtype": "float32",
+     "numel": 3221225472,
+     "dim0": 3221225472,
+     "source": "supplied"
+    },
+    "y": {
+     "base": 1099511627776,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 3221225472,
+     "dtype": "float32",
+     "numel": 3221225472,
+     "dim0": 3221225472,
+     "source": "supplied"
+    },
+    "out": {
+     "base": 2199023255552,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 3221225472,
+     "dtype": "float32",
+     "numel": 3221225472,
+     "dim0": 3221225472,
+     "source": "supplied"
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P5 offsets_fit",
+    "P6 n_fits"
+   ]
+  },
+  {
+   "name": "M5_grid_offsets_overflow",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 16,
+     "dtype": "float32"
+    }
+   },
+   "grid": [
+    536870913
+   ],
+   "expect": "reject",
+   "expect_failures": [
+    "P5 offsets_fit"
+   ]
+  },
+  {
+   "name": "M6_out_overlaps_x_shift1",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32",
+     "pad": 1
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "out": {
+     "alias_of": "x",
+     "offset": 1,
+     "numel": 8
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P10 out_disjoint"
+   ]
+  },
+  {
+   "name": "M7_out_is_x_inplace",
+   "kind": "unsupported-nongoal",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "out": {
+     "alias_of": "x",
+     "offset": 0,
+     "numel": 8
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P10 out_disjoint"
+   ]
+  },
+  {
+   "name": "M8_y_float16",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float16"
+    }
+   },
+   "expect": "reject",
+   "expect_failures": [
+    "P9 dtype_ok"
+   ]
+  },
+  {
+   "name": "M9_grid_rank2",
+   "kind": "fault",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    }
+   },
+   "grid": [
+    2,
+    1
+   ],
+   "expect": "reject",
+   "expect_failures": [
+    "P1 grid_rank"
+   ]
+  }
+ ]
+}

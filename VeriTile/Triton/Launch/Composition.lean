@@ -201,6 +201,25 @@ def LaunchCorrect {ι : Type} (k : Kernel) (g : Grid) (s : BlockState)
     ∀ (i : ι) (addr : MemCellAddr), write i = some addr →
       sFinal.readMem addr.1 addr.2 = expected i
 
+/-- Whole-grid single-memory output correctness **with frame** — the
+`LaunchCorrect` contract strengthened by the frame clause that `⊨` carries for
+single programs: the merged final memory realizes `expected` at every cell
+selected by `write`, and every cell selected by no index is unchanged. -/
+def LaunchCorrectFramed {ι : Type} (k : Kernel) (g : Grid) (s : BlockState)
+    (write : ι → Option MemCellAddr) (expected : ι → ℝ) : Prop :=
+  ∃ sFinal, ∃ _ : Kernel.GridLaunchedOrdinary k g s sFinal,
+    (∀ (i : ι) (addr : MemCellAddr), write i = some addr →
+      sFinal.readMem addr.1 addr.2 = expected i) ∧
+    (∀ addr : MemCellAddr, (∀ i : ι, write i ≠ some addr) →
+      sFinal.mem addr.1 addr.2 = s.mem addr.1 addr.2)
+
+theorem LaunchCorrectFramed.toLaunchCorrect {ι : Type} {k : Kernel} {g : Grid}
+    {s : BlockState} {write : ι → Option MemCellAddr} {expected : ι → ℝ}
+    (h : Kernel.LaunchCorrectFramed k g s write expected) :
+    Kernel.LaunchCorrect k g s write expected := by
+  obtain ⟨sFinal, hL, hval, _⟩ := h
+  exact ⟨sFinal, hL, hval⟩
+
 end Kernel
 
 end VeriTile.Triton

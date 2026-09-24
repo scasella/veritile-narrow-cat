@@ -1,0 +1,93 @@
+inductive VeriTile.Triton.ElemDType : Type
+number of parameters: 0
+constructors:
+VeriTile.Triton.ElemDType.f32 : ElemDType
+VeriTile.Triton.ElemDType.f16 : ElemDType
+VeriTile.Triton.ElemDType.bf16 : ElemDType
+VeriTile.Triton.ElemDType.other : ElemDType
+structure VeriTile.Triton.BufMeta : Type
+number of parameters: 0
+fields:
+  VeriTile.Triton.BufMeta.base : Nat
+  VeriTile.Triton.BufMeta.elemBytes : Nat
+  VeriTile.Triton.BufMeta.stride : Nat
+  VeriTile.Triton.BufMeta.capacity : Nat
+  VeriTile.Triton.BufMeta.dtype : ElemDType
+constructor:
+  VeriTile.Triton.BufMeta.mk (base elemBytes stride capacity : Nat) (dtype : ElemDType) : BufMeta
+structure VeriTile.Triton.Blocked1DLaunch : Type
+number of parameters: 0
+fields:
+  VeriTile.Triton.Blocked1DLaunch.n : Nat
+  VeriTile.Triton.Blocked1DLaunch.block : Nat
+  VeriTile.Triton.Blocked1DLaunch.grid : List Nat
+  VeriTile.Triton.Blocked1DLaunch.inputs : List BufMeta
+  VeriTile.Triton.Blocked1DLaunch.output : BufMeta
+constructor:
+  VeriTile.Triton.Blocked1DLaunch.mk (n block : Nat) (grid : List Nat) (inputs : List BufMeta) (output : BufMeta) :
+    Blocked1DLaunch
+def VeriTile.Triton.Blocked1DLaunch.gridX : Blocked1DLaunch → Nat :=
+fun c => c.grid.headD 0
+def VeriTile.Triton.Blocked1DLaunch.bufs : Blocked1DLaunch → List BufMeta :=
+fun c => c.output :: c.inputs
+def VeriTile.Triton.Blocked1DLaunch.i32Limit : Nat :=
+2 ^ 31
+def VeriTile.Triton.Blocked1DLaunch.RangesDisjoint : Nat → BufMeta → BufMeta → Prop :=
+fun n a b =>
+  ∀ (addr : Nat), ¬(a.base ≤ addr ∧ addr < a.base + n * a.elemBytes ∧ b.base ≤ addr ∧ addr < b.base + n * b.elemBytes)
+def VeriTile.Triton.Blocked1DLaunch.GridRank : Blocked1DLaunch → Prop :=
+fun c => c.grid.length = 1
+def VeriTile.Triton.Blocked1DLaunch.BlockOk : Blocked1DLaunch → Prop :=
+fun c => ∃ k, k ≤ 20 ∧ c.block = 2 ^ k
+def VeriTile.Triton.Blocked1DLaunch.Covers : Blocked1DLaunch → Prop :=
+fun c => ∀ (i : Nat), i < c.n → i / c.block < c.gridX
+def VeriTile.Triton.Blocked1DLaunch.LanesInBounds : Blocked1DLaunch → Prop :=
+fun c =>
+  ∀ (b : BufMeta),
+    b ∈ c.bufs →
+      ∀ (pid : Nat), pid < c.gridX → ∀ (j : Nat), j < c.block → pid * c.block + j < c.n → pid * c.block + j < b.capacity
+def VeriTile.Triton.Blocked1DLaunch.OffsetsFit : Blocked1DLaunch → Prop :=
+fun c => ∀ (pid : Nat), pid < c.gridX → ∀ (j : Nat), j < c.block → pid * c.block + j < Blocked1DLaunch.i32Limit
+def VeriTile.Triton.Blocked1DLaunch.NFits : Blocked1DLaunch → Prop :=
+fun c => c.n < Blocked1DLaunch.i32Limit
+def VeriTile.Triton.Blocked1DLaunch.GridFits : Blocked1DLaunch → Prop :=
+fun c => c.gridX < Blocked1DLaunch.i32Limit
+def VeriTile.Triton.Blocked1DLaunch.UnitStride : Blocked1DLaunch → Prop :=
+fun c => ∀ (b : BufMeta), b ∈ c.bufs → c.n ≤ 1 ∨ b.stride = 1
+def VeriTile.Triton.Blocked1DLaunch.DTypeOk : Blocked1DLaunch → Prop :=
+fun c => ∀ (b : BufMeta), b ∈ c.bufs → b.dtype = ElemDType.f32 ∧ b.elemBytes = 4
+def VeriTile.Triton.Blocked1DLaunch.OutDisjoint : Blocked1DLaunch → Prop :=
+fun c => ∀ (b : BufMeta), b ∈ c.inputs → Blocked1DLaunch.RangesDisjoint c.n c.output b
+structure VeriTile.Triton.Blocked1DLaunch.Pre (c : Blocked1DLaunch) : Prop
+number of parameters: 1
+fields:
+  VeriTile.Triton.Blocked1DLaunch.Pre.grid_rank : c.GridRank
+  VeriTile.Triton.Blocked1DLaunch.Pre.block_ok : c.BlockOk
+  VeriTile.Triton.Blocked1DLaunch.Pre.covers : c.Covers
+  VeriTile.Triton.Blocked1DLaunch.Pre.lanes_in_bounds : c.LanesInBounds
+  VeriTile.Triton.Blocked1DLaunch.Pre.offsets_fit : c.OffsetsFit
+  VeriTile.Triton.Blocked1DLaunch.Pre.n_fits : c.NFits
+  VeriTile.Triton.Blocked1DLaunch.Pre.grid_fits : c.GridFits
+  VeriTile.Triton.Blocked1DLaunch.Pre.unit_stride : c.UnitStride
+  VeriTile.Triton.Blocked1DLaunch.Pre.dtype_ok : c.DTypeOk
+  VeriTile.Triton.Blocked1DLaunch.Pre.out_disjoint : c.OutDisjoint
+constructor:
+  VeriTile.Triton.Blocked1DLaunch.Pre.mk {c : Blocked1DLaunch} (grid_rank : c.GridRank) (block_ok : c.BlockOk)
+    (covers : c.Covers) (lanes_in_bounds : c.LanesInBounds) (offsets_fit : c.OffsetsFit) (n_fits : c.NFits)
+    (grid_fits : c.GridFits) (unit_stride : c.UnitStride) (dtype_ok : c.DTypeOk) (out_disjoint : c.OutDisjoint) : c.Pre
+Blocked1DLaunch.check_ok : ∀ (c : Blocked1DLaunch), c.check = true → c.Pre
+Blocked1DLaunch.check_complete : ∀ (c : Blocked1DLaunch), c.Pre → c.check = true
+@Blocked1DLaunch.Pre.offset_injective : ∀ {c : Blocked1DLaunch},
+  c.Pre → ∀ {p₁ p₂ j₁ j₂ : Nat}, j₁ < c.block → j₂ < c.block → p₁ * c.block + j₁ = p₂ * c.block + j₂ → p₁ = p₂ ∧ j₁ = j₂
+@Blocked1DLaunch.Pre.i32_offset_toInt : ∀ {c : Blocked1DLaunch},
+  c.Pre →
+    ∀ {pid j : Nat},
+      pid < c.gridX →
+        j < c.block → (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).toInt = ↑(pid * c.block + j)
+@Blocked1DLaunch.Pre.i32_mask_eq : ∀ {c : Blocked1DLaunch},
+  c.Pre →
+    ∀ {pid j : Nat},
+      pid < c.gridX →
+        j < c.block →
+          (BitVec.ofNat 32 pid * BitVec.ofNat 32 c.block + BitVec.ofNat 32 j).slt (BitVec.ofNat 32 c.n) =
+            decide (pid * c.block + j < c.n)
