@@ -1,8 +1,12 @@
 # add_example launch checker — external evidence handoff
 
-Both gates below are **NOT RUN**. The development host is macOS arm64
-(no Landlock/systemd; no Triton wheels; no NVIDIA/AMD GPU). Nothing in this
-directory claims either result. `python3 scripts/launch_local_check.py
+Status: **§A was run** in a local Linux container (Docker Desktop on macOS,
+ubuntu:24.04 with systemd, Landlock ABI 8) — all selected targets accepted;
+see `launch_evidence/official_comparator.json`. **§B (GPU) is NOT RUN**: no
+NVIDIA/AMD GPU is reachable. A Triton CPU-interpreter run exists
+(`launch_evidence/interpreter.json`) and is interpreter evidence only. On the
+GPU host, also record whether the pinned `add_example.py` (string annotation
+`BLOCK_SIZE: "tl.constexpr"`) compiles: it fails in the 3.8.0 interpreter. `python3 scripts/launch_local_check.py
 --require-official` / `--require-gpu` exit non-zero until a result file with
 matching `input_hashes` is placed in `launch_evidence/`.
 
