@@ -1914,6 +1914,43 @@ applicability and whole-grid composition over the strided output footprint
 `k * out_stride` (`Blocked1D.launch_of_frames_addr`), transferred to the
 wrapper's `(num_ctas, 1, 1)` grid (`Blocked1D.liftFrames`). -/
 
+/-- One program of the one-tile branch, from any state whose input logical
+elements below `s0` read `xs`: it succeeds, writes `relu (xs o)` at the
+strided cell `o * out_stride` of every task `o < s0` of its tile, and changes
+no other cell. (A repackaging of `relu_one_tile_region_run`.) -/
+theorem relu_one_tile_program_run
+    (in0_ptr out0_ptr : RegionName)
+    (in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 : Nat)
+    (hStride : 0 < out0_stride0) (hT : 0 < tile_size0)
+    (t : BlockState) (xs : Nat → ℝ)
+    (hx : ∀ k, k < s0 → t.readMem in0_ptr (k * in0_stride0) = xs k) :
+    ∃ f, exec ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+        in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0).toAlgKernel) t = some f ∧
+      (∀ o, o < s0 → o / tile_size0 = t.pids 0 →
+        f.readMem out0_ptr (o * out0_stride0) = TiledActivation.relu (xs o)) ∧
+      (∀ r o, ¬ Blocked1D.addrWrites out0_ptr (fun k => k * out0_stride0) s0 tile_size0
+          (t.pids 0) (r, o) → f.mem r o = t.mem r o) := by
+  obtain ⟨f, hexec, hvals, hframe⟩ := relu_one_tile_region_run in0_ptr out0_ptr
+    in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 hStride t
+    (fun i => xs (taskIndex (t.pids 0) tile_size0 i.1))
+    (fun i hi => hx _ hi)
+  refine ⟨f, hexec, fun o ho hd => ?_, fun r o hno => ?_⟩
+  · have hdm := Nat.div_add_mod' o tile_size0
+    rw [hd] at hdm
+    have := hvals (⟨o % tile_size0, Nat.mod_lt o hT⟩, PUnit.unit)
+      (show t.pids 0 * tile_size0 + o % tile_size0 < s0 by omega)
+    simp only [taskIndex] at this
+    rw [hdm] at this
+    exact this
+  · apply hframe
+    by_cases hr : r = out0_ptr
+    · refine Or.inr fun i hi ho => hno ?_
+      rw [Blocked1D.addrWrites_iff hT]
+      refine ⟨hr, taskIndex (t.pids 0) tile_size0 i.1, hi, ?_, ho.symm⟩
+      simp only [taskIndex]
+      rw [Nat.add_comm, Nat.add_mul_div_right _ _ hT, Nat.div_eq_of_lt i.1.isLt, Nat.zero_add]
+    · exact Or.inl hr
+
 /-- **Whole-wrapper headline (strided ReLU, one-tile branch).** For rank-1
 tensors accepted by the checker, input and output in distinct regions, and an
 input whose logical element `k` (at element offset `k * in_stride` from the
@@ -1971,7 +2008,142 @@ specification relu_wrapper_one_tile_correctness
         (BitVec.ofNat 32 pid * BitVec.ofNat 32 (StridedUnary.launch x out).tile
             + BitVec.ofNat 32 i).toInt
           = ((pid * (StridedUnary.launch x out).tile + i : Nat) : Int)) := by
-  sorry
+  classical
+  have hpre := StridedUnary.check_ok _ hc
+  obtain ⟨hT, -, -, hcov, hnt, -⟩ := StridedUnary.Pre.derived hpre
+  obtain ⟨hsi, hso⟩ := hpre.pos_strides
+  have hon : out.numel = (StridedUnary.launch x out).s0 := hnt
+  rw [hon]
+  have hx' : ∀ k, k < (StridedUnary.launch x out).s0 →
+      s.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k :=
+    fun k hk => hx k (hon ▸ hk)
+  -- per-program frames on the 1-D grid `(num_ctas,)`
+  have hprog := fun (t : BlockState)
+      (ht : ∀ k, k < (StridedUnary.launch x out).s0 →
+        t.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k) =>
+    relu_one_tile_program_run in0_ptr out0_ptr (StridedUnary.launch x out).inStride
+      (StridedUnary.launch x out).outStride (StridedUnary.launch x out).s0
+      (StridedUnary.launch x out).numTasks (StridedUnary.launch x out).tilesPerCta
+      (StridedUnary.launch x out).tile hso hT t xs ht
+  have hxg : ∀ idx : GridIndex (Blocked1D.line (StridedUnary.launch x out).numCtas),
+      ∀ k, k < (StridedUnary.launch x out).s0 →
+        (s.withGridIndex idx).readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k :=
+    fun idx k hk => by simpa [BlockState.readMem] using hx' k hk
+  let frames : Kernel.GridFrames
+      ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+        (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+        (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+        (StridedUnary.launch x out).tilesPerCta (StridedUnary.launch x out).tile).toAlgKernel)
+      (Blocked1D.line (StridedUnary.launch x out).numCtas) s := fun idx =>
+    { final := Classical.choose (hprog _ (hxg idx))
+      writes := Blocked1D.addrWrites out0_ptr (fun k => k * (StridedUnary.launch x out).outStride)
+        (StridedUnary.launch x out).s0 (StridedUnary.launch x out).tile (Blocked1D.pidOf idx)
+      h_exec := (Classical.choose_spec (hprog _ (hxg idx))).1
+      h_writeWithin := fun r o hno => by
+        have := (Classical.choose_spec (hprog _ (hxg idx))).2.2 r o (by
+          rw [show (s.withGridIndex idx).pids 0 = Blocked1D.pidOf idx from
+            Blocked1D.withGridIndex_pid_line s idx]
+          exact hno)
+        exact this.symm }
+  have hwr : ∀ idx, (frames idx).writes = Blocked1D.addrWrites out0_ptr
+      (fun k => k * (StridedUnary.launch x out).outStride) (StridedUnary.launch x out).s0
+      (StridedUnary.launch x out).tile (Blocked1D.pidOf idx) := fun _ => rfl
+  have hinj : ∀ a b, (fun k => k * (StridedUnary.launch x out).outStride) a
+      = (fun k => k * (StridedUnary.launch x out).outStride) b → a = b :=
+    fun a b h => Nat.eq_of_mul_eq_mul_right hso h
+  have hval : ∀ idx o, o < (StridedUnary.launch x out).s0 →
+      o / (StridedUnary.launch x out).tile = Blocked1D.pidOf idx →
+      (frames idx).final.readMem out0_ptr (o * (StridedUnary.launch x out).outStride)
+        = TiledActivation.relu (xs o) := fun idx o ho hd =>
+    (Classical.choose_spec (hprog _ (hxg idx))).2.1 o ho (by
+      rw [show (s.withGridIndex idx).pids 0 = Blocked1D.pidOf idx from
+        Blocked1D.withGridIndex_pid_line s idx]
+      exact hd)
+  have hdiv : ∀ p j, j < (StridedUnary.launch x out).tile →
+      (p * (StridedUnary.launch x out).tile + j) / (StridedUnary.launch x out).tile = p := by
+    intro p j hj
+    rw [Nat.add_comm, Nat.add_mul_div_right _ _ hT, Nat.div_eq_of_lt hj, Nat.zero_add]
+  obtain ⟨L1, hL1, hout, hframe⟩ := Blocked1D.launch_of_frames_addr hT hcov
+    (fun k => k * (StridedUnary.launch x out).outStride) hinj frames hwr
+    (fun k => TiledActivation.relu (xs k))
+    (fun idx j hj hn => hval idx _ hn (hdiv _ j hj))
+  have hdisj : Kernel.GridWritesDisjoint frames := hL1 ▸ L1.h_disjoint
+  -- robustness: programs read only the input region, written by nobody
+  have hrob : Kernel.FrameRobust frames := by
+    intro idx m hm
+    have hin : ∀ o, m in0_ptr o = s.mem in0_ptr o := by
+      intro o
+      apply hm
+      rintro ⟨idx', -, hw⟩
+      rw [hwr, Blocked1D.addrWrites_iff hT] at hw
+      exact hne hw.1
+    obtain ⟨f, hf, hv, hfr⟩ := hprog (({ s with mem := m } : BlockState).withGridIndex idx)
+      (fun k hk => by
+        rw [← hx' k hk]
+        simp [BlockState.readMem, hin])
+    refine ⟨f, hf, fun r o hw => ?_, fun r o hnw => ?_⟩
+    · rw [hwr, Blocked1D.addrWrites_iff hT] at hw
+      obtain ⟨rfl, k, hk, hd, rfl⟩ := hw
+      have hpid : (({ s with mem := m } : BlockState).withGridIndex idx).pids 0
+          = Blocked1D.pidOf idx := Blocked1D.withGridIndex_pid_line _ idx
+      rw [hv k hk (by rw [hpid]; exact hd), hval idx k hk hd]
+    · rw [hwr] at hnw
+      have hpid : (({ s with mem := m } : BlockState).withGridIndex idx).pids 0
+          = Blocked1D.pidOf idx := Blocked1D.withGridIndex_pid_line _ idx
+      rw [hfr r o (by rw [hpid]; exact hnw)]
+      rfl
+  refine ⟨?_, ?_, ?_, fun pid i hp hi => hpre.i32_offset_toInt hp hi⟩
+  · -- (1) the (num_ctas, 1, 1) launch
+    refine ⟨Kernel.mergeFrames (Blocked1D.line (StridedUnary.launch x out).numCtas) s frames,
+      ⟨Blocked1D.liftFrames frames, Blocked1D.liftFrames_disjoint hdisj,
+        (Blocked1D.mergeFrames_liftFrames hdisj).symm⟩, ?_, ?_⟩
+    · intro k addr hw
+      by_cases hk : k < (StridedUnary.launch x out).s0
+      · simp only [hk, if_true, Option.some.injEq] at hw
+        subst hw
+        exact hout k hk
+      · simp [hk] at hw
+    · rintro ⟨r, o⟩ hno
+      apply hframe
+      rintro ⟨hr, k, hk, ho⟩
+      simp only at hr ho
+      subst hr
+      exact hno k (by simp [hk, ho])
+  · -- (2) trace safety for the tensors' own strided extents
+    intro bounds b0 b1 idx
+    apply relu_one_tile_traceSafe
+    · intro i hi
+      have := Nat.mul_le_mul_right (StridedUnary.launch x out).inStride
+        (show taskIndex ((s.withGridIndex idx).pids 0) _ i ≤ (StridedUnary.launch x out).s0 - 1
+          by omega)
+      omega
+    · intro i hi
+      have := Nat.mul_le_mul_right (StridedUnary.launch x out).outStride
+        (show taskIndex ((s.withGridIndex idx).pids 0) _ i ≤ (StridedUnary.launch x out).s0 - 1
+          by omega)
+      omega
+  · -- (3) serial orders
+    intro L hnd hall
+    obtain ⟨m, hm, hw, hnw⟩ := Kernel.runSerial_agrees_merge (Blocked1D.liftFrames frames)
+      (Blocked1D.liftFrames_disjoint hdisj) (Blocked1D.liftFrames_robust hrob) L hnd hall
+    rw [Blocked1D.mergeFrames_liftFrames hdisj] at hw hnw
+    refine ⟨m, hm, fun k hk => ?_, fun r o hno => ?_⟩
+    · have hown : k / (StridedUnary.launch x out).tile < (StridedUnary.launch x out).numCtas :=
+        (Nat.div_lt_iff_lt_mul hT).2 (by omega)
+      obtain ⟨idx3, h3⟩ := Blocked1D.toLine_bijective.2 (Blocked1D.indexOf _ hown)
+      rw [hw out0_ptr _ ⟨idx3, by
+        show (frames (Blocked1D.toLine idx3)).writes _
+        rw [h3, hwr, Blocked1D.addrWrites_iff hT, Blocked1D.pidOf_indexOf]
+        exact ⟨rfl, k, hk, rfl, rfl⟩⟩]
+      exact hout k hk
+    · have hnot : ¬ Kernel.GridWriteFootprint (Blocked1D.liftFrames frames) (r, o) := by
+        rintro ⟨idx3, h⟩
+        change (frames (Blocked1D.toLine idx3)).writes (r, o) at h
+        rw [hwr, Blocked1D.addrWrites_iff hT] at h
+        obtain ⟨hr, k, hk, -, ho⟩ := h
+        exact hno ⟨hr, k, hk, ho⟩
+      rw [hnw r o hnot]
+      exact hframe r o fun ⟨hr, k, hk, ho⟩ => hno ⟨hr, k, hk, ho⟩
 
 /-- **A wrong stride inside the allocation reads the wrong logical element.**
 Launch the kernel with input stride `1` over a view whose actual stride is
@@ -1985,6 +2157,13 @@ theorem relu_wrong_stride_reads_wrong_element (in0_ptr out0_ptr : RegionName)
     ∃ s1, exec ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
         1 1 2 2 1 2).toAlgKernel) s = some s1 ∧
       s1.readMem out0_ptr 1 ≠ TiledActivation.relu (s.readMem in0_ptr (1 * 2)) := by
-  sorry
+  obtain ⟨s1, hexec, hvals, -⟩ := relu_one_tile_region_run in0_ptr out0_ptr 1 1 2 2 1 2
+    (by decide) s (fun i => s.readMem in0_ptr (taskIndex (s.pids 0) 2 i.1 * 1))
+    (fun _ _ => rfl)
+  refine ⟨s1, hexec, ?_⟩
+  have h := hvals (⟨1, by decide⟩, PUnit.unit) (by simp [taskIndex, hpid])
+  simp only [taskIndex, hpid, Nat.zero_mul, Nat.zero_add, Nat.one_mul, Nat.mul_one] at h
+  rw [h, h1, show (1 * 2 : Nat) = 2 from rfl, h2]
+  simp [TiledActivation.relu]
 
 end VeriTile.Bench.TritonBenchG.ReluStridedBuffer

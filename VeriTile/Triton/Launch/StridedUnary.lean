@@ -139,17 +139,62 @@ def check (c : Launch) : Bool :=
     decide ((c.s0 - 1) * c.outStride * 4 < i64Limit))
 
 theorem check_ok (c : Launch) (h : check c = true) : Pre c := by
-  sorry
+  simp only [check, Bool.and_eq_true, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq] at h
+  obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨a1, a2⟩, a3⟩, a4⟩, sh⟩, ne⟩, one⟩, ⟨p1, p2⟩⟩, ⟨b1, b2⟩⟩, ⟨⟨⟨d1, d2⟩, d3⟩, d4⟩⟩, ⟨l1, l2⟩⟩, sd⟩, of⟩, ⟨f1, f2⟩⟩ := h
+  exact ⟨⟨a1, a2, a3, a4⟩, sh, ne, one, ⟨p1, p2⟩, ⟨b1, b2⟩, ⟨d1, d2, d3, d4⟩, ⟨l1, l2⟩, sd,
+    of, ⟨f1, f2⟩⟩
 
 theorem check_complete (c : Launch) (h : Pre c) : check c = true := by
-  sorry
+  obtain ⟨⟨a1, a2, a3, a4⟩, sh, ne, one, ⟨p1, p2⟩, ⟨b1, b2⟩, ⟨d1, d2, d3, d4⟩, ⟨l1, l2⟩, sd,
+    of, ⟨f1, f2⟩⟩ := h
+  simp only [check, Bool.and_eq_true, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq]
+  exact ⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨a1, a2⟩, a3⟩, a4⟩, sh⟩, ne⟩, one⟩, ⟨p1, p2⟩⟩, ⟨b1, b2⟩⟩, ⟨⟨⟨d1, d2⟩, d3⟩, d4⟩⟩, ⟨l1, l2⟩⟩, sd⟩, of⟩, ⟨f1, f2⟩⟩
+
+theorem nextPow2Aux_pos : ∀ (fuel p n : Nat), 0 < p → 0 < nextPow2Aux fuel p n
+  | 0, p, _, hp => hp
+  | fuel + 1, p, n, hp => by
+    unfold nextPow2Aux
+    split
+    · exact hp
+    · exact nextPow2Aux_pos fuel (2 * p) n (by omega)
+
+theorem nextPow2_pos {n : Nat} (hn : 0 < n) : 0 < nextPow2 n := by
+  unfold nextPow2
+  split
+  · exact hn
+  · exact nextPow2Aux_pos 64 1 n (by decide)
+
+theorem cdiv_mul_ge (a b : Nat) (hb : 0 < b) : a ≤ cdiv a b * b := by
+  unfold cdiv
+  have := Nat.lt_div_mul_add (a := a + b - 1) hb
+  omega
+
+theorem cdiv_pos {a b : Nat} (ha : 0 < a) (hb : 0 < b) : 0 < cdiv a b := by
+  unfold cdiv
+  exact Nat.div_pos (by omega) hb
+
+theorem cdiv_self {a : Nat} (ha : 0 < a) : cdiv a a = 1 := by
+  unfold cdiv
+  exact Nat.div_eq_of_lt_le (by omega) (by omega)
 
 /-- Facts the composition needs, derived from a checked launch of `launch x out`. -/
 theorem Pre.derived {x out : TensorMeta} (h : Pre (launch x out)) :
     let c := launch x out
     0 < c.tile ∧ c.numCtas = c.numTiles ∧ c.tilesPerCta = 1 ∧ c.s0 ≤ c.numCtas * c.tile ∧
       c.numTasks = c.s0 ∧ x.numel = c.s0 := by
-  sorry
+  obtain ⟨⟨hrx, hro, -, -⟩, hsh, hne, hone, -, -, -, -, -, -, -⟩ := h
+  simp only [launch, NonEmpty, OneTile, SameShape] at hrx hro hsh hne hone ⊢
+  have hs : out.shape = [out.shape.headD 0] := by
+    match hm : out.shape, hro with
+    | [d], _ => rfl
+  have htile : 0 < min 512 (nextPow2 (out.shape.headD 0)) :=
+    Nat.lt_min.2 ⟨by decide, nextPow2_pos hne⟩
+  have htiles := cdiv_pos hne htile
+  refine ⟨htile, Nat.min_eq_right hone, ?_, ?_, ?_, ?_⟩
+  · rw [Nat.min_eq_right hone]; exact cdiv_self htiles
+  · rw [Nat.min_eq_right hone]; exact cdiv_mul_ge _ _ htile
+  · simp only [TensorMeta.numel]; rw [hs]; simp
+  · simp only [TensorMeta.numel]; rw [hsh, hs]; simp
 
 /-- Every launched lane offset `pid * tile + i` evaluates in two's-complement
 `i32` to its ℕ value (block-pointer offsets are `i32` in Triton 3.8.0). -/
@@ -157,7 +202,29 @@ theorem Pre.i32_offset_toInt {x out : TensorMeta} (h : Pre (launch x out))
     {pid i : Nat} (hp : pid < (launch x out).numCtas) (hi : i < (launch x out).tile) :
     (BitVec.ofNat 32 pid * BitVec.ofNat 32 (launch x out).tile + BitVec.ofNat 32 i).toInt
       = ((pid * (launch x out).tile + i : Nat) : Int) := by
-  sorry
+  have hfit := h.offsets_fit
+  unfold OffsetsFit i32Limit at hfit
+  have hlt : pid * (launch x out).tile + i < 2 ^ 31 := by
+    have : (pid + 1) * (launch x out).tile ≤ (launch x out).numCtas * (launch x out).tile :=
+      Nat.mul_le_mul_right _ hp
+    rw [Nat.succ_mul] at this
+    omega
+  have htile : (launch x out).tile < 2 ^ 32 := by
+    have : (launch x out).tile ≤ 512 := Nat.min_le_left _ _
+    omega
+  have hpid : pid < 2 ^ 32 := by
+    have := h.offsets_fit
+    unfold OffsetsFit i32Limit at this
+    have h1 : 0 < (launch x out).tile := by omega
+    have h2 := Nat.le_mul_of_pos_right (launch x out).numCtas h1
+    omega
+  have hn : (BitVec.ofNat 32 pid * BitVec.ofNat 32 (launch x out).tile
+      + BitVec.ofNat 32 i).toNat = pid * (launch x out).tile + i := by
+    simp only [BitVec.toNat_add, BitVec.toNat_mul, BitVec.toNat_ofNat]
+    rw [Nat.mod_eq_of_lt hpid, Nat.mod_eq_of_lt htile, Nat.mod_eq_of_lt (a := i) (by omega),
+      Nat.mod_eq_of_lt (a := pid * (launch x out).tile) (by omega), Nat.mod_eq_of_lt (by omega)]
+  rw [BitVec.toInt_eq_toNat_cond, hn]
+  simp only [show 2 * (pid * (launch x out).tile + i) < 2 ^ 32 by omega, if_true]
 
 end StridedUnary
 
