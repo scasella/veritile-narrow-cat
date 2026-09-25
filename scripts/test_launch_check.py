@@ -369,5 +369,41 @@ class FusedBinding(unittest.TestCase):
         with self.assertRaises(L.Unsupported):
             self.F.fused_projection(self.src.replace("    z = x + y\n", ""))
 
+
+class FastContract(unittest.TestCase):
+    """fast_ew2 on real tensors agrees with the full mirror (verdict and launch)."""
+
+    def test_real_tensor_layouts(self):
+        try:
+            import torch
+            import launch_fast as FA
+        except ImportError as e:
+            self.skipTest(str(e))
+        import launch_invoke as I
+        base = torch.randn(4096)
+        cases = [(torch.randn(16), torch.randn(16), torch.empty(16)),
+                 (torch.randn(4, 8), torch.randn(4, 8), torch.empty(4, 8)),
+                 (torch.randn(8, 4).t(), torch.randn(4, 8), torch.empty(4, 8)),
+                 (base[0:100], base[50:150], torch.empty(100)),
+                 (base[0:100], base[0:100], torch.empty(100)),
+                 (base[1:101], base[200:300], torch.empty(100)),
+                 (torch.randn(0), torch.randn(0), torch.empty(0)),
+                 (torch.randn(16).half(), torch.randn(16).half(), torch.empty(16).half()),
+                 (torch.randn(16), torch.randn(12), torch.empty(16)),
+                 (base[::2][:50], base[1::2][:50], torch.empty(50)),
+                 (torch.randn(3, 1, 5), torch.randn(3, 1, 5), torch.empty(3, 1, 5)),
+                 (base[:64], base[64:128], base[32:96])]
+        for B in (1, 3, 64, 1024, 2 ** 21):
+            for x, y, o in cases:
+                mx, my, mo = I.tensor_meta(x), I.tensor_meta(y), I.tensor_meta(o)
+                ok_m = all(v for _, v in I.ew2_obligations(B, mx, my, mo))
+                ok_f, n, g = FA.fast_ew2(B, FA.raw_meta(x), FA.raw_meta(y), FA.raw_meta(o))
+                self.assertEqual(ok_f, ok_m, (B, x.shape, x.stride()))
+                if ok_m:
+                    L = I.ew2_launch(B, mx, my, mo)
+                    self.assertEqual((n, g), (L["n"], L["grid"][0]))
+                self.assertEqual(FA.raw_meta(x), (mx.base, mx.elemBytes, mx.shape, mx.strides,
+                                                  mx.capacity, mx.dtype))
+
 if __name__ == "__main__":
     unittest.main()

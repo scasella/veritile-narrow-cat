@@ -1,0 +1,850 @@
+{
+ "kind": "block_search (checked general API, small/medium inputs)",
+ "device": "cuda",
+ "triton": "3.8.0",
+ "torch": "2.14.0+cu130",
+ "python": "3.12.10",
+ "TRITON_INTERPRET": null,
+ "gpu_name": "NVIDIA L4",
+ "compute_capability": [
+  8,
+  9
+ ],
+ "torch_cuda": "13.0",
+ "nvidia_smi": "NVIDIA L4, 580.95.05, 23034 MiB, 2040 MHz",
+ "cpu": "model name\t: unknown\n1",
+ "blocks": [
+  64,
+  128,
+  256,
+  512,
+  1024,
+  2048,
+  4096
+ ],
+ "search_sizes": [
+  4096,
+  16384,
+  65536,
+  262144,
+  1048576,
+  4194304
+ ],
+ "held_out_sizes": [
+  3000,
+  50001,
+  700001,
+  3000017
+ ],
+ "judged_by": "single-mode checked end-to-end time (median over reps; median of trials)",
+ "rows": [
+  {
+   "n": 4096,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      116.75450000225851,
+      115.44650000061552,
+      115.78350000007731
+     ],
+     "e2e_single_us": 115.78350000007731,
+     "kernel_us": 1.1529999999997926
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      115.85149999859823,
+      116.30999999567848,
+      116.60599999530064
+     ],
+     "e2e_single_us": 116.30999999567848,
+     "kernel_us": 1.1200000000000045
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      115.50749999855725,
+      116.09250000077509,
+      116.50699999776748
+     ],
+     "e2e_single_us": 116.09250000077509,
+     "kernel_us": 1.1210000000000946
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      117.30750000182866,
+      117.04450000138422,
+      116.50549999941973
+     ],
+     "e2e_single_us": 117.04450000138422,
+     "kernel_us": 1.183999999999969
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      117.51500000301007,
+      116.75150000201029,
+      116.23099999980013
+     ],
+     "e2e_single_us": 116.75150000201029,
+     "kernel_us": 1.2480000000000473
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      116.06400000019335,
+      116.97450000269782,
+      116.92399999674308
+     ],
+     "e2e_single_us": 116.92399999674308,
+     "kernel_us": 1.4080000000000723
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      116.5224999972736,
+      116.7194999993626,
+      116.74750000167933
+     ],
+     "e2e_single_us": 116.7194999993626,
+     "kernel_us": 1.7609999999999673
+    }
+   }
+  },
+  {
+   "n": 16384,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      126.47049999969795,
+      127.70100000025764,
+      127.13199999936364
+     ],
+     "e2e_single_us": 127.13199999936364,
+     "kernel_us": 1.3120000000000118
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.5900000017316,
+      127.60299999925451,
+      127.62900000140576
+     ],
+     "e2e_single_us": 127.60299999925451,
+     "kernel_us": 1.24799999999982
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      126.52349999697776,
+      127.19600000110631,
+      127.46200000179897
+     ],
+     "e2e_single_us": 127.19600000110631,
+     "kernel_us": 1.2159999999998945
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.00249999753055,
+      128.6990000011201,
+      130.45050000215497
+     ],
+     "e2e_single_us": 128.6990000011201,
+     "kernel_us": 1.2159999999998945
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.09100000055196,
+      128.45550000051276,
+      127.99900000004527
+     ],
+     "e2e_single_us": 128.09100000055196,
+     "kernel_us": 1.2480000000000473
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.42449999691985,
+      127.83400000060396,
+      128.58299999862766
+     ],
+     "e2e_single_us": 127.83400000060396,
+     "kernel_us": 1.37600000000009
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.26850000027912,
+      128.3964999991838,
+      128.09750000286613
+     ],
+     "e2e_single_us": 128.3964999991838,
+     "kernel_us": 1.759999999999991
+    }
+   }
+  },
+  {
+   "n": 65536,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.0345000012062,
+      126.9685000018228,
+      127.91649999854826
+     ],
+     "e2e_single_us": 127.91649999854826,
+     "kernel_us": 1.905999999999949
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.6385000014434,
+      126.38350000315768,
+      127.14149999837332
+     ],
+     "e2e_single_us": 127.14149999837332,
+     "kernel_us": 1.5670000000000073
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.29750000062268,
+      127.25799999913079,
+      128.50450000101432
+     ],
+     "e2e_single_us": 127.29750000062268,
+     "kernel_us": 1.5359999999998308
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.87749999990206,
+      126.9635000014091,
+      127.91599999673053
+     ],
+     "e2e_single_us": 127.91599999673053,
+     "kernel_us": 1.5039999999999054
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      126.79700000006733,
+      127.49849999948992,
+      127.68649999728154
+     ],
+     "e2e_single_us": 127.49849999948992,
+     "kernel_us": 1.5364999999999327
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.62249999909159,
+      127.40650000253595,
+      128.8389999984929
+     ],
+     "e2e_single_us": 127.62249999909159,
+     "kernel_us": 1.47199999999998
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      126.98300000124618,
+      127.36749999930908,
+      127.77650000117546
+     ],
+     "e2e_single_us": 127.36749999930908,
+     "kernel_us": 1.7919999999999163
+    }
+   }
+  },
+  {
+   "n": 262144,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.56699999982857,
+      127.16450000027635,
+      127.1955000028413
+     ],
+     "e2e_single_us": 127.1955000028413,
+     "kernel_us": 3.9680000000000746
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      126.97449999876653,
+      127.66700000099718,
+      126.87050000081967
+     ],
+     "e2e_single_us": 126.97449999876653,
+     "kernel_us": 2.72300000000007
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.55849999837687,
+      126.22949999752109,
+      126.90300000173238
+     ],
+     "e2e_single_us": 126.90300000173238,
+     "kernel_us": 2.304499999999962
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.35849999959237,
+      127.27300000392461,
+      126.95899999926041
+     ],
+     "e2e_single_us": 127.27300000392461,
+     "kernel_us": 2.367999999999938
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.66249999987645,
+      128.27100000123437,
+      128.86999999750515
+     ],
+     "e2e_single_us": 128.66249999987645,
+     "kernel_us": 2.4260000000000446
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.23799999747598,
+      127.45950000336848,
+      127.71300000125052
+     ],
+     "e2e_single_us": 127.45950000336848,
+     "kernel_us": 2.369000000000028
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.0149999978164,
+      128.52100000060318,
+      128.30749999892532
+     ],
+     "e2e_single_us": 128.30749999892532,
+     "kernel_us": 2.816000000000031
+    }
+   }
+  },
+  {
+   "n": 1048576,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      132.55999999728374,
+      127.7129999976978,
+      127.46750000047768
+     ],
+     "e2e_single_us": 127.7129999976978,
+     "kernel_us": 12.206500000000005
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.4235000049705,
+      127.38399999889793,
+      127.41200000121466
+     ],
+     "e2e_single_us": 127.41200000121466,
+     "kernel_us": 7.167500000000018
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.363000002769,
+      127.75199999737197,
+      128.28399999875728
+     ],
+     "e2e_single_us": 128.28399999875728,
+     "kernel_us": 5.72950000000003
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.63300000023992,
+      128.94949999875394,
+      128.8114999979939
+     ],
+     "e2e_single_us": 128.94949999875394,
+     "kernel_us": 6.017499999999927
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.26750000272114,
+      129.05750000413718,
+      128.31500000132223
+     ],
+     "e2e_single_us": 128.31500000132223,
+     "kernel_us": 7.040499999999952
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.6910000004582,
+      129.59400000056576,
+      127.72550000050842
+     ],
+     "e2e_single_us": 128.6910000004582,
+     "kernel_us": 7.327499999999986
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      130.0449999988018,
+      129.225500000274,
+      129.051000001823
+     ],
+     "e2e_single_us": 129.225500000274,
+     "kernel_us": 7.472000000000094
+    }
+   }
+  },
+  {
+   "n": 4194304,
+   "held_out": false,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      181.83850000141888,
+      171.50400000076615,
+      171.82500000245682
+     ],
+     "e2e_single_us": 171.82500000245682,
+     "kernel_us": 74.08500000000015
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      161.94199999830516,
+      165.2684999982057,
+      166.00600000060695
+     ],
+     "e2e_single_us": 165.2684999982057,
+     "kernel_us": 69.10650000000004
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      157.88249999815207,
+      158.79999999768302,
+      162.14949999948658
+     ],
+     "e2e_single_us": 158.79999999768302,
+     "kernel_us": 64.4615
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      164.05900000293627,
+      157.2935000027087,
+      157.62049999779038
+     ],
+     "e2e_single_us": 157.62049999779038,
+     "kernel_us": 63.56000000000006
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      165.8225000014113,
+      153.51300000432389,
+      153.79400000270493
+     ],
+     "e2e_single_us": 153.79400000270493,
+     "kernel_us": 61.117500000000064
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      159.7655000011855,
+      151.43300000275417,
+      151.41049999911615
+     ],
+     "e2e_single_us": 151.43300000275417,
+     "kernel_us": 54.76700000000005
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      148.9250000012987,
+      150.3080000020418,
+      148.9924999980019
+     ],
+     "e2e_single_us": 148.9924999980019,
+     "kernel_us": 54.297000000000025
+    }
+   }
+  },
+  {
+   "n": 3000,
+   "held_out": true,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.2305000042404,
+      128.03299999930573,
+      129.2379999995319
+     ],
+     "e2e_single_us": 129.2305000042404,
+     "kernel_us": 1.1200000000001182
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.71999999930495,
+      128.15150000022868,
+      128.3914999987701
+     ],
+     "e2e_single_us": 128.3914999987701,
+     "kernel_us": 1.1200000000001182
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.33850000149027,
+      128.48549999944225,
+      127.93900000218628
+     ],
+     "e2e_single_us": 128.33850000149027,
+     "kernel_us": 1.1204999999999927
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.38299999984315,
+      128.68050000136577,
+      127.90299999920762
+     ],
+     "e2e_single_us": 128.38299999984315,
+     "kernel_us": 1.21650000000011
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.6385000014434,
+      129.3284999981381,
+      129.55050000229562
+     ],
+     "e2e_single_us": 129.3284999981381,
+     "kernel_us": 1.4250000000000682
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.45300000208226,
+      128.6860000035972,
+      128.72849999823188
+     ],
+     "e2e_single_us": 128.6860000035972,
+     "kernel_us": 1.6664999999999281
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.7870000023238,
+      129.0585000006672,
+      129.2030000001887
+     ],
+     "e2e_single_us": 129.2030000001887,
+     "kernel_us": 2.0184999999999036
+    }
+   }
+  },
+  {
+   "n": 50001,
+   "held_out": true,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.2925000022649,
+      127.34450000095876,
+      127.44249999840918
+     ],
+     "e2e_single_us": 127.44249999840918,
+     "kernel_us": 1.69600000000014
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.2465000009836,
+      128.28750000082323,
+      127.04700000298885
+     ],
+     "e2e_single_us": 128.2465000009836,
+     "kernel_us": 1.47199999999998
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.4879999989007,
+      130.01650000177278,
+      127.55300000222292
+     ],
+     "e2e_single_us": 129.4879999989007,
+     "kernel_us": 1.4399999999999409
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      131.53200000104448,
+      130.3940000028092,
+      128.7310000002151
+     ],
+     "e2e_single_us": 130.3940000028092,
+     "kernel_us": 1.5039999999999623
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      131.300000003165,
+      129.0484999998398,
+      128.84499999898935
+     ],
+     "e2e_single_us": 129.0484999998398,
+     "kernel_us": 1.5195000000000505
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.9320000001103,
+      128.06799999864893,
+      128.853500001469
+     ],
+     "e2e_single_us": 128.853500001469,
+     "kernel_us": 1.7280000000000086
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      143.88499999995474,
+      128.65250000260176,
+      128.64199999995662
+     ],
+     "e2e_single_us": 128.65250000260176,
+     "kernel_us": 2.36749999999995
+    }
+   }
+  },
+  {
+   "n": 700001,
+   "held_out": true,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.81900000039082,
+      128.2495000012318,
+      128.41999999935183
+     ],
+     "e2e_single_us": 128.41999999935183,
+     "kernel_us": 8.562999999999874
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      127.4779999995701,
+      128.7664999978233,
+      128.12299999964694
+     ],
+     "e2e_single_us": 128.12299999964694,
+     "kernel_us": 5.185000000000002
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.6510000007013,
+      128.28049999669133,
+      128.10549999997534
+     ],
+     "e2e_single_us": 128.28049999669133,
+     "kernel_us": 4.45799999999997
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      129.35099999822341,
+      128.77550000212068,
+      127.65350000165654
+     ],
+     "e2e_single_us": 128.77550000212068,
+     "kernel_us": 5.2485000000000355
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.53800000200977,
+      127.72899999902165,
+      130.11199999724
+     ],
+     "e2e_single_us": 128.53800000200977,
+     "kernel_us": 7.203499999999963
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.2220000007328,
+      127.74450000208049,
+      129.3604999972331
+     ],
+     "e2e_single_us": 128.2220000007328,
+     "kernel_us": 7.10450000000003
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.19650000039928,
+      127.50249999982088,
+      129.09949999695414
+     ],
+     "e2e_single_us": 128.19650000039928,
+     "kernel_us": 9.430999999999926
+    }
+   }
+  },
+  {
+   "n": 3000017,
+   "held_out": true,
+   "blocks": {
+    "64": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      137.5295000016763,
+      137.32099999685943,
+      139.19649999749595
+     ],
+     "e2e_single_us": 137.5295000016763,
+     "kernel_us": 32.590500000000134
+    },
+    "128": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      130.7510000003731,
+      129.63700000057088,
+      131.05400000057443
+     ],
+     "e2e_single_us": 130.7510000003731,
+     "kernel_us": 18.143500000000017
+    },
+    "256": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.47550000216756,
+      128.656000001115,
+      129.4879999989007
+     ],
+     "e2e_single_us": 128.656000001115,
+     "kernel_us": 15.105000000000018
+    },
+    "512": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      128.41799999563364,
+      129.0705000016601,
+      130.94750000064437
+     ],
+     "e2e_single_us": 129.0705000016601,
+     "kernel_us": 17.456000000000017
+    },
+    "1024": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      130.34149999668898,
+      133.47350000003644,
+      134.26350000145248
+     ],
+     "e2e_single_us": 133.47350000003644,
+     "kernel_us": 23.726999999999975
+    },
+    "2048": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      133.34700000200428,
+      133.8370000034672,
+      133.96099999951616
+     ],
+     "e2e_single_us": 133.8370000034672,
+     "kernel_us": 24.860500000000116
+    },
+    "4096": {
+     "bitwise_equal_eager": true,
+     "e2e_single_trials": [
+      143.29500000087592,
+      144.10850000246,
+      145.1320000001033
+     ],
+     "e2e_single_us": 144.10850000246,
+     "kernel_us": 33.646999999999935
+    }
+   }
+  }
+ ],
+ "correct": true,
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Serial.lean": "f79aef0c55c04905e544fff60db59b3e5ba78a4498180f1934e7dcc6eacb5776",
+  "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
+  "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
+  "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
+  "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
+  "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "95d43e33ae40d3823ada1b117a32ad2edcaa0df2b2d83a2fed24dd52f3d4340f",
+  "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
+  "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
+  "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
+  "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
+  "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
+  "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
+  "scripts/launch_local_check.py": "543571b9250535066e98a65acc878c832ae3fe901c737f6e3c7afbb083f8c787",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
+  "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
+  "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
+  "scripts/test_launch_check.py": "08b659aba67cc3d29d2ee539914aa80fb6ac9bfc20bbf0a67cc3674d872670f3",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
+  "bench/tritonbench_g/add_example/improvement/add_relu_fused.py": "1721d008dc13c60cf1793ee6fc5b964ec5ab3cd2fca4f89c50bed76c59558437",
+  "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
+  "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
+  "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
+  "scripts/launch_fast.py": "08b4512e00be4fb51e7af6096b6b022f716a849a2566359cf5e9e1337e5ec20a",
+  "scripts/launch_latency.py": "0ee7714a7d268a1a99070753f646acbb4ac857c6afb583aeb6c5f9add0bec858",
+  "scripts/launch_latency_modal.py": "3ab511b5ed80899a43a8e22dc2be12c38e7cd4d96501ab728f5d239a7c2e4de1",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ }
+}

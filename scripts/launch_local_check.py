@@ -141,6 +141,7 @@ AUDIT_TARGETS = [
       "relu_wrapper_one_tile_flat_correctness"]),
     ("bench/tritonbench_g/add_example/improvement/AddReluFused.lean", FUSED,
      [f"{FUSED}.{t}" for t in ("add_relu_kernel_correctness", "add_relu_wrapper_correctness",
+                              "add_relu_wrapper_correctness_block",
                               "add_relu_kernel_region_run", "add_relu_kernel_traceSafe")],
      ["add_relu_kernel_correctness", "add_relu_wrapper_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
@@ -256,7 +257,9 @@ FUSED_SURFACE_PRINTS = [
     "#print VeriTile.Triton.Elementwise2.flatAlloc",
     "#print VeriTile.Triton.TiledActivation.relu",
     "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_correctness",
-    "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness"]
+    "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness",
+    # stage 9: every block size the contract accepts
+    "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness_block"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),
@@ -301,6 +304,9 @@ def input_files() -> list:
                         "scripts/launch_fused.py", "scripts/launch_bench.py", "scripts/launch_bench_modal.py",
                         # checked-execution latency (stage 9)
                         "scripts/launch_fast.py", "scripts/launch_latency.py", "scripts/launch_latency_modal.py",
+                        "scripts/launch_probe.py",
+                        "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
+                        "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
 
 
@@ -378,6 +384,12 @@ def evidence_deps(name: str, root: Path = REPO):
         "block_sweep.json": HANDOFF, "interpreter.json": HANDOFF,
         "relu_tune.json": BENCH, "fusion_bench.json": BENCH,
         "latency_ladder.json": LATENCY, "block_search.json": LATENCY,
+        "validation.json": LATENCY + ["scripts/launch_probe.py"],
+        "workload_probe.json": LATENCY + ["scripts/launch_probe.py",
+                                          "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
+                                          "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py"],
+        "fast_check_differential.json": ["scripts/launch_fast.py", "scripts/launch_invoke.py", "scripts/launch_fused.py"]
+        + PY_CORE + lean("VeriTile/Triton/Launch/Blocked1DWrapper.lean"),
     }.get(name)
     return None if deps is None else sorted(set(deps))
 

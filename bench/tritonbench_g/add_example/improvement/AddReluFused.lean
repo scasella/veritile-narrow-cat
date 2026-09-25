@@ -547,6 +547,103 @@ theorem add_relu_kernel_launch_flat
     subst hr
     exact hno i (by simp [hi, ho])
 
+/-- **Whole-wrapper headline for every block size.** As
+`add_relu_wrapper_correctness`, for any `BLOCK_SIZE = B` the unchanged
+`Elementwise2` contract accepts (`Elementwise2.check B x y out = true`; the
+contract's P2/P5–P7 constrain `B`). A checked API may therefore launch the fused
+kernel with any block it decides this check for. -/
+specification add_relu_wrapper_correctness_block
+    (B : Nat)
+    (x y out : TensorMeta) (hc : Elementwise2.check B x y out = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (h0 : out_ptr ≠ in_ptr0) (h1 : out_ptr ≠ in_ptr1)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < x.numel → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < y.numel → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_relu_kernel in_ptr0 in_ptr1 out_ptr x.numel B).toAlgKernel)
+        { dims := (Elementwise2.launch B x y out).grid } s
+        (fun i : Nat => if i < out.numel then some (out_ptr, i) else none)
+        (fun i => TiledActivation.relu (xs i + ys i)) ∧
+      (∀ idx, TensorMeta.InShape out.shape idx →
+        out.offsetOf idx = x.offsetOf idx ∧ y.offsetOf idx = x.offsetOf idx ∧
+          x.offsetOf idx < out.numel) ∧
+      (∀ bounds : RegionBounds,
+        x.numel ≤ bounds in_ptr0 → y.numel ≤ bounds in_ptr1 → out.numel ≤ bounds out_ptr →
+        ∀ idx : GridIndex { dims := (Elementwise2.launch B x y out).grid },
+          Kernel.TraceSafe bounds
+            ((add_relu_kernel in_ptr0 in_ptr1 out_ptr x.numel B).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      (∀ L : List (GridIndex { dims := (Elementwise2.launch B x y out).grid }),
+        L.Nodup → (∀ idx, idx ∈ L) →
+        ∃ m, Kernel.runSerial ((add_relu_kernel in_ptr0 in_ptr1 out_ptr x.numel B).toAlgKernel)
+              s L s.mem = some m ∧
+          (∀ i, i < out.numel → Kernel.memReal m out_ptr i = TiledActivation.relu (xs i + ys i)) ∧
+          (∀ r o, ¬ (r = out_ptr ∧ o < out.numel) → m r o = s.mem r o)) ∧
+      (∀ flat : RegionName, (in_ptr0 = in_ptr1 ↔ x.base = y.base) →
+        s.undef = (fun _ _ => 0) →
+        (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).Disjoint ∧
+        (∀ r, r ∉ (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).regions →
+          (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).extent r = 0) ∧
+        Kernel.LaunchCorrectFramed
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenKernel
+            ((add_relu_kernel in_ptr0 in_ptr1 out_ptr x.numel B).toAlgKernel))
+          { dims := (Elementwise2.launch B x y out).grid }
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenState s)
+          (fun i : Nat => if i < out.numel then
+            some (flat, out.base / out.elemBytes + i) else none)
+          (fun i => TiledActivation.relu (xs i + ys i))) := by
+  have hpre := Elementwise2.check_ok B x y out hc
+  have hL := hpre.launch
+  have hc' : Blocked1DLaunch.check (Elementwise2.launch B x y out) = Bool.true :=
+    Blocked1DLaunch.check_complete _ hL
+  have hW1 : x.numel = out.numel := hpre.output_covered
+  have hyn : x.numel = y.numel := by simp [TensorMeta.numel, hpre.same_shape.1]
+  have hx' : ∀ i, i < (Elementwise2.launch B x y out).n →
+      s.mem in_ptr0 i = MemCell.real (xs i) := hx
+  have hy' : ∀ i, i < (Elementwise2.launch B x y out).n →
+      s.mem in_ptr1 i = MemCell.real (ys i) := fun i hi =>
+    hy i (by change i < x.numel at hi; omega)
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · rw [← hW1]
+    exact add_relu_kernel_launch_framed _ hc' in_ptr0 in_ptr1 out_ptr s xs ys hx' hy'
+  · intro idx hi
+    obtain ⟨ss1, ss2⟩ := hpre.same_shape
+    obtain ⟨cx, cy, co⟩ := hpre.contiguous
+    have ho := TensorMeta.offsetOf_eq_linear out co idx hi
+    have hix : TensorMeta.InShape x.shape idx := by rw [← ss2]; exact hi
+    have hiy : TensorMeta.InShape y.shape idx := by rw [ss1, ← ss2]; exact hi
+    have hxl := TensorMeta.offsetOf_eq_linear x cx idx hix
+    have hyl := TensorMeta.offsetOf_eq_linear y cy idx hiy
+    rw [ss2] at ho
+    rw [ss1] at hyl
+    refine ⟨ho.1.trans hxl.1.symm, hyl.1.trans hxl.1.symm, ?_⟩
+    rw [hxl.1, ← hW1]
+    exact hxl.2
+  · intro bounds b0 b1 b2
+    rw [hL.grid_eq]
+    intro idx
+    apply add_relu_kernel_traceSafe <;> intro j hj <;>
+      rw [Blocked1D.withGridIndex_pid_line] at hj ⊢ <;> omega
+  · rw [← hW1]
+    exact add_relu_kernel_launch_serial _ hc' in_ptr0 in_ptr1 out_ptr h0 h1 s xs ys hx' hy'
+  · intro flat hnames hu
+    refine ⟨hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames,
+      Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out, ?_⟩
+    have hbase : (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).base out_ptr
+        = out.base / out.elemBytes := by simp [Elementwise2.flatAlloc]
+    have hflat := add_relu_kernel_launch_flat _ hc' in_ptr0 in_ptr1 out_ptr
+      (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out)
+      (hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames) rfl
+      (Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out)
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      s hu xs ys hx' hy'
+    rw [← hW1, ← hbase]
+    exact hflat
+
+
 /-- **Whole-wrapper headline (fused add + ReLU).** For tensors accepted by the
 unchanged `Elementwise2` contract at `BLOCK_SIZE = 64`, region names that follow
 the allocations, and inputs holding typed real values:
@@ -601,55 +698,6 @@ specification add_relu_wrapper_correctness
           (fun i : Nat => if i < out.numel then
             some (flat, out.base / out.elemBytes + i) else none)
           (fun i => TiledActivation.relu (xs i + ys i))) := by
-  have hpre := Elementwise2.check_ok 64 x y out hc
-  have hL := hpre.launch
-  have hc' : Blocked1DLaunch.check (Elementwise2.launch 64 x y out) = Bool.true :=
-    Blocked1DLaunch.check_complete _ hL
-  have hW1 : x.numel = out.numel := hpre.output_covered
-  have hyn : x.numel = y.numel := by simp [TensorMeta.numel, hpre.same_shape.1]
-  have hx' : ∀ i, i < (Elementwise2.launch 64 x y out).n →
-      s.mem in_ptr0 i = MemCell.real (xs i) := hx
-  have hy' : ∀ i, i < (Elementwise2.launch 64 x y out).n →
-      s.mem in_ptr1 i = MemCell.real (ys i) := fun i hi =>
-    hy i (by change i < x.numel at hi; omega)
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [← hW1]
-    exact add_relu_kernel_launch_framed _ hc' in_ptr0 in_ptr1 out_ptr s xs ys hx' hy'
-  · intro idx hi
-    obtain ⟨ss1, ss2⟩ := hpre.same_shape
-    obtain ⟨cx, cy, co⟩ := hpre.contiguous
-    have ho := TensorMeta.offsetOf_eq_linear out co idx hi
-    have hix : TensorMeta.InShape x.shape idx := by rw [← ss2]; exact hi
-    have hiy : TensorMeta.InShape y.shape idx := by rw [ss1, ← ss2]; exact hi
-    have hxl := TensorMeta.offsetOf_eq_linear x cx idx hix
-    have hyl := TensorMeta.offsetOf_eq_linear y cy idx hiy
-    rw [ss2] at ho
-    rw [ss1] at hyl
-    refine ⟨ho.1.trans hxl.1.symm, hyl.1.trans hxl.1.symm, ?_⟩
-    rw [hxl.1, ← hW1]
-    exact hxl.2
-  · intro bounds b0 b1 b2
-    rw [hL.grid_eq]
-    intro idx
-    apply add_relu_kernel_traceSafe <;> intro j hj <;>
-      rw [Blocked1D.withGridIndex_pid_line] at hj ⊢ <;> omega
-  · rw [← hW1]
-    exact add_relu_kernel_launch_serial _ hc' in_ptr0 in_ptr1 out_ptr h0 h1 s xs ys hx' hy'
-  · intro flat hnames hu
-    refine ⟨hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames,
-      Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out, ?_⟩
-    have hbase : (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).base out_ptr
-        = out.base / out.elemBytes := by simp [Elementwise2.flatAlloc]
-    have hflat := add_relu_kernel_launch_flat _ hc' in_ptr0 in_ptr1 out_ptr
-      (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out)
-      (hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames) rfl
-      (Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out)
-      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
-      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
-      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
-      s hu xs ys hx' hy'
-    rw [← hW1, ← hbase]
-    exact hflat
-
+  exact add_relu_wrapper_correctness_block 64 x y out hc in_ptr0 in_ptr1 out_ptr h0 h1 s xs ys hx hy
 
 end VeriTile.Bench.TritonBenchG.AddReluFused
