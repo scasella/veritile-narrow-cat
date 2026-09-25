@@ -287,5 +287,56 @@ class LeanVerdictTest(unittest.TestCase):
         self.assertTrue(all(x["kernel_checked"] for x in v.values()))
 
 
+
+class EvidenceFreshness(unittest.TestCase):
+    """Rerun a check when its relevant inputs change, and only then."""
+
+    def setUp(self):
+        import launch_local_check as LC
+        self.LC = LC
+        self.h = LC.input_hashes()
+
+    def rec(self, name, **changes):
+        deps = self.LC.evidence_deps(name)
+        ih = {k: v for k, v in self.h.items() if deps is None or k in deps}
+        ih.update(changes)
+        return {"input_hashes": ih}
+
+    def test_current_when_dependencies_match(self):
+        for n in ("gpu_wrapper.json", "invoke_differential_strided.json", "official_comparator.json"):
+            self.assertTrue(self.LC.evidence_freshness(n, self.rec(n), self.h)[0], n)
+
+    def test_change_outside_subset_does_not_stale(self):
+        h = dict(self.h)
+        h["bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean"] = "0" * 64
+        self.assertTrue(self.LC.evidence_freshness("gpu_wrapper.json", self.rec("gpu_wrapper.json"), h)[0])
+
+    def test_change_inside_subset_stales(self):
+        h = dict(self.h)
+        h["scripts/launch_invoke.py"] = "0" * 64
+        ok, stale, _ = self.LC.evidence_freshness("gpu_wrapper.json", self.rec("gpu_wrapper.json"), h)
+        self.assertFalse(ok)
+        self.assertEqual(stale, ["scripts/launch_invoke.py"])
+
+    def test_lean_closure_dependency_stales_differential(self):
+        h = dict(self.h)
+        h["VeriTile/Triton/Launch/Blocked1DConfig.lean"] = "0" * 64
+        self.assertFalse(self.LC.evidence_freshness(
+            "invoke_differential_strided.json", self.rec("invoke_differential_strided.json"), h)[0])
+
+    def test_unhashed_dependency_is_not_current(self):
+        r = self.rec("gpu_wrapper.json")
+        del r["input_hashes"]["scripts/launch_gpu.py"]
+        ok, _, unhashed = self.LC.evidence_freshness("gpu_wrapper.json", r, self.h)
+        self.assertFalse(ok)
+        self.assertEqual(unhashed, ["scripts/launch_gpu.py"])
+
+    def test_whole_set_evidence_never_narrowed(self):
+        self.assertIsNone(self.LC.evidence_deps("official_comparator.json"))
+        h = dict(self.h)
+        h["bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean"] = "0" * 64
+        self.assertFalse(self.LC.evidence_freshness(
+            "official_comparator.json", self.rec("official_comparator.json"), h)[0])
+
 if __name__ == "__main__":
     unittest.main()
