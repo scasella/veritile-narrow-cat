@@ -13,7 +13,7 @@ A failure means a `proven` theorem's transitive proof depends on `sorryAx`
 or a non-standard axiom (footprint outside {propext, Classical.choice,
 Quot.sound}) — a real soundness finding, NOT something to paper over.
 
-Coverage: 121 library theorems across 10 modules.
+Coverage: 129 library theorems across 15 modules.
 Standalone bench ports + bench/examples are audited by bench/audit_trust.sh.
 -/
 import VeriTile.Meta.StatementAudit
@@ -27,6 +27,11 @@ import VeriTile.Examples.FlashAttention1.ScoreVariants.Math
 import VeriTile.Examples.FlashAttention2
 import VeriTile.Triton.Launch.Blocked1D
 import VeriTile.Triton.Launch.Blocked1DConfig
+import VeriTile.Triton.Launch.Blocked1DFlat
+import VeriTile.Triton.Launch.Blocked1DWrapper
+import VeriTile.Triton.Launch.Line3
+import VeriTile.Triton.Launch.Serial
+import VeriTile.Triton.Launch.StridedUnary
 
 -- `#axiomsClean` is a global command registered by importing
 -- VeriTile.Meta.StatementAudit; fully-qualified names resolve without `open`.
@@ -171,4 +176,22 @@ import VeriTile.Triton.Launch.Blocked1DConfig
 -- VeriTile.Triton.Launch.Blocked1DConfig
 #axiomsClean VeriTile.Triton.Blocked1DLaunch.check_complete
 #axiomsClean VeriTile.Triton.Blocked1DLaunch.check_ok
+
+-- VeriTile.Triton.Launch.Blocked1DFlat
+#axiomsClean VeriTile.Triton.Blocked1D.launch_of_frames_addr
+
+-- VeriTile.Triton.Launch.Blocked1DWrapper
+#axiomsClean VeriTile.Triton.Elementwise2.check_complete
+#axiomsClean VeriTile.Triton.Elementwise2.check_ok
+#axiomsClean VeriTile.Triton.Elementwise2.launchDim0_not_covered
+
+-- VeriTile.Triton.Launch.Line3
+#axiomsClean VeriTile.Triton.Blocked1D.mergeFrames_liftFrames
+
+-- VeriTile.Triton.Launch.Serial
+#axiomsClean VeriTile.Triton.Kernel.runSerial_agrees_merge
+
+-- VeriTile.Triton.Launch.StridedUnary
+#axiomsClean VeriTile.Triton.StridedUnary.check_complete
+#axiomsClean VeriTile.Triton.StridedUnary.check_ok
 

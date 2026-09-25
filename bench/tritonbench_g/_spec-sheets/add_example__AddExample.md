@@ -171,3 +171,111 @@ def add_kernel
 }
 ```
 </details>
+
+## Public theorem: `add_wrapper_correctness`
+
+<details><summary>docstring</summary>
+
+```
+/-- **Whole-wrapper headline.** For tensors accepted by the wrapper checker
+and region names that follow the allocations, from any state whose input
+tensors hold typed real values:
+
+1. every element `i < out.numel` of the returned tensor is written with
+   `xs i + ys i`, and every other cell is unchanged (framed whole-grid launch);
+2. for every in-shape multi-index, the three tensors address the same
+   row-major element, below `out.numel` (the logical view);
+3. every program is trace-safe for bounds equal to the tensors' own element
+   counts — no access leaves an input's logical extent;
+4. running the programs one after another in **any** complete order gives the
+   same result (so the merge semantics does not rely on a program never
+   reading another's writes);
+5. in the flat memory placed at the tensors' element addresses
+   (`base / elemBytes`), the checked conditions discharge the bridge's
+   disjointness and closure hypotheses and the flattened launch writes
+   `xs i + ys i` at element address `out.base / out.elemBytes + i` for every
+   `i < out.numel`, leaving every other flat cell unchanged. -/
+```
+</details>
+
+**Statement:**
+```lean
+specification add_wrapper_correctness
+    (x y out : TensorMeta) (hc : Elementwise2.check 4 x y out = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (h0 : out_ptr ≠ in_ptr0) (h1 : out_ptr ≠ in_ptr1)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < x.numel → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < y.numel → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+        { dims := (Elementwise2.launch 4 x y out).grid } s
+        (fun i : Nat => if i < out.numel then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ idx, TensorMeta.InShape out.shape idx →
+        out.offsetOf idx = x.offsetOf idx ∧ y.offsetOf idx = x.offsetOf idx ∧
+          x.offsetOf idx < out.numel) ∧
+      (∀ bounds : RegionBounds,
+        x.numel ≤ bounds in_ptr0 → y.numel ≤ bounds in_ptr1 → out.numel ≤ bounds out_ptr →
+        ∀ idx : GridIndex { dims := (Elementwise2.launch 4 x y out).grid },
+          Kernel.TraceSafe bounds
+            ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      (∀ L : List (GridIndex { dims := (Elementwise2.launch 4 x y out).grid }),
+        L.Nodup → (∀ idx, idx ∈ L) →
+        ∃ m, Kernel.runSerial ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+              s L s.mem = some m ∧
+          (∀ i, i < out.numel → Kernel.memReal m out_ptr i = xs i + ys i) ∧
+          (∀ r o, ¬ (r = out_ptr ∧ o < out.numel) → m r o = s.mem r o)) ∧
+      (∀ flat : RegionName, (in_ptr0 = in_ptr1 ↔ x.base = y.base) →
+        s.undef = (fun _ _ => 0) →
+        (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).Disjoint ∧
+        (∀ r, r ∉ (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).regions →
+          (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).extent r = 0) ∧
+        Kernel.LaunchCorrectFramed
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenKernel
+            ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel))
+          { dims := (Elementwise2.launch 4 x y out).grid }
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenState s)
+          (fun i : Nat => if i < out.numel then
+            some (flat, out.base / out.elemBytes + i) else none)
+          (fun i => xs i + ys i))
+```
+
+**Assumptions / layout contracts:**
+- `hc : Elementwise2.check 4 x y out = Bool.true`
+- `h0 : out_ptr ≠ in_ptr0`
+- `h1 : out_ptr ≠ in_ptr1`
+- `xs ys : Nat → ℝ`
+- `hx : ∀ i, i < x.numel → s.mem in_ptr0 i = MemCell.real (xs i)`
+- `hy : ∀ i, i < y.numel → s.mem in_ptr1 i = MemCell.real (ys i)`
+
+**Closed-form spec defs (transitive):** `add_kernel`
+
+<details><summary><code>add_kernel</code></summary>
+
+```
+/-- Faithful 1:1 transcription of `add_example.py`'s `add_kernel`.
+
+Allowed mechanical Lean-syntax-only changes:
+- Python `BLOCK_SIZE: tl.constexpr` annotation → Lean `Nat` parameter
+  (the `tl.constexpr` is implicit in Lean params).
+
+Everything else is verbatim from the upstream kernel. -/
+```
+```lean
+def add_kernel
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (n_elements BLOCK_SIZE : Nat) :
+    ComputeKernel := triton {
+  pid = tl.program_id(axis=0)
+  block_start = pid * $(BLOCK_SIZE)
+  offsets = block_start + tl.arange(0, $(BLOCK_SIZE))
+  mask = offsets < $(n_elements)
+  x = tl.load(in_ptr0 + offsets, mask=mask)
+  y = tl.load(in_ptr1 + offsets, mask=mask)
+  output = x + y
+  tl.store(out_ptr + offsets, output, mask=mask)
+}
+```
+</details>

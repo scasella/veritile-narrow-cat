@@ -154,3 +154,66 @@ def _add_kernel
 }
 ```
 </details>
+
+## Public theorem: `custom_add_correctness`
+
+<details><summary>docstring</summary>
+
+```
+/-- **Whole-wrapper headline (`custom_add`).** For rank-1 tensors accepted by
+the wrapper checker and input cells holding typed real values, every element
+`i < c.numel` of the returned tensor is written with `xs i + ys i`, every
+other cell is unchanged, and every program is trace-safe for bounds equal to
+the tensors' own element counts. -/
+```
+</details>
+
+**Statement:**
+```lean
+specification custom_add_correctness
+    (a b c : TensorMeta) (hc : Elementwise2.checkRank1 16 a b c = Bool.true)
+    (A B C : RegionName) (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < a.numel → s.mem A i = MemCell.real (xs i))
+    (hy : ∀ i, i < b.numel → s.mem B i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((_add_kernel A B C (c.shape.headD 0) 16).toAlgKernel)
+        { dims := (Elementwise2.launchDim0 16 a b c).grid } s
+        (fun i : Nat => if i < c.numel then some (C, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ bounds : RegionBounds,
+        a.numel ≤ bounds A → b.numel ≤ bounds B → c.numel ≤ bounds C →
+        ∀ idx : GridIndex { dims := (Elementwise2.launchDim0 16 a b c).grid },
+          Kernel.TraceSafe bounds
+            ((_add_kernel A B C (c.shape.headD 0) 16).toAlgKernel)
+            (s.withGridIndex idx))
+```
+
+**Assumptions / layout contracts:**
+- `hc : Elementwise2.checkRank1 16 a b c = Bool.true`
+- `xs ys : Nat → ℝ`
+- `hx : ∀ i, i < a.numel → s.mem A i = MemCell.real (xs i)`
+- `hy : ∀ i, i < b.numel → s.mem B i = MemCell.real (ys i)`
+
+**Closed-form spec defs (transitive):** `_add_kernel`
+
+<details><summary><code>_add_kernel</code></summary>
+
+```
+/-- Faithful 1:1 transcription of `vector_addition_custom.py`'s `_add_kernel`.
+
+Allowed mechanical Lean-syntax-only changes:
+- Python `BLOCK: tl.constexpr` → Lean `Nat` parameter. -/
+```
+```lean
+def _add_kernel
+    (A B C : RegionName)
+    (size BLOCK : Nat) :
+    ComputeKernel := triton {
+  prog_id = tl.program_id(0)
+  offs = prog_id * $(BLOCK) + tl.arange(0, $(BLOCK))
+  a = tl.load(A + offs, mask=offs < $(size))
+  b = tl.load(B + offs, mask=offs < $(size))
+  tl.store(C + offs, a + b, mask=offs < $(size))
+}
+```
+</details>

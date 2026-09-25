@@ -28,7 +28,7 @@ if modal.is_local():
     sys.path.insert(0, str(REPO / "scripts"))
     import launch_local_check as LC  # noqa: E402
     LOCAL_HASHES = LC.input_hashes(REPO)
-    assert len(LOCAL_HASHES) == 24, sorted(LOCAL_HASHES)  # every hashed input exists locally
+    assert len(LOCAL_HASHES) == len(LC.input_files()), sorted(LOCAL_HASHES)  # all exist locally
     UPLOAD = sorted(set(LOCAL_HASHES) | set(HARNESS))
     image = modal.Image.debian_slim(python_version="3.12").pip_install("torch", "numpy")
     for f in UPLOAD:

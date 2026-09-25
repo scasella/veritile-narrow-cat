@@ -26,7 +26,7 @@
     {
       "file": "bench/tritonbench_g/add_example/AddExample.lean",
       "python_file": "bench/tritonbench_g/add_example/add_example.py",
-      "lean_sha256": "2fb9978d20e2c97b7279a395dcfa3c5f68ccadc50dcf9ffaaa54d26ca0d6d16f",
+      "lean_sha256": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
       "python_sha256": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
       "declarations": [
         {
@@ -56,6 +56,22 @@
             }
           ],
           "scope": "Whole-grid launch over the host grid c.grid for any configuration accepted by the proved checker Blocked1DLaunch.check (grid rank 1, power-of-two block, coverage, active-lane allocation bounds, i32 offset/n/grid fit, unit stride, f32, output disjoint from inputs): framed LaunchCorrectFramed output, per-program trace safety, i32 agreement. Exact-R model; host metadata binding is adapter-checked (scripts/launch_check.py), not proved. Same-agent review."
+        },
+        {
+          "declaration": "add_wrapper_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "add_kernel",
+              "line": 7
+            },
+            {
+              "name": "add_wrapper",
+              "line": 23
+            }
+          ],
+          "scope": "Whole-wrapper contract of add_wrapper from the tensors' own metadata (TensorMeta) for tensors accepted by the proved wrapper checker Elementwise2.check (equal shapes, contiguity, element alignment, input separation, P1-P10 of the derived launch): every element of the returned tensor written (W1 derived), each input's logical extent respected (W2 derived), logical multi-index view, any serial program order equal to the merge, and the flat placement at element addresses base/elemBytes discharging FlatAlloc.Disjoint. Exact-R model; metadata extraction and the invocation-time Python mirror are trusted (differentially tested). Same-agent review."
         }
       ]
     },
@@ -4310,7 +4326,7 @@
     {
       "file": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
       "python_file": "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
-      "lean_sha256": "fef3b43f81f29413d890af918862e6042eaeaa54384800e4c64585100a775650",
+      "lean_sha256": "6a12198b1d7330426bb351641b9cdecd39bc9431e2885798f0c69c1f04c42c21",
       "python_sha256": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
       "declarations": [
         {
@@ -4348,6 +4364,26 @@
             }
           ],
           "scope": "Rank-one one-tile and grid-stride ReLU contracts. Positive output stride and, for streaming IO, input/output separation constrain applicability."
+        },
+        {
+          "declaration": "relu_wrapper_one_tile_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "heuristics_for_tile_size",
+              "line": 7
+            },
+            {
+              "name": "relu_forward_wrapper_rank_1",
+              "line": 81
+            },
+            {
+              "name": "relu_forward_kernel_rank_1",
+              "line": 121
+            }
+          ],
+          "scope": "Whole-wrapper contract of relu_forward_wrapper_rank_1, one-tile branch, for rank-1 positive-stride tensors accepted by StridedUnary.check (non-empty, one-tile branch, strided elements inside each allocation, f32, aligned, disjoint spans, i32 offsets, i64 addresses): every strided output element relu of the matching strided input element, gap cells and input unchanged, strided extents, serial orders, over the wrapper's (num_ctas,1,1) grid; per-program proofs reused unchanged. Grid-stride branch, negative strides, dtype reinterpretation and empty input are rejected. Exact-R model; .to() casts erased. Same-agent review."
         }
       ]
     },
@@ -5726,7 +5762,7 @@
     {
       "file": "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
       "python_file": "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
-      "lean_sha256": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
+      "lean_sha256": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
       "python_sha256": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
       "declarations": [
         {
@@ -5756,6 +5792,22 @@
             }
           ],
           "scope": "Whole-grid launch over the host grid c.grid for any configuration accepted by the proved checker Blocked1DLaunch.check (same obligations as add_example). Covers out[0,size) only: for inputs of rank > 1 the wrapper's size = c.size(0) leaves the rest of the returned tensor unwritten (adapter obligation W1). Exact-R model. Same-agent review."
+        },
+        {
+          "declaration": "custom_add_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "_add_kernel",
+              "line": 7
+            },
+            {
+              "name": "custom_add",
+              "line": 15
+            }
+          ],
+          "scope": "Whole-wrapper contract of custom_add restricted to its supported rank-1 API (Elementwise2.checkRank1): the dim-0 launch equals the numel launch and every element of the returned tensor is written; beyond rank 1 the launch leaves outputs unwritten (Elementwise2.launchDim0_not_covered) and is rejected. Exact-R model. Same-agent review."
         }
       ]
     }

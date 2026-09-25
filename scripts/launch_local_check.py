@@ -44,6 +44,9 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Serial.lean",
             "VeriTile/Triton/Launch/Blocked1DWrapper.lean",
             "VeriTile/Triton/Launch/Blocked1DFlat.lean",
+            "VeriTile/Triton/Launch/StridedUnary.lean",
+            "VeriTile/Triton/Launch/Line3.lean",
+            "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
             "VeriTile/Triton/Launch/Composition.lean",
             "bench/tritonbench_g/add_example/AddExample.lean",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
@@ -57,6 +60,7 @@ UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 # Paths this project adds (anything else changed vs the pin fails the gate).
 _AE = "bench/tritonbench_g/add_example/"
 ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
+                  "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/Line3.lean",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
                                       "launch_manifest.json", "launch_evidence/", "improvement/",
                                       ".gitignore")),
@@ -71,12 +75,15 @@ REGISTRIES = ("bench/tritonbench_g/coverage_review.json", "bench/tritonbench_g/p
 ADDITIVE = {"VeriTile/Triton/Launch.lean": "prefix",
             "VeriTile/Triton/Launch/Composition.lean": "before-final-end",
             "bench/tritonbench_g/add_example/AddExample.lean": "namespace-body",
-            "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "namespace-body"}
+            "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "namespace-body",
+            "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "namespace-body"}
 # Pinned sources that must be byte-identical to the upstream pin.
 PINNED_EXACT = ("bench/tritonbench_g/add_example/add_example.py",
                 "bench/tritonbench_g/add_example/README.md",
                 "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
-                "bench/tritonbench_g/vector_addition_custom/README.md")
+                "bench/tritonbench_g/vector_addition_custom/README.md",
+                "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
+                "bench/tritonbench_g/relu_strided_buffer/README.md")
 PINNED_MATHLIB = "8a178386ffc0f5fef0b77738bb5449d50efeea95"
 HEADLINES = ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
              "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable",
@@ -110,11 +117,25 @@ AUDIT_TARGETS = [
      + [f"VeriTile.Triton.Elementwise2.{t}" for t in (
         "checkRank1_ok", "checkRank1_complete", "launchDim0_eq", "launchDim0_not_covered")],
      ["add_kernel_correctness", "add_kernel_launch_correctness", "custom_add_correctness"]),
+    ("bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
+     "VeriTile.Bench.TritonBenchG.ReluStridedBuffer",
+     [f"VeriTile.Bench.TritonBenchG.ReluStridedBuffer.{t}" for t in (
+        "relu_wrapper_one_tile_correctness", "relu_one_tile_program_run",
+        "relu_wrong_stride_reads_wrong_element", "relu_strided_buffer_one_tile_io_correctness")]
+     + [f"VeriTile.Triton.{t}" for t in (
+        "StridedUnary.check_ok", "StridedUnary.check_complete", "StridedUnary.Pre.derived",
+        "StridedUnary.Pre.i32_offset_toInt", "Blocked1D.toLine_bijective",
+        "Blocked1D.withGridIndex_toLine", "Blocked1D.liftFrames_disjoint",
+        "Blocked1D.mergeFrames_liftFrames", "Blocked1D.liftFrames_robust")],
+     ["relu_strided_buffer_one_tile_io_correctness", "relu_wrapper_one_tile_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
                             "w2_launch_accepted", "w2_inputs_not_covered", "w2_wrapper_rejected",
-                            "w1_launch_accepted", "w1_output_not_covered", "w1_wrapper_rejected"]], []),
+                            "w1_launch_accepted", "w1_output_not_covered", "w1_wrapper_rejected",
+                            "relu_valid_contiguous", "relu_valid_strided", "relu_empty_rejected",
+                            "relu_loop_branch_rejected", "relu_stride_out_of_alloc_rejected",
+                            "relu_overlap_rejected", "relu_f16_rejected"]], []),
 ]
 
 # Protected surface: printed from the elaborated environment and compared
@@ -210,7 +231,11 @@ def sha(p: Path) -> str:
 
 
 def input_hashes(root: Path = REPO) -> dict:
-    files = NEW_LEAN + ["VeriTile/Triton/Launch.lean",
+    return {f: sha(root / f) for f in input_files() if (root / f).exists()}
+
+
+def input_files() -> list:
+    return NEW_LEAN + ["VeriTile/Triton/Launch.lean",
                         "bench/tritonbench_g/add_example/add_example.py",
                         "bench/tritonbench_g/add_example/CONTRACT.md",
                         "bench/tritonbench_g/add_example/launch_manifest.json",
@@ -220,11 +245,12 @@ def input_hashes(root: Path = REPO) -> dict:
                         "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json",
                         "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
                         "bench/tritonbench_g/vector_addition_custom/launch_manifest.json",
+                        "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
                         "scripts/launch_check.py", "scripts/launch_local_check.py",
+                        "scripts/launch_invoke.py",
                         "scripts/launch_emulate.py", "scripts/launch_mutation_suite.py",
                         "scripts/test_launch_check.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
-    return {f: sha(root / f) for f in files if (root / f).exists()}
 
 
 class Step:
@@ -633,6 +659,21 @@ def main(argv=None) -> int:
                   REPO / "scripts", a.timeout, logs / "adapter_tests.log")
     steps[s.key] = s.done("passed" if rc == 0 else "failed", str(logs / "adapter_tests.log"),
                           out.strip().splitlines()[-1] if out.strip() else f"rc={rc}")
+
+    # L7 invocation mirror ---------------------------------------------------
+    s = Step("invocation_mirror", "scripts/launch_invoke.py: Python mirrors of Elementwise2.check / "
+             "checkRank1 / StridedUnary.check agree with the Lean definitions (#eval) on randomized "
+             "near-valid and adversarial metadata",
+             "the runtime path uses the mirror; trusted by this differential test, not proved")
+    rc1, o1 = run([sys.executable, "scripts/launch_invoke.py", "--differential", "--cases", "800",
+                   "--out", str(logs / "invoke_differential.json")], REPO, a.timeout,
+                  logs / "invoke_differential.log")
+    rc2, o2 = run([sys.executable, "scripts/launch_invoke.py", "--differential-strided", "--cases",
+                   "800", "--out", str(logs / "invoke_differential_strided.json")], REPO, a.timeout,
+                  logs / "invoke_differential_strided.log")
+    steps[s.key] = s.done("passed" if rc1 == 0 and rc2 == 0 else "failed",
+                          str(logs / "invoke_differential.json"),
+                          f"elementwise rc={rc1}, strided rc={rc2} (0 = no mismatch)")
 
     local_ok = all(st.status == "passed" for st in steps.values())
     hashes = input_hashes(root)  # hashes of the copy that was actually verified

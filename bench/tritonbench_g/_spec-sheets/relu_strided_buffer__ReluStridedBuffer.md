@@ -398,6 +398,112 @@ def taskIndex (tile_id0 tile_size0 : Nat) (i : Fin tile_size0) : Nat :=
 ```
 </details>
 
+## Public theorem: `relu_wrapper_one_tile_correctness`
+
+<details><summary>docstring</summary>
+
+```
+/-- **Whole-wrapper headline (strided ReLU, one-tile branch).** For rank-1
+tensors accepted by the checker, input and output in distinct regions, and an
+input whose logical element `k` (at element offset `k * in_stride` from the
+view's data pointer) reads `xs k`:
+
+1. every logical output element `k < out.numel`, at `k * out_stride`, holds
+   `relu (xs k)`, and every other cell is unchanged — in particular the gap
+   cells between strided outputs and the whole input;
+2. every program is trace-safe for bounds covering each tensor's own strided
+   extent `(s0 - 1) * stride + 1`;
+3. running the programs serially in any complete order gives the same result;
+4. every launched block-pointer offset `pid * tile + i` is the same in
+   two's-complement `i32` as in ℕ. -/
+```
+</details>
+
+**Statement:**
+```lean
+specification relu_wrapper_one_tile_correctness
+    (x out : TensorMeta) (hc : StridedUnary.check (StridedUnary.launch x out) = Bool.true)
+    (in0_ptr out0_ptr : RegionName) (hne : in0_ptr ≠ out0_ptr)
+    (s : BlockState) (xs : Nat → ℝ)
+    (hx : ∀ k, k < out.numel →
+      s.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k) :
+    Kernel.LaunchCorrectFramed
+        ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+          (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+          (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+          (StridedUnary.launch x out).tilesPerCta (StridedUnary.launch x out).tile).toAlgKernel)
+        { dims := (StridedUnary.launch x out).grid } s
+        (fun k : Nat => if k < out.numel then
+          some (out0_ptr, k * (StridedUnary.launch x out).outStride) else none)
+        (fun k => TiledActivation.relu (xs k)) ∧
+      (∀ bounds : RegionBounds,
+        ((StridedUnary.launch x out).s0 - 1) * (StridedUnary.launch x out).inStride
+          < bounds in0_ptr →
+        ((StridedUnary.launch x out).s0 - 1) * (StridedUnary.launch x out).outStride
+          < bounds out0_ptr →
+        ∀ idx : GridIndex { dims := (StridedUnary.launch x out).grid },
+          Kernel.TraceSafe bounds
+            ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+              (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+              (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+              (StridedUnary.launch x out).tilesPerCta
+              (StridedUnary.launch x out).tile).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      (∀ L : List (GridIndex { dims := (StridedUnary.launch x out).grid }),
+        L.Nodup → (∀ idx, idx ∈ L) →
+        ∃ m, Kernel.runSerial
+            ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+              (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+              (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+              (StridedUnary.launch x out).tilesPerCta
+              (StridedUnary.launch x out).tile).toAlgKernel) s L s.mem = some m ∧
+          (∀ k, k < out.numel → Kernel.memReal m out0_ptr
+            (k * (StridedUnary.launch x out).outStride) = TiledActivation.relu (xs k)) ∧
+          (∀ r o, ¬ (r = out0_ptr ∧ ∃ k, k < out.numel ∧
+              k * (StridedUnary.launch x out).outStride = o) → m r o = s.mem r o)) ∧
+      (∀ pid i, pid < (StridedUnary.launch x out).numCtas → i < (StridedUnary.launch x out).tile →
+        (BitVec.ofNat 32 pid * BitVec.ofNat 32 (StridedUnary.launch x out).tile
+            + BitVec.ofNat 32 i).toInt
+          = ((pid * (StridedUnary.launch x out).tile + i : Nat) : Int))
+```
+
+**Assumptions / layout contracts:**
+- `hc : StridedUnary.check (StridedUnary.launch x out) = Bool.true`
+- `hne : in0_ptr ≠ out0_ptr`
+- `xs : Nat → ℝ`
+
+**Closed-form spec defs (transitive):** `relu_forward_kernel_rank_1_one_tile_surface`
+
+<details><summary><code>relu_forward_kernel_rank_1_one_tile_surface</code></summary>
+
+```
+/-- Faithful transcription of `relu_strided_buffer.py`'s
+`relu_forward_kernel_rank_1`, specialized to the `one_tile_per_cta = true`
+(monolithic) branch: one `tile_size0`-wide tile per program, block-pointer
+load/store with `boundary_check` on axis 0, `relu_forward` inlined as
+`tl.where(in0 > 0, in0, 0)`. -/
+```
+```lean
+def relu_forward_kernel_rank_1_one_tile_surface
+    (in0_ptr out0_ptr : RegionName)
+    (in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 : Nat) :
+    ComputeKernel := triton {
+  pid = tl.program_id(0)
+  num_tiles0 = tl.cdiv($(s0), $(tile_size0))
+  tile_id = pid
+  tile_id0 = tile_id
+  offset0 = tile_id0 * $(tile_size0)
+  in0_bptr = tl.make_block_ptr(base=in0_ptr, shape=($(s0)), strides=($(in0_stride0)),
+    offsets=(offset0), block_shape=($(tile_size0)), order=(0))
+  in0 = (tl.load(in0_bptr, boundary_check=([0] : List Nat))).to(in0_ptr.type.element_ty)
+  out0 = tl.where(in0 > 0, in0, 0)
+  out0_bptr = tl.make_block_ptr(base=out0_ptr, shape=($(s0)), strides=($(out0_stride0)),
+    offsets=(offset0), block_shape=($(tile_size0)), order=(0))
+  tl.store(out0_bptr, (out0).to(out0_bptr.type.element_ty), boundary_check=([0] : List Nat))
+}
+```
+</details>
+
 ## Also present (pinned special-case summaries)
 - `relu_one_tile_compute_correct`
 - `relu_grid_stride_compute_correct`

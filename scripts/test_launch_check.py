@@ -145,6 +145,54 @@ class WrapperRecognition(unittest.TestCase):
         self.assertEqual((w.block, w.grid_kind, w.n_source), (16, "cdiv", "c#dim0"))
 
 
+class StridedReluRecognition(unittest.TestCase):
+    RELU = REPO / "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py"
+
+    def setUp(self):
+        import launch_invoke
+        self.I = launch_invoke
+        self.src = self.RELU.read_text()
+
+    def test_pinned_wrapper_recognized(self):
+        r = self.I.recognize_relu(self.src)
+        self.assertEqual(r["binding"]["in0_stride0"], "in0_strides[0]")
+        self.assertEqual(r["binding"]["out0_stride0"], "out0_strides[0]")
+
+    def test_wrong_stride_argument_rejected(self):
+        src = self.src.replace("in0_strides[0], # stride for in0", "out0_strides[0], # stride for in0")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_stride_from_other_tensor_rejected(self):
+        src = self.src.replace("in0_strides = in0.stride()", "in0_strides = out0.stride()")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_task_space_rebinding_rejected(self):
+        src = self.src.replace("shape[0], # task indexing space", "num_tasks, # task indexing space")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_grid_cap_change_rejected(self):
+        src = self.src.replace("num_ctas = min(65536, num_tiles)", "num_ctas = min(1024, num_tiles)")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_tile_heuristic_change_rejected(self):
+        src = self.src.replace("tile_sizes = heuristics_for_tile_size(512, *shape)",
+                               "tile_sizes = heuristics_for_tile_size(1024, *shape)")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_mirror_nonempty_and_negative_stride(self):
+        T = self.I.TensorMeta
+        x = T(4096, 4, (0,), (1,), 0, "f32")
+        self.assertIn("S3 nonempty", [n for n, ok in self.I.strided_obligations(x, x) if not ok])
+        y = T(4096, 4, (10,), (-1,), 10, "f32")
+        self.assertEqual(self.I.strided_obligations(y, T(65536, 4, (10,), (1,), 10, "f32")),
+                         [("S5 pos_strides (negative stride)", False)])
+
+
 class WrapperObligations(unittest.TestCase):
     def test_empty_like_variant_recognized(self):
         src = (REPO / "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py").read_text()

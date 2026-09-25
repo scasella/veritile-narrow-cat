@@ -1,6 +1,6 @@
 # Spec-sheet index
 
-- 173 kernels, 347 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
+- 173 kernels, 350 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
 - Ranked by **review-cost** proxy `score = 3·defs + flat_offset_reads + stmt_lines + hyps` (hardest specs to audit first). Documented single-read element accessors (docstring + body = one `readMem`, optionally boundary-masked) are exempt from `flat_offset_reads` and count 1 (not 3) in the `defs` term — they are readability aids, not tax.
 
 | score | kernel | defs | flat-reads | stmt-lines | hyps | flags |
@@ -43,6 +43,7 @@
 | 125 | [kldiv_ops__KldivOps.md](kldiv_ops__KldivOps.md) | 13 | 0 | 82 | 4 |  |
 | 124 | [fused_recurrent_hgrn__FusedRecurrentHgrn.md](fused_recurrent_hgrn__FusedRecurrentHgrn.md) | 20 | 0 | 70 | 2 |  |
 | 123 | [int_scaled_matmul__IntScaledMatmul.md](int_scaled_matmul__IntScaledMatmul.md) | 26 | 0 | 44 | 3 |  |
+| 122 | [relu_strided_buffer__ReluStridedBuffer.md](relu_strided_buffer__ReluStridedBuffer.md) | 6 | 0 | 97 | 9 |  |
 | 121 | [fused_rwkv6_kernel__FusedRwkv6Kernel.md](fused_rwkv6_kernel__FusedRwkv6Kernel.md) | 20 | 0 | 64 | 3 |  |
 | 120 | [attention_fwd_triton2__AttentionFwdTriton2.md](attention_fwd_triton2__AttentionFwdTriton2.md) | 19 | 5 | 49 | 9 |  |
 | 119 | [parallel_retention_attention__ParallelRetentionAttention.md](parallel_retention_attention__ParallelRetentionAttention.md) | 29 | 0 | 35 | 11 |  |
@@ -72,6 +73,7 @@
 | 90 | [sgmv_expand_slice__SgmvExpandSlice.md](sgmv_expand_slice__SgmvExpandSlice.md) | 17 | 0 | 39 | 4 |  |
 | 89 | [attention_score__AttentionScore.md](attention_score__AttentionScore.md) | 18 | 0 | 35 | 6 |  |
 | 89 | [rotary_emb__RotaryEmb.md](rotary_emb__RotaryEmb.md) | 12 | 0 | 49 | 4 |  |
+| 86 | [add_example__AddExample.md](add_example__AddExample.md) | 2 | 0 | 69 | 11 |  |
 | 86 | [attention_kernel_aligned__AttentionKernelAligned.md](attention_kernel_aligned__AttentionKernelAligned.md) | 17 | 0 | 31 | 10 |  |
 | 85 | [context_attn_nopad__ContextAttnNopad.md](context_attn_nopad__ContextAttnNopad.md) | 20 | 0 | 23 | 8 |  |
 | 84 | [matmul_dequantize_int4__MatmulDequantizeInt4.md](matmul_dequantize_int4__MatmulDequantizeInt4.md) | 22 | 0 | 22 | 0 |  |
@@ -91,7 +93,6 @@
 | 76 | [matmul_tma__MatmulTma.md](matmul_tma__MatmulTma.md) | 9 | 0 | 49 | 4 |  |
 | 76 | [reversed_cumsum_scalar__ReversedCumsumScalar.md](reversed_cumsum_scalar__ReversedCumsumScalar.md) | 13 | 0 | 37 | 2 |  |
 | 75 | [attention_fwd_triton1__AttentionFwdTriton1.md](attention_fwd_triton1__AttentionFwdTriton1.md) | 9 | 0 | 38 | 10 |  |
-| 75 | [relu_strided_buffer__ReluStridedBuffer.md](relu_strided_buffer__ReluStridedBuffer.md) | 6 | 0 | 53 | 6 |  |
 | 75 | [rmsnorm_implementation__RmsnormImplementation.md](rmsnorm_implementation__RmsnormImplementation.md) | 11 | 0 | 38 | 8 |  |
 | 74 | [matmul_leakyrelu__MatmulLeakyrelu.md](matmul_leakyrelu__MatmulLeakyrelu.md) | 16 | 0 | 23 | 7 |  |
 | 74 | [matmul_leakyrelu_fp8__MatmulLeakyreluFp8.md](matmul_leakyrelu_fp8__MatmulLeakyreluFp8.md) | 16 | 0 | 23 | 7 |  |
@@ -105,6 +106,7 @@
 | 61 | [llama_ff_triton__LlamaFfTriton.md](llama_ff_triton__LlamaFfTriton.md) | 15 | 0 | 18 | 4 |  |
 | 61 | [rms_rbe_matmul__RmsRbeMatmul.md](rms_rbe_matmul__RmsRbeMatmul.md) | 15 | 0 | 18 | 4 |  |
 | 61 | [rmsnorm_fused_llama__RmsnormFusedLlama.md](rmsnorm_fused_llama__RmsnormFusedLlama.md) | 11 | 0 | 23 | 5 |  |
+| 60 | [vector_addition_custom__VectorAdditionCustom.md](vector_addition_custom__VectorAdditionCustom.md) | 2 | 0 | 45 | 9 |  |
 | 59 | [reversed_cumsum__ReversedCumsum.md](reversed_cumsum__ReversedCumsum.md) | 8 | 0 | 34 | 1 |  |
 | 56 | [batched_vecmat_mult__BatchedVecmatMult.md](batched_vecmat_mult__BatchedVecmatMult.md) | 10 | 0 | 23 | 7 |  |
 | 56 | [rmsnorm_triton__RmsnormTriton.md](rmsnorm_triton__RmsnormTriton.md) | 9 | 0 | 20 | 9 |  |
@@ -125,8 +127,6 @@
 | 44 | [cross_entropy2__CrossEntropy2.md](cross_entropy2__CrossEntropy2.md) | 6 | 0 | 21 | 5 |  |
 | 44 | [cross_entropy_ops__CrossEntropyOps.md](cross_entropy_ops__CrossEntropyOps.md) | 6 | 0 | 21 | 5 |  |
 | 41 | [matmul_dequant_int4__MatmulDequantInt4.md](matmul_dequant_int4__MatmulDequantInt4.md) | 8 | 0 | 19 | 0 |  |
-| 40 | [add_example__AddExample.md](add_example__AddExample.md) | 2 | 0 | 29 | 5 |  |
-| 40 | [vector_addition_custom__VectorAdditionCustom.md](vector_addition_custom__VectorAdditionCustom.md) | 2 | 0 | 29 | 5 |  |
 | 37 | [chunk_cumsum_kernel__ChunkCumsumKernel.md](chunk_cumsum_kernel__ChunkCumsumKernel.md) | 4 | 0 | 21 | 4 |  |
 | 36 | [cross_entropy1__CrossEntropy1.md](cross_entropy1__CrossEntropy1.md) | 5 | 0 | 18 | 3 |  |
 | 36 | [matrix_reduction__MatrixReduction.md](matrix_reduction__MatrixReduction.md) | 6 | 0 | 17 | 1 |  |
