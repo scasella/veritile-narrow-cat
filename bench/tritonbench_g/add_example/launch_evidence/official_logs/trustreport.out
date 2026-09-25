@@ -1,0 +1,359 @@
+VeriTile.Examples.approx_gelu_kernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardRealMasked_allVisible: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardReal_eq_reverseMode: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionCausal_sum_eq_attentionBackwardRealCausal: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionMasked_sum_eq_attentionBackwardRealMasked: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQBoundaryDKernel_gridLaunched_backward_correct_of_owner_tail: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQBoundaryKernel_gridLaunched_backward_correct_of_owner_tail: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalBoundaryDKernel_gridLaunched_backward_correct_of_owner_tail: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalBoundaryKernel_gridLaunched_backward_correct_of_owner_tail: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalKernel_gridLaunched_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalKernel_statefulTrace_blockContribution_from_inputs: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQCausalKernel_tailStores_readback_from_inputs: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQKernel_gridLaunched_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQKernel_gridLaunched_masked_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQKernel_statefulTrace_blockContribution_from_inputs_of_exec: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardAtomicDQKernel_tailStores_readback_from_inputs: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardStrippedKernelStrided_realizes: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardStrippedKernelStrided_realizes_4D_fullSequence: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardStrippedKernelStrided_realizes_4D_queryBlock: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.fa1BackwardStrippedKernel_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_boundaryD_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_boundary_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_causalBoundaryD_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_causalBoundary_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_causal_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_masked_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.gridLaunchedAtomic_masked_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.softmax_jvp_identity: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.streamingLSE_eq_lseReal: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardReal4DMasked_slice: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardRealBoundaryD_eq_padded: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardRealBoundary_eq_masked: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardRealCausalBoundaryD_eq_padded: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.attentionBackwardRealCausalBoundary_eq_masked: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.causalBackward_block_tile_bridges_complete: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.causalBackward_tile_bridges_complete: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionBoundaryD_sum_eq_attentionBackwardRealBoundaryD: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionBoundary_sum_eq_attentionBackwardRealBoundary: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionCausalBoundaryD_sum_eq_attentionBackwardRealCausalBoundaryD: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.dQBlockContributionCausalBoundary_sum_eq_attentionBackwardRealCausalBoundary: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Backward.maskedBackward_block_tile_bridges_complete: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_forward_correct_4D_causal_views: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_forward_correct_4D_views: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_boundaryD_refines_naive_reference_views: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_causal_boundaryD_refines_naive_reference_views: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.gridLaunchedAtomic_alibiSlidingSoftcap_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.gridLaunchedAtomic_alibi_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.gridLaunchedAtomic_scoreVariant_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.gridLaunchedAtomic_slidingWindow_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.gridLaunchedAtomic_softcap_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.attentionBackwardRealAlibiSlidingSoftcap_eq_scoreVariant: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.attentionBackwardRealAlibi_eq_scoreVariant: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.attentionBackwardRealScoreVariant_dotScore_eq_masked: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.attentionBackwardRealSlidingWindow_eq_scoreVariant: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.attentionBackwardRealSoftcap_eq_scoreVariant: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.dQBlockContributionAlibi_sum_eq_attentionBackwardRealAlibi: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.dQBlockContributionScoreVariant_sum_eq_attentionBackwardRealScoreVariant: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.dQBlockContributionSlidingWindow_sum_eq_attentionBackwardRealSlidingWindow: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.FA1Score.dQBlockContributionSoftcap_sum_eq_attentionBackwardRealSoftcap: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_backward_eq_fa2_backward: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_backward_eq_fa2_backward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_causal_backward_eq_fa2_causal_backward: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_causal_backward_eq_fa2_causal_backward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa1_eq_fa2_two_block_forward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQCausalKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQCausalTwoBlockKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQCausalTwoBlockPartitionKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQCausalTwoBlockPartitionKernel_gridLaunched_backward_correct_4D_slice: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQCausalTwoBlockPartitionKernel_statefulTrace_blockContribution_from_inputs: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQKernel_gridLaunched_dQ_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQTwoBlockKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQTwoBlockPartitionKernel_gridLaunched_backward_correct: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQTwoBlockPartitionKernel_gridLaunched_backward_correct_4D_slice: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2BackwardAtomicDQTwoBlockPartitionKernel_statefulTrace_blockContribution_from_inputs_of_exec: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarFragmentSummaryKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarMergedMaxKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarMergedMaxKernel_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarScoreMaxKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarScoreMaxKernel_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal4D_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal_of_score_producers_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal_of_score_value_max_merged_producers_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal_of_score_value_max_producers_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal_of_score_value_producers_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_attentionReal_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoBlockForwardKernel_forAll_attentionReal4D_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoFragmentMergeKernel_attentionReal_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarTwoFragmentMergeKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarValueFragmentKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarValueFragmentKernel_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScalarValueFragmentKernel_twoBlock_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentKernel_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentKernel_scaledScore_correct_view: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentKernel_scaledScore_row_loaded: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentKernel_scaledScore_row_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentKernel_twoBlock_rows_loaded_of_agrees: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2ScoreFragmentSpec_eq_scaledScore: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_delayed_rescale_sum_eq: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_delayed_rescale_weighted_sum_eq: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_forward_correct_4D_views: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_masked_sum_eq_zero_of_all_invisible: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_masked_weighted_sum_eq_zero_of_all_invisible: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_score_fragment_tile_eq: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_backward_dQ4D_eq_fa1_backward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_backward_dQ4D_eq_fa2_backward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_backward_dQ_eq_fa1_backward: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_backward_dQ_eq_fa2_backward: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_causal_backward_dQ4D_eq_fa2_causal_backward4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_causal_backward_dQ_eq_fa2_causal_backward: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_forward_eq_attentionReal: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_block_forward_eq_attentionReal4D: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_fragment_attention_ratio_eq_flat: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_fragment_denominator_merge_eq_flat: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Examples.fa2_two_fragment_numerator_merge_eq_flat: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Blocked1D.launch_of_frames: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound, Classical.choice])
+VeriTile.Triton.Blocked1DLaunch.check_complete: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Blocked1DLaunch.check_ok: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound, Classical.choice])

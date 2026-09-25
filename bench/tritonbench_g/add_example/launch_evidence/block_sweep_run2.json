@@ -16,24 +16,24 @@
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
-  "bench/tritonbench_g/add_example/AddExample.lean": "2fb9978d20e2c97b7279a395dcfa3c5f68ccadc50dcf9ffaaa54d26ca0d6d16f",
+  "bench/tritonbench_g/add_example/AddExample.lean": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
   "bench/tests/Blocked1DLaunchWitnesses.lean": "1a8f82f8a9e6b9a1b01b83445a336c152783e08d26c91dc113f6bc8d1af97ef8",
   "VeriTile/Triton/Launch.lean": "7604496333658faefa002a70c6dd423a017fd7cdb28768f5be9d5863d4d1d34f",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
-  "bench/tritonbench_g/add_example/CONTRACT.md": "cc53e79ea459b7ffcdb5e72b55636cebc1c676a7ce9f9289dec23d1b93945775",
-  "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "0fbb5505921f969c1739a49ae31539bbad084744fb3893b4523b01251dc9c6b5",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
   "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
   "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
   "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
   "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
   "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
-  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
-  "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "36ea0d7f6125567d0d546e1dc90d3c2bce321096d178ee1285151c6069c1291c",
+  "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8",
   "scripts/launch_local_check.py": "a0909f8236dfa531afff77e3caa8d44b5d22c335098790eb1501ad523317b645",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
-  "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "a1e2a6aa10bb6c9fd4d41a63934ed0dbbde46a6b072a4483062da3bddfc2f1c2",
+  "scripts/launch_mutation_suite.py": "3e41e6947e3baa4986f78e55f1d83fc05658b7871dca78bd05bf6a0f25e7de6e",
+  "scripts/test_launch_check.py": "c6b48520d331a1d47b37ee94e8cc428f38b33eb235c21a45a8a1b29718635507",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
@@ -93,12 +93,12 @@
      "kernel": {
       "median_ms": 0.02457600086927414,
       "p20_ms": 0.023552000522613525,
-      "p80_ms": 0.02457600086927414,
+      "p80_ms": 0.025599999353289604,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 31.99999886813267,
      "zeros_like_wrapper": {
-      "median_ms": 0.026623999699950218,
+      "median_ms": 0.025647999718785286,
       "p20_ms": 0.025599999353289604,
       "p80_ms": 0.026623999699950218,
       "method": "triton.testing.do_bench(25, 200)"
@@ -113,44 +113,44 @@
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.24985599517822266,
-      "p20_ms": 0.24985599517822266,
-      "p80_ms": 0.25088000297546387,
+      "median_ms": 0.2457599937915802,
+      "p20_ms": 0.24473600089550018,
+      "p80_ms": 0.2457599937915802,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 50.36065670957621,
+     "kernel_GBps": 51.200001293420826,
      "zeros_like_wrapper": {
-      "median_ms": 0.2611199915409088,
-      "p20_ms": 0.2611199915409088,
-      "p80_ms": 0.26214399933815,
+      "median_ms": 0.25600001215934753,
+      "p20_ms": 0.2549760043621063,
+      "p80_ms": 0.25702399015426636,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.2529279887676239,
-      "p20_ms": 0.2519040107727051,
-      "p80_ms": 0.2529279887676239,
+      "median_ms": 0.24371199309825897,
+      "p20_ms": 0.24371199309825897,
+      "p80_ms": 0.24473600089550018,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 3.5594239234924316,
-      "p20_ms": 3.5583999156951904,
-      "p80_ms": 3.560447931289673,
+      "median_ms": 3.575808048248291,
+      "p20_ms": 3.5713024139404297,
+      "p80_ms": 3.5768320560455322,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 56.56156623301632,
+     "kernel_GBps": 56.3024047385948,
      "zeros_like_wrapper": {
-      "median_ms": 3.8143999576568604,
-      "p20_ms": 3.813375949859619,
-      "p80_ms": 3.8154239654541016,
+      "median_ms": 3.8307840824127197,
+      "p20_ms": 3.8297600746154785,
+      "p80_ms": 3.831808090209961,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 3.555327892303467,
-      "p20_ms": 3.5543038845062256,
-      "p80_ms": 3.555327892303467,
+      "median_ms": 3.597823977470398,
+      "p20_ms": 3.5862527847290036,
+      "p80_ms": 3.626790380477905,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -234,44 +234,44 @@
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.10956799983978271,
-      "p20_ms": 0.1085439994931221,
-      "p80_ms": 0.11059200018644333,
+      "median_ms": 0.11059200018644333,
+      "p20_ms": 0.10956799983978271,
+      "p80_ms": 0.11161600053310394,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 114.84112166325508,
+     "kernel_GBps": 113.77777758596365,
      "zeros_like_wrapper": {
       "median_ms": 0.11468800157308578,
       "p20_ms": 0.11366400122642517,
-      "p80_ms": 0.11468800157308578,
+      "p80_ms": 0.1157120019197464,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.1085439994931221,
-      "p20_ms": 0.10814719945192337,
-      "p80_ms": 0.1085439994931221,
+      "median_ms": 0.10956799983978271,
+      "p20_ms": 0.1085439994931221,
+      "p80_ms": 0.11059200018644333,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 1.07315194606781,
-      "p20_ms": 1.0711040496826172,
-      "p80_ms": 1.0758143663406372,
+      "median_ms": 1.0864640474319458,
+      "p20_ms": 1.0838016271591187,
+      "p80_ms": 1.0895359516143799,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 187.60306286327008,
+     "kernel_GBps": 185.30442169335635,
      "zeros_like_wrapper": {
-      "median_ms": 1.3230079412460327,
-      "p20_ms": 1.3209600448608398,
-      "p80_ms": 1.3250559568405151,
+      "median_ms": 1.3352960348129272,
+      "p20_ms": 1.3332480192184448,
+      "p80_ms": 1.3383680582046509,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 1.070080041885376,
-      "p20_ms": 1.0670080184936523,
-      "p80_ms": 1.0782719850540161,
+      "median_ms": 1.112064003944397,
+      "p20_ms": 1.1079679727554321,
+      "p80_ms": 1.120255947113037,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -341,13 +341,13 @@
      "kernel_GBps": 85.33333031502046,
      "zeros_like_wrapper": {
       "median_ms": 0.011264000087976456,
-      "p20_ms": 0.01027199998497963,
+      "p20_ms": 0.010239999741315842,
       "p80_ms": 0.01228800043463707,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
       "median_ms": 0.009216000325977802,
-      "p20_ms": 0.009216000325977802,
+      "p20_ms": 0.008191999979317188,
       "p80_ms": 0.010239999741315842,
       "method": "triton.testing.do_bench(25, 200)"
      }
@@ -355,44 +355,44 @@
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.06451199948787689,
+      "median_ms": 0.0655359998345375,
       "p20_ms": 0.06348799914121628,
-      "p80_ms": 0.06656000018119812,
+      "p80_ms": 0.06758400052785873,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 195.04762059598823,
+     "kernel_GBps": 192.0000004847534,
      "zeros_like_wrapper": {
-      "median_ms": 0.07168000191450119,
-      "p20_ms": 0.06963200122117996,
-      "p80_ms": 0.0727040022611618,
+      "median_ms": 0.0727040022611618,
+      "p20_ms": 0.07065600156784058,
+      "p80_ms": 0.07475200295448303,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.06348799914121628,
-      "p20_ms": 0.06143999844789505,
-      "p80_ms": 0.0655359998345375,
+      "median_ms": 0.062463998794555664,
+      "p20_ms": 0.060416001826524734,
+      "p80_ms": 0.06451199948787689,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.8944640159606934,
-      "p20_ms": 0.8884223937988281,
-      "p80_ms": 0.9000959992408752,
+      "median_ms": 0.8908799886703491,
+      "p20_ms": 0.8857600092887878,
+      "p80_ms": 0.8970239758491516,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 225.080705771899,
+     "kernel_GBps": 225.98620977050203,
      "zeros_like_wrapper": {
-      "median_ms": 1.1489280462265015,
-      "p20_ms": 1.1438080072402954,
-      "p80_ms": 1.1560959815979004,
+      "median_ms": 1.149440050125122,
+      "p20_ms": 1.1440128087997437,
+      "p80_ms": 1.1581439971923828,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
       "median_ms": 0.8908799886703491,
       "p20_ms": 0.8847360014915466,
-      "p80_ms": 0.8960000276565552,
+      "p80_ms": 0.8970239758491516,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -456,13 +456,13 @@
      "kernel": {
       "median_ms": 0.009216000325977802,
       "p20_ms": 0.008191999979317188,
-      "p80_ms": 0.009216000325977802,
+      "p80_ms": 0.010239999741315842,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 85.33333031502046,
      "zeros_like_wrapper": {
       "median_ms": 0.011264000087976456,
-      "p20_ms": 0.010239999741315842,
+      "p20_ms": 0.011264000087976456,
       "p80_ms": 0.01228800043463707,
       "method": "triton.testing.do_bench(25, 200)"
      },
@@ -478,7 +478,7 @@
      "kernel": {
       "median_ms": 0.06656000018119812,
       "p20_ms": 0.06451199948787689,
-      "p80_ms": 0.06758400052785873,
+      "p80_ms": 0.06860800087451935,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 189.0461533315083,
@@ -489,31 +489,31 @@
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.06348799914121628,
-      "p20_ms": 0.06143999844789505,
-      "p80_ms": 0.06451199948787689,
+      "median_ms": 0.06451199948787689,
+      "p20_ms": 0.062463998794555664,
+      "p80_ms": 0.0655359998345375,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.8960000276565552,
-      "p20_ms": 0.8888319730758667,
-      "p80_ms": 0.9015488147735595,
+      "median_ms": 0.8929280042648315,
+      "p20_ms": 0.8873984217643738,
+      "p80_ms": 0.899071991443634,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 224.69485020727063,
+     "kernel_GBps": 225.46788883136986,
      "zeros_like_wrapper": {
       "median_ms": 1.1489280462265015,
-      "p20_ms": 1.141759991645813,
-      "p80_ms": 1.1538431644439697,
+      "p20_ms": 1.1427839994430542,
+      "p80_ms": 1.1530239582061768,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.8898559808731079,
-      "p20_ms": 0.8857600092887878,
-      "p80_ms": 0.8960000276565552,
+      "median_ms": 0.8878080248832703,
+      "p20_ms": 0.8828927874565125,
+      "p80_ms": 0.8939520120620728,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -575,34 +575,34 @@
     {
      "n": 65536,
      "kernel": {
-      "median_ms": 0.009216000325977802,
-      "p20_ms": 0.009216000325977802,
-      "p80_ms": 0.010239999741315842,
+      "median_ms": 0.008191999979317188,
+      "p20_ms": 0.008191999979317188,
+      "p80_ms": 0.009216000325977802,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 85.33333031502046,
+     "kernel_GBps": 96.0000002423767,
      "zeros_like_wrapper": {
       "median_ms": 0.011264000087976456,
       "p20_ms": 0.010239999741315842,
-      "p80_ms": 0.011264000087976456,
+      "p80_ms": 0.012319999746978283,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.009216000325977802,
-      "p20_ms": 0.009011200256645684,
-      "p80_ms": 0.009420800209045427,
+      "median_ms": 0.008191999979317188,
+      "p20_ms": 0.008191999979317188,
+      "p80_ms": 0.009216000325977802,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.0655359998345375,
+      "median_ms": 0.06656000018119812,
       "p20_ms": 0.06451199948787689,
-      "p80_ms": 0.06656000018119812,
+      "p80_ms": 0.06758400052785873,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 192.0000004847534,
+     "kernel_GBps": 189.0461533315083,
      "zeros_like_wrapper": {
       "median_ms": 0.0727040022611618,
       "p20_ms": 0.07168000191450119,
@@ -610,31 +610,31 @@
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.06348799914121628,
-      "p20_ms": 0.06143999844789505,
-      "p80_ms": 0.06451199948787689,
+      "median_ms": 0.06451199948787689,
+      "p20_ms": 0.06266879886388779,
+      "p80_ms": 0.0655359998345375,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.8831999897956848,
+      "median_ms": 0.8837119936943054,
       "p20_ms": 0.8785920143127441,
-      "p80_ms": 0.8878080248832703,
+      "p80_ms": 0.8878208041191101,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 227.95130698152965,
+     "kernel_GBps": 227.81923685155178,
      "zeros_like_wrapper": {
-      "median_ms": 1.136639952659607,
-      "p20_ms": 1.1325440406799316,
-      "p80_ms": 1.1415551900863647,
+      "median_ms": 1.134592056274414,
+      "p20_ms": 1.1304960250854492,
+      "p80_ms": 1.1397119760513306,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.8775680065155029,
-      "p20_ms": 0.8744959831237793,
-      "p80_ms": 0.8826879858970642,
+      "median_ms": 0.8765439987182617,
+      "p20_ms": 0.8724480271339417,
+      "p80_ms": 0.8806399703025818,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -698,7 +698,7 @@
      "kernel": {
       "median_ms": 0.009216000325977802,
       "p20_ms": 0.008191999979317188,
-      "p80_ms": 0.010239999741315842,
+      "p80_ms": 0.009216000325977802,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 85.33333031502046,
@@ -718,12 +718,12 @@
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.06656000018119812,
+      "median_ms": 0.0655359998345375,
       "p20_ms": 0.06451199948787689,
       "p80_ms": 0.06758400052785873,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 189.0461533315083,
+     "kernel_GBps": 192.0000004847534,
      "zeros_like_wrapper": {
       "median_ms": 0.0727040022611618,
       "p20_ms": 0.07168000191450119,
@@ -732,30 +732,30 @@
      },
      "empty_like_wrapper": {
       "median_ms": 0.0655359998345375,
-      "p20_ms": 0.0636927992105484,
-      "p80_ms": 0.06656000018119812,
+      "p20_ms": 0.06451199948787689,
+      "p80_ms": 0.06758400052785873,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.886784017086029,
-      "p20_ms": 0.8806399703025818,
+      "median_ms": 0.8862720131874084,
+      "p20_ms": 0.881663978099823,
       "p80_ms": 0.8919039964675903,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 227.03001872040824,
+     "kernel_GBps": 227.16117512945553,
      "zeros_like_wrapper": {
-      "median_ms": 1.1407359838485718,
-      "p20_ms": 1.136639952659607,
-      "p80_ms": 1.1466752290725708,
+      "median_ms": 1.146880030632019,
+      "p20_ms": 1.1419647932052612,
+      "p80_ms": 1.1499520540237427,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.8826879858970642,
-      "p20_ms": 0.8785920143127441,
-      "p80_ms": 0.8888319730758667,
+      "median_ms": 0.8847360014915466,
+      "p20_ms": 0.8796160221099854,
+      "p80_ms": 0.8919039964675903,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -825,8 +825,8 @@
      "kernel_GBps": 85.33333031502046,
      "zeros_like_wrapper": {
       "median_ms": 0.011264000087976456,
-      "p20_ms": 0.010239999741315842,
-      "p80_ms": 0.011264000087976456,
+      "p20_ms": 0.011264000087976456,
+      "p80_ms": 0.01228800043463707,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
@@ -839,44 +839,44 @@
     {
      "n": 1048576,
      "kernel": {
-      "median_ms": 0.062463998794555664,
-      "p20_ms": 0.06143999844789505,
-      "p80_ms": 0.06348799914121628,
+      "median_ms": 0.06143999844789505,
+      "p20_ms": 0.060416001826524734,
+      "p80_ms": 0.062463998794555664,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 201.44262683830485,
+     "kernel_GBps": 204.8000051736833,
      "zeros_like_wrapper": {
-      "median_ms": 0.07168000191450119,
+      "median_ms": 0.0727040022611618,
       "p20_ms": 0.07065600156784058,
       "p80_ms": 0.07372800260782242,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.062463998794555664,
-      "p20_ms": 0.06143999844789505,
-      "p80_ms": 0.06348799914121628,
+      "median_ms": 0.06143999844789505,
+      "p20_ms": 0.05959680154919625,
+      "p80_ms": 0.062463998794555664,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.8898559808731079,
+      "median_ms": 0.8903679847717285,
       "p20_ms": 0.8857600092887878,
-      "p80_ms": 0.893337607383728,
+      "p80_ms": 0.8939520120620728,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 226.2462649320653,
+     "kernel_GBps": 226.11616257924624,
      "zeros_like_wrapper": {
       "median_ms": 1.1458560228347778,
-      "p20_ms": 1.1407359838485718,
-      "p80_ms": 1.1489280462265015,
+      "p20_ms": 1.1427839994430542,
+      "p80_ms": 1.1499520540237427,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
       "median_ms": 0.8847360014915466,
-      "p20_ms": 0.881663978099823,
-      "p80_ms": 0.8888319730758667,
+      "p20_ms": 0.8822783827781677,
+      "p80_ms": 0.8878080248832703,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -945,13 +945,13 @@
      },
      "kernel_GBps": 85.33333031502046,
      "zeros_like_wrapper": {
-      "median_ms": 0.011264000087976456,
-      "p20_ms": 0.010239999741315842,
-      "p80_ms": 0.011264000087976456,
+      "median_ms": 0.01228800043463707,
+      "p20_ms": 0.011264000087976456,
+      "p80_ms": 0.013311999849975109,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.009216000325977802,
+      "median_ms": 0.008191999979317188,
       "p20_ms": 0.008191999979317188,
       "p80_ms": 0.009216000325977802,
       "method": "triton.testing.do_bench(25, 200)"
@@ -967,15 +967,15 @@
      },
      "kernel_GBps": 201.44262683830485,
      "zeros_like_wrapper": {
-      "median_ms": 0.07065600156784058,
+      "median_ms": 0.07168000191450119,
       "p20_ms": 0.06963200122117996,
-      "p80_ms": 0.07168000191450119,
+      "p80_ms": 0.0727040022611618,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.06143999844789505,
-      "p20_ms": 0.060416001826524734,
-      "p80_ms": 0.062463998794555664,
+      "median_ms": 0.062463998794555664,
+      "p20_ms": 0.06143999844789505,
+      "p80_ms": 0.06451199948787689,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
@@ -983,21 +983,21 @@
      "n": 16777216,
      "kernel": {
       "median_ms": 0.8919039964675903,
-      "p20_ms": 0.886784017086029,
-      "p80_ms": 0.8960000276565552,
+      "p20_ms": 0.8873984217643738,
+      "p80_ms": 0.894976019859314,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 225.72675175507607,
      "zeros_like_wrapper": {
-      "median_ms": 1.1479040384292603,
-      "p20_ms": 1.1448320150375366,
-      "p80_ms": 1.1510015964508058,
+      "median_ms": 1.1438080072402954,
+      "p20_ms": 1.1397119760513306,
+      "p80_ms": 1.146880030632019,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.8888319730758667,
-      "p20_ms": 0.8857600092887878,
-      "p80_ms": 0.8929280042648315,
+      "median_ms": 0.8878080248832703,
+      "p20_ms": 0.8843263983726501,
+      "p80_ms": 0.8908799886703491,
       "method": "triton.testing.do_bench(25, 200)"
      }
     }
@@ -1059,22 +1059,22 @@
     {
      "n": 65536,
      "kernel": {
-      "median_ms": 0.010239999741315842,
-      "p20_ms": 0.010239999741315842,
-      "p80_ms": 0.011264000087976456,
+      "median_ms": 0.009216000325977802,
+      "p20_ms": 0.009216000325977802,
+      "p80_ms": 0.010239999741315842,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 76.80000194013124,
+     "kernel_GBps": 85.33333031502046,
      "zeros_like_wrapper": {
       "median_ms": 0.01228800043463707,
       "p20_ms": 0.011264000087976456,
-      "p80_ms": 0.01228800043463707,
+      "p80_ms": 0.013311999849975109,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
       "median_ms": 0.010239999741315842,
       "p20_ms": 0.009216000325977802,
-      "p80_ms": 0.011264000087976456,
+      "p80_ms": 0.010239999741315842,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
@@ -1082,41 +1082,41 @@
      "n": 1048576,
      "kernel": {
       "median_ms": 0.060416001826524734,
-      "p20_ms": 0.05939200147986412,
-      "p80_ms": 0.062463998794555664,
+      "p20_ms": 0.058368001133203506,
+      "p80_ms": 0.06143999844789505,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "kernel_GBps": 208.27118014412636,
      "zeros_like_wrapper": {
       "median_ms": 0.06860800087451935,
       "p20_ms": 0.06758400052785873,
-      "p80_ms": 0.06963200122117996,
+      "p80_ms": 0.06860800087451935,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.05939200147986412,
-      "p20_ms": 0.058368001133203506,
-      "p80_ms": 0.060416001826524734,
+      "median_ms": 0.05632000043988228,
+      "p20_ms": 0.055296000093221664,
+      "p80_ms": 0.058368001133203506,
       "method": "triton.testing.do_bench(25, 200)"
      }
     },
     {
      "n": 16777216,
      "kernel": {
-      "median_ms": 0.8898559808731079,
-      "p20_ms": 0.8863744139671326,
-      "p80_ms": 0.8939520120620728,
+      "median_ms": 0.8919039964675903,
+      "p20_ms": 0.8888319730758667,
+      "p80_ms": 0.8960000276565552,
       "method": "triton.testing.do_bench(25, 200)"
      },
-     "kernel_GBps": 226.2462649320653,
+     "kernel_GBps": 225.72675175507607,
      "zeros_like_wrapper": {
-      "median_ms": 1.146880030632019,
+      "median_ms": 1.1479040384292603,
       "p20_ms": 1.1438080072402954,
-      "p80_ms": 1.1509759426116943,
+      "p80_ms": 1.1519999504089355,
       "method": "triton.testing.do_bench(25, 200)"
      },
      "empty_like_wrapper": {
-      "median_ms": 0.8878080248832703,
+      "median_ms": 0.8883199989795685,
       "p20_ms": 0.8847360014915466,
       "p80_ms": 0.8919039964675903,
       "method": "triton.testing.do_bench(25, 200)"
@@ -1136,7 +1136,7 @@
    },
    "torch_x_plus_y_alloc": {
     "median_ms": 0.009216000325977802,
-    "p20_ms": 0.008191999979317188,
+    "p20_ms": 0.009216000325977802,
     "p80_ms": 0.010239999741315842,
     "method": "triton.testing.do_bench(25, 200)"
    }
@@ -1144,15 +1144,15 @@
   {
    "n": 1048576,
    "torch_add_out": {
-    "median_ms": 0.060896001756191254,
+    "median_ms": 0.060416001826524734,
     "p20_ms": 0.05939200147986412,
-    "p80_ms": 0.062463998794555664,
+    "p80_ms": 0.06143999844789505,
     "method": "triton.testing.do_bench(25, 200)"
    },
    "torch_x_plus_y_alloc": {
     "median_ms": 0.062463998794555664,
     "p20_ms": 0.06143999844789505,
-    "p80_ms": 0.06451199948787689,
+    "p80_ms": 0.06348799914121628,
     "method": "triton.testing.do_bench(25, 200)"
    }
   },
@@ -1160,14 +1160,14 @@
    "n": 16777216,
    "torch_add_out": {
     "median_ms": 0.8898559808731079,
-    "p20_ms": 0.886784017086029,
+    "p20_ms": 0.8878080248832703,
     "p80_ms": 0.8939520120620728,
     "method": "triton.testing.do_bench(25, 200)"
    },
    "torch_x_plus_y_alloc": {
-    "median_ms": 0.8857600092887878,
-    "p20_ms": 0.8837119936943054,
-    "p80_ms": 0.8898559808731079,
+    "median_ms": 0.8837119936943054,
+    "p20_ms": 0.881663978099823,
+    "p80_ms": 0.8888319730758667,
     "method": "triton.testing.do_bench(25, 200)"
    }
   }

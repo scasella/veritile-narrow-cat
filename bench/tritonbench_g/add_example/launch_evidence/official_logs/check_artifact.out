@@ -1,0 +1,11 @@
+Official comparator and sandbox tools are available.
+[ok] lake build passes with no sorry warnings
+Comparator: proven library manifest: 121 theorem(s) accepted; logs: /home/proof/VeriTile/Logs/comparator-check-zasdidne/Library-ndm8dp0t
+[ok] official comparator accepts the proven library manifest
+[ok] axioms match whitelist
+[ok] kernel manifest is internally consistent
+[ok] README example links resolve
+[ok] Triton subset/gap docs mention required artifact terms
+115 documented public API references resolved by Lean.
+[ok] documented public API references resolve
+[ok] artifact checks passed

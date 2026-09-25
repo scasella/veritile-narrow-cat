@@ -57,8 +57,10 @@ EOF
 python3 scripts/launch_local_check.py --require-official
 ```
 
-Also run the unmodified upstream release gates; this project did not run or
-alter them: `scripts/check-artifact.sh`, `bench/audit_tritonbench_g.sh`.
+Also run the unmodified upstream release gates (this project did not alter
+them). `scripts/check-artifact.sh` was run in full in the local Linux container
+and passed (`official_logs/check_artifact.out`), together with `TrustReport.lean`
+elaboration; `bench/audit_tritonbench_g.sh` (full corpus) was not run.
 
 ## B. GPU correctness and performance (Linux + NVIDIA CC ≥ 8.0 or AMD ROCm ≥ 6.2)
 
