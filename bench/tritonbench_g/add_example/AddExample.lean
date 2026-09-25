@@ -548,6 +548,213 @@ alignment, input separation, and P1–P10 of the derived launch). W1 (every
 element of `out` is written) and W2 (every input tensor holds the elements
 read) are consequences, not hypotheses. -/
 
+/-- One program of `add_kernel`, from any state whose input cells below `n`
+hold typed real values: it succeeds, writes `xs o + ys o` at every active
+output lane of its block, and changes no other cell. -/
+theorem add_kernel_program_run
+    (in_ptr0 in_ptr1 out_ptr : RegionName) (n B : Nat) (hB : 0 < B)
+    (t : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < n → t.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < n → t.mem in_ptr1 i = MemCell.real (ys i)) :
+    ∃ f, exec ((add_kernel in_ptr0 in_ptr1 out_ptr n B).toAlgKernel) t = some f ∧
+      (∀ o, o < n → o / B = t.pid → f.readMem out_ptr o = xs o + ys o) ∧
+      (∀ r o, ¬ Blocked1D.blockWrites out_ptr n B t.pid (r, o) → f.mem r o = t.mem r o) := by
+  obtain ⟨f, hexec, hvals, hframe⟩ := add_kernel_region_run in_ptr0 in_ptr1 out_ptr n B t
+    (fun l => xs (t.pid * B + l.val)) (fun l => ys (t.pid * B + l.val))
+    (fun l hl => by simp [BlockState.readMem, hx _ hl])
+    (fun l hl => by simp [BlockState.readMem, hy _ hl])
+  refine ⟨f, hexec, fun o ho hd => ?_, fun r o hno => ?_⟩
+  · have hdm := Nat.div_add_mod' o B
+    rw [hd] at hdm
+    have := hvals ⟨o % B, Nat.mod_lt o hB⟩ (show t.pid * B + o % B < n by omega)
+    simp only at this
+    rw [hdm] at this
+    exact this
+  · apply hframe
+    by_cases hr : r = out_ptr
+    · refine Or.inr fun j hj ho => hno ?_
+      rw [Blocked1D.blockWrites_iff hB]
+      refine ⟨hr, by omega, ?_⟩
+      rw [ho, Nat.add_comm, Nat.add_mul_div_right _ _ hB, Nat.div_eq_of_lt j.isLt, Nat.zero_add]
+    · exact Or.inl hr
+
+/-- **Serial orders.** Running the programs of a checked launch one after
+another, in any complete duplicate-free order, writes `xs i + ys i` at every
+output index `i < n` and leaves every other cell unchanged — the same result
+as the merge (`Kernel.runSerial_agrees_merge`), because no program reads a
+cell another program writes. -/
+theorem add_kernel_launch_serial
+    (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName) (h0 : out_ptr ≠ in_ptr0) (h1 : out_ptr ≠ in_ptr1)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    ∀ L : List (GridIndex { dims := c.grid }), L.Nodup → (∀ idx, idx ∈ L) →
+      ∃ m, Kernel.runSerial ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+            s L s.mem = some m ∧
+        (∀ i, i < c.n → Kernel.memReal m out_ptr i = xs i + ys i) ∧
+        (∀ r o, ¬ (r = out_ptr ∧ o < c.n) → m r o = s.mem r o) := by
+  have hpre := Blocked1DLaunch.check_ok c hc
+  have hB := hpre.block_pos
+  have hcov : c.n ≤ c.gridX * c.block :=
+    of_decide_eq_true ((Blocked1DLaunch.coversB_iff c hB).2 hpre.covers)
+  rw [hpre.grid_eq]
+  intro L hnd hall
+  let frames : Kernel.GridFrames ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel)
+      (Blocked1D.line c.gridX) s :=
+    fun idx => addLaunchFrame in_ptr0 in_ptr1 out_ptr c.n c.block c.gridX s idx
+  have hwr : ∀ idx, (frames idx).writes
+      = Blocked1D.blockWrites out_ptr c.n c.block (Blocked1D.pidOf idx) := fun _ => rfl
+  have hdisj : Kernel.GridWritesDisjoint frames := by
+    intro i₁ i₂ hne
+    rw [hwr i₁, hwr i₂]
+    exact Blocked1D.blockWrites_disjoint hB fun h => hne (Blocked1D.idx_ext h)
+  have hfinal : ∀ idx o, o < c.n → o / c.block = Blocked1D.pidOf idx →
+      (frames idx).final.readMem out_ptr o = xs o + ys o := by
+    intro idx o ho hd
+    obtain ⟨f, hf, hv, -⟩ := add_kernel_program_run in_ptr0 in_ptr1 out_ptr c.n c.block hB
+      (s.withGridIndex idx) xs ys (by simpa using hx) (by simpa using hy)
+    have hfe : (frames idx).final = f := by
+      have h1 := (frames idx).h_exec
+      rw [hf] at h1
+      exact (Option.some.inj h1).symm
+    rw [hfe]
+    exact hv o ho (by rw [Blocked1D.withGridIndex_pid_line]; exact hd)
+  have hrob : Kernel.FrameRobust frames := by
+    intro idx m hm
+    have hin : ∀ r, r ≠ out_ptr → ∀ i, m r i = s.mem r i := by
+      intro r hr i
+      apply hm
+      rintro ⟨idx', -, hw⟩
+      rw [hwr, Blocked1D.blockWrites_iff hB] at hw
+      exact hr hw.1
+    obtain ⟨f, hf, hv, hfr⟩ := add_kernel_program_run in_ptr0 in_ptr1 out_ptr c.n c.block hB
+      (({ s with mem := m } : BlockState).withGridIndex idx) xs ys
+      (fun i hi => by
+        rw [BlockState.withGridIndex_mem]
+        show m in_ptr0 i = _
+        rw [hin _ (Ne.symm h0)]
+        exact hx i hi)
+      (fun i hi => by
+        rw [BlockState.withGridIndex_mem]
+        show m in_ptr1 i = _
+        rw [hin _ (Ne.symm h1)]
+        exact hy i hi)
+    refine ⟨f, hf, fun r o hw => ?_, fun r o hnw => ?_⟩
+    · rw [hwr, Blocked1D.blockWrites_iff hB] at hw
+      obtain ⟨rfl, ho, hd⟩ := hw
+      rw [hv o ho (by rw [Blocked1D.withGridIndex_pid_line]; exact hd), hfinal idx o ho hd]
+    · rw [hwr] at hnw
+      rw [hfr r o (by rw [Blocked1D.withGridIndex_pid_line]; exact hnw)]
+      rfl
+  obtain ⟨m, hm, hw, hnw⟩ := Kernel.runSerial_agrees_merge frames hdisj hrob L hnd hall
+  obtain ⟨-, -, hout, hframe⟩ := Blocked1D.launch_of_frames hB hcov frames hwr
+    (fun i => xs i + ys i)
+    (fun idx j hj hn => hfinal idx _ hn (by
+      rw [Nat.add_comm, Nat.add_mul_div_right _ _ hB, Nat.div_eq_of_lt hj, Nat.zero_add]))
+  refine ⟨m, hm, fun i hi => ?_, fun r o hno => ?_⟩
+  · have hown : i / c.block < c.gridX := (Nat.div_lt_iff_lt_mul hB).2 (by omega)
+    rw [hw out_ptr i ⟨Blocked1D.indexOf _ hown, by
+      rw [hwr, Blocked1D.blockWrites_iff hB, Blocked1D.pidOf_indexOf]; exact ⟨rfl, hi, rfl⟩⟩]
+    exact hout i hi
+  · have hnot : ¬ Kernel.GridWriteFootprint frames (r, o) := by
+      rintro ⟨idx, h⟩
+      rw [hwr, Blocked1D.blockWrites_iff hB] at h
+      exact hno ⟨h.1, h.2.1⟩
+    rw [hnw r o hnot]
+    exact hframe r o hno
+
+/-- **Flat-memory whole launch.** For any flat placement of the three buffers
+that satisfies the bridge's hypotheses (disjoint, closed, extents covering
+the `n` accessed elements), the flattened launch of a checked configuration
+writes `xs i + ys i` at flat address `A.base out_ptr + i` for every `i < n`
+and leaves every other flat cell unchanged. Per program this is the upstream
+flat headline `add_kernel_correctness` (`⊨`); `launch_of_frames_addr`
+composes the programs. -/
+theorem add_kernel_launch_flat
+    (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName) (A : FlatAlloc)
+    (hd : A.Disjoint) (hreg : A.regions = [in_ptr0, in_ptr1, out_ptr])
+    (hcl : ∀ r, r ∉ A.regions → A.extent r = 0)
+    (he0 : c.n ≤ A.extent in_ptr0) (he1 : c.n ≤ A.extent in_ptr1)
+    (heo : c.n ≤ A.extent out_ptr)
+    (s : BlockState) (hu : s.undef = (fun _ _ => 0)) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < c.n → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < c.n → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+      (A.flattenKernel ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel))
+      { dims := c.grid } (A.flattenState s)
+      (fun i : Nat => if i < c.n then some (A.flat, A.base out_ptr + i) else none)
+      (fun i => xs i + ys i) := by
+  have hpre := Blocked1DLaunch.check_ok c hc
+  have hB := hpre.block_pos
+  have hcov : c.n ≤ c.gridX * c.block :=
+    of_decide_eq_true ((Blocked1DLaunch.coversB_iff c hB).2 hpre.covers)
+  rw [hpre.grid_eq]
+  have hI := add_kernel_correctness in_ptr0 in_ptr1 out_ptr c.n c.block
+  have hprog : ∀ idx : GridIndex (Blocked1D.line c.gridX), ∃ s',
+      exec (A.flattenKernel ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel))
+        ((A.flattenState s).withGridIndex idx) = some s' ∧
+      (∀ j, j < c.block → Blocked1D.pidOf idx * c.block + j < c.n →
+        s'.readMem A.flat (A.base out_ptr + (Blocked1D.pidOf idx * c.block + j))
+          = xs (Blocked1D.pidOf idx * c.block + j) + ys (Blocked1D.pidOf idx * c.block + j)) ∧
+      (∀ r o, ¬ Blocked1D.addrWrites A.flat (fun t => A.base out_ptr + t) c.n c.block
+          (Blocked1D.pidOf idx) (r, o) →
+        ((A.flattenState s).withGridIndex idx).mem r o = s'.mem r o) := by
+    intro idx
+    obtain ⟨s', hex, hval, hfr⟩ := hI A hd (by simp [addIO, hreg]) hcl (Blocked1D.pidOf idx)
+      (fun j hj => by simp only [addIO] at hj ⊢; omega)
+      (fun j hj => by simp only [addIO] at hj ⊢; omega)
+      (fun j hj => by simp only [addIO] at hj ⊢; omega)
+      (fun p hp => by simp [addIO] at hp)
+      (fun j => xs (Blocked1D.pidOf idx * c.block + j.val))
+      (fun j => ys (Blocked1D.pidOf idx * c.block + j.val))
+      (s.withGridIndex idx) (Blocked1D.withGridIndex_pid_line s idx) (by simp [hu])
+      (fun j hj => by
+        simp only [addIO] at hj ⊢
+        simp [BlockState.readMem, hx _ hj])
+      (fun j hj => by
+        simp only [addIO] at hj ⊢
+        simp [BlockState.readMem, hy _ hj])
+    rw [FlatAlloc.flattenState_withGridIndex]
+    refine ⟨s', hex, fun j hj hn => ?_, fun r o hno => ?_⟩
+    · have := hval ⟨j, hj⟩ hn
+      simpa [addIO, FlatAlloc.addr] using this
+    · refine (hfr r o ?_).symm
+      by_cases hr : r = A.flat
+      · refine Or.inr ⟨fun j hj ho => hno ?_, fun p hp => by simp [addIO] at hp⟩
+        rw [Blocked1D.addrWrites_iff hB]
+        have hj' : j.val < c.block := j.isLt
+        refine ⟨hr, Blocked1D.pidOf idx * c.block + j.val, hj, ?_, ?_⟩
+        · rw [Nat.add_comm, Nat.add_mul_div_right _ _ hB, Nat.div_eq_of_lt hj', Nat.zero_add]
+        · simp only [addIO, FlatAlloc.addr] at ho; exact ho.symm
+      · exact Or.inl hr
+  classical
+  let frames : Kernel.GridFrames
+      (A.flattenKernel ((add_kernel in_ptr0 in_ptr1 out_ptr c.n c.block).toAlgKernel))
+      (Blocked1D.line c.gridX) (A.flattenState s) := fun idx =>
+    { final := Classical.choose (hprog idx)
+      writes := Blocked1D.addrWrites A.flat (fun t => A.base out_ptr + t) c.n c.block
+        (Blocked1D.pidOf idx)
+      h_exec := (Classical.choose_spec (hprog idx)).1
+      h_writeWithin := fun r o hno => (Classical.choose_spec (hprog idx)).2.2 r o hno }
+  obtain ⟨L, -, hout, hframe⟩ := Blocked1D.launch_of_frames_addr hB hcov
+    (fun t => A.base out_ptr + t) (fun a b h => by simp only at h; omega) frames (fun _ => rfl)
+    (fun i => xs i + ys i) (fun idx j hj hn => (Classical.choose_spec (hprog idx)).2.1 j hj hn)
+  refine ⟨_, L, ?_, ?_⟩
+  · intro i addr hw
+    by_cases hi : i < c.n
+    · simp only [hi, if_true, Option.some.injEq] at hw
+      subst hw
+      exact hout i hi
+    · simp [hi] at hw
+  · rintro ⟨r, o⟩ hno
+    apply hframe
+    rintro ⟨hr, i, hi, ho⟩
+    simp only at hr ho
+    subst hr
+    exact hno i (by simp [hi, ho])
+
 /-- **Whole-wrapper headline.** For tensors accepted by the wrapper checker
 and region names that follow the allocations, from any state whose input
 tensors hold typed real values:
@@ -606,6 +813,54 @@ specification add_wrapper_correctness
           (fun i : Nat => if i < out.numel then
             some (flat, out.base / out.elemBytes + i) else none)
           (fun i => xs i + ys i)) := by
-  sorry
+  have hpre := Elementwise2.check_ok 4 x y out hc
+  have hL := hpre.launch
+  have hc' : Blocked1DLaunch.check (Elementwise2.launch 4 x y out) = Bool.true :=
+    Blocked1DLaunch.check_complete _ hL
+  have hW1 : x.numel = out.numel := hpre.output_covered
+  have hyn : x.numel = y.numel := by simp [TensorMeta.numel, hpre.same_shape.1]
+  have hx' : ∀ i, i < (Elementwise2.launch 4 x y out).n →
+      s.mem in_ptr0 i = MemCell.real (xs i) := hx
+  have hy' : ∀ i, i < (Elementwise2.launch 4 x y out).n →
+      s.mem in_ptr1 i = MemCell.real (ys i) := fun i hi =>
+    hy i (by change i < x.numel at hi; omega)
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · rw [← hW1]
+    exact add_kernel_launch_framed _ hc' in_ptr0 in_ptr1 out_ptr s xs ys hx' hy'
+  · intro idx hi
+    obtain ⟨ss1, ss2⟩ := hpre.same_shape
+    obtain ⟨cx, cy, co⟩ := hpre.contiguous
+    have ho := TensorMeta.offsetOf_eq_linear out co idx hi
+    have hix : TensorMeta.InShape x.shape idx := by rw [← ss2]; exact hi
+    have hiy : TensorMeta.InShape y.shape idx := by rw [ss1, ← ss2]; exact hi
+    have hxl := TensorMeta.offsetOf_eq_linear x cx idx hix
+    have hyl := TensorMeta.offsetOf_eq_linear y cy idx hiy
+    rw [ss2] at ho
+    rw [ss1] at hyl
+    refine ⟨ho.1.trans hxl.1.symm, hyl.1.trans hxl.1.symm, ?_⟩
+    rw [hxl.1, ← hW1]
+    exact hxl.2
+  · intro bounds b0 b1 b2
+    rw [hL.grid_eq]
+    intro idx
+    apply add_kernel_traceSafe <;> intro j hj <;>
+      rw [Blocked1D.withGridIndex_pid_line] at hj ⊢ <;> omega
+  · rw [← hW1]
+    exact add_kernel_launch_serial _ hc' in_ptr0 in_ptr1 out_ptr h0 h1 s xs ys hx' hy'
+  · intro flat hnames hu
+    refine ⟨hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames,
+      Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out, ?_⟩
+    have hbase : (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).base out_ptr
+        = out.base / out.elemBytes := by simp [Elementwise2.flatAlloc]
+    have hflat := add_kernel_launch_flat _ hc' in_ptr0 in_ptr1 out_ptr
+      (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out)
+      (hpre.flat_disjoint flat in_ptr0 in_ptr1 out_ptr h0 h1 hnames) rfl
+      (Elementwise2.flatAlloc_closed flat in_ptr0 in_ptr1 out_ptr x y out)
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      (by simp [Elementwise2.flatAlloc, Elementwise2.launch])
+      s hu xs ys hx' hy'
+    rw [← hW1, ← hbase]
+    exact hflat
 
 end VeriTile.Bench.TritonBenchG.AddExample

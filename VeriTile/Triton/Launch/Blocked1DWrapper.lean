@@ -137,25 +137,51 @@ def check (B : Nat) (x y out : TensorMeta) : Bool :=
   Blocked1DLaunch.check (launch B x y out)
 
 theorem contiguousB_iff (t : TensorMeta) : t.contiguousB = true ↔ t.Contiguous := by
-  sorry
+  simp only [contiguousB, Contiguous, Bool.and_eq_true, beq_iff_eq, List.all_eq_true,
+    List.mem_range, Bool.or_eq_true, Bool.not_eq_true', decide_eq_false_iff_not]
+  constructor
+  · rintro ⟨hl, h⟩
+    exact ⟨hl, fun i hi h1 => (h i hi).resolve_left (by omega)⟩
+  · rintro ⟨hl, h⟩
+    refine ⟨hl, fun i hi => ?_⟩
+    by_cases h1 : 1 < t.shape.getD i 0
+    · exact Or.inr (h i hi h1)
+    · exact Or.inl h1
 
 theorem check_ok (B : Nat) (x y out : TensorMeta) (h : check B x y out = true) :
     Pre B x y out := by
-  sorry
+  simp only [check, Bool.and_eq_true, Bool.or_eq_true, beq_iff_eq] at h
+  obtain ⟨⟨⟨⟨⟨hs1, hs2⟩, ⟨⟨hc1, hc2⟩, hc3⟩⟩, ⟨⟨ha1, ha2⟩, ha3⟩⟩, hsep⟩, hl⟩ := h
+  refine ⟨⟨hs1, hs2⟩, ⟨(contiguousB_iff x).1 hc1, (contiguousB_iff y).1 hc2,
+    (contiguousB_iff out).1 hc3⟩, ⟨ha1, ha2, ha3⟩, ?_, Blocked1DLaunch.check_ok _ hl⟩
+  rcases hsep with h | h
+  · exact Or.inl h
+  · exact Or.inr ((Blocked1DLaunch.disjointB_iff _ _ _).1 h)
 
 theorem check_complete (B : Nat) (x y out : TensorMeta) (h : Pre B x y out) :
     check B x y out = true := by
-  sorry
+  simp only [check, Bool.and_eq_true, Bool.or_eq_true, beq_iff_eq]
+  refine ⟨⟨⟨⟨h.same_shape, ⟨⟨(contiguousB_iff x).2 h.contiguous.1,
+    (contiguousB_iff y).2 h.contiguous.2.1⟩, (contiguousB_iff out).2 h.contiguous.2.2⟩⟩,
+    ⟨⟨h.aligned.1, h.aligned.2.1⟩, h.aligned.2.2⟩⟩, ?_⟩,
+    Blocked1DLaunch.check_complete _ h.launch⟩
+  rcases h.inputs_separate with hs | hs
+  · exact Or.inl hs
+  · exact Or.inr ((Blocked1DLaunch.disjointB_iff _ _ _).2 hs)
 
 /-- W1 is derived: the wrapper's `n = x.numel()` and `out = *_like(x)`. -/
 theorem Pre.output_covered {B : Nat} {x y out : TensorMeta} (h : Pre B x y out) :
     OutputCovered (Elementwise2.launch B x y out) out := by
-  sorry
+  simp [OutputCovered, Elementwise2.launch, TensorMeta.numel, h.same_shape.2]
 
 /-- W2 is derived from equal shapes. -/
 theorem Pre.inputs_cover {B : Nat} {x y out : TensorMeta} (h : Pre B x y out) :
     InputsCover (Elementwise2.launch B x y out) [x, y] := by
-  sorry
+  intro t ht
+  simp only [List.mem_cons, List.mem_nil_iff, or_false] at ht
+  rcases ht with rfl | rfl
+  · exact Nat.le_refl _
+  · simp [Elementwise2.launch, TensorMeta.numel, h.same_shape.1]
 
 end Elementwise2
 
