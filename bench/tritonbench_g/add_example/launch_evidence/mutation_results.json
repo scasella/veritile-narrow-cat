@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T14:18:06Z",
- "elapsed_s": 42.6,
+ "generated": "2026-09-25T14:44:26Z",
+ "elapsed_s": 41.8,
  "counts": {
   "accepted": 13,
   "violated_obligation": 12,
@@ -25,7 +25,7 @@
   "bench/tests/Blocked1DLaunchWitnesses.lean": "71523294d64098963539577834011bb3071748ca3fddb0fd7a2ef7bd15876550",
   "VeriTile/Triton/Launch.lean": "c856d4ce9664baa41d2630800599375becd9b665c944e6219c8c3d24b9299bf1",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
-  "bench/tritonbench_g/add_example/CONTRACT.md": "59bf0991a1a689671b4b403702ed26fb0e8ddcfd572100d4598cefa137561088",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
   "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
   "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
@@ -36,10 +36,10 @@
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
   "scripts/launch_local_check.py": "a99914f9b627d241c0ea7d32a1fe07c4b3e7b4c3bb54dbdab410f370f41ca397",
-  "scripts/launch_invoke.py": "efc2feb3283e3f589a1ee1147383222e4546277c46e40b7686e9e2aa1234bbe1",
+  "scripts/launch_invoke.py": "171bb1893454fca0d148f7d1a854d9fe2b89bf0eb1df11c74fac5345ff789635",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "bb29e2f59b60e9aae700a4a59f140b21acbf6042460054e2f817106acfed38f8",
+  "scripts/test_launch_check.py": "c065777b65651714d185dd7bed1444af343293c91a3ae3e1558a57af75feab73",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"

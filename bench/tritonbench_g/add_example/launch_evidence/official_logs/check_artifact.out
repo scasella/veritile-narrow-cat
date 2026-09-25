@@ -1,6 +1,6 @@
 Official comparator and sandbox tools are available.
 [ok] lake build passes with no sorry warnings
-Comparator: proven library manifest: 129 theorem(s) accepted; logs: /home/proof/VeriTile/Logs/comparator-check-8br5kk2c/Library-of5gb1nh
+Comparator: proven library manifest: 129 theorem(s) accepted; logs: /home/proof/VeriTile/Logs/comparator-check-fl7n1o29/Library-13coinxu
 [ok] official comparator accepts the proven library manifest
 [ok] axioms match whitelist
 [ok] kernel manifest is internally consistent

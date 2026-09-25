@@ -3,37 +3,37 @@
  "torch": "2.10.0",
  "note": "host-side cost of the checked path only (metadata extraction, contract decision, cache lookup), CPU tensors; kernel launch not included",
  "strided_relu": {
-  "storage_meta_x2_us": 2.2380835143849254,
-  "contract_decision_us": 1.4817499904893339
+  "storage_meta_x2_us": 2.156167000066489,
+  "contract_decision_us": 1.4961874985601753
  },
  "rows": [
   {
    "shape": [
     1024
    ],
-   "tensor_meta_x3_us": 2.7028544864151627,
-   "contract_decision_us": 5.815999989863485,
-   "cache_key_and_lookup_us": 7.433312508510426,
-   "zeros_like_alloc_us_reference": 0.3825000021606684
+   "tensor_meta_x3_us": 2.764770993962884,
+   "contract_decision_us": 5.874312511878088,
+   "cache_key_and_lookup_us": 7.672750012716279,
+   "zeros_like_alloc_us_reference": 0.4350004019215703
   },
   {
    "shape": [
     1048576
    ],
-   "tensor_meta_x3_us": 2.744416502537206,
-   "contract_decision_us": 5.788875016150996,
-   "cache_key_and_lookup_us": 7.49791698763147,
-   "zeros_like_alloc_us_reference": 42.604999616742134
+   "tensor_meta_x3_us": 2.7833334752358496,
+   "contract_decision_us": 5.911666987231001,
+   "cache_key_and_lookup_us": 7.45856249704957,
+   "zeros_like_alloc_us_reference": 43.119590263813734
   },
   {
    "shape": [
     256,
     256
    ],
-   "tensor_meta_x3_us": 2.9667915077880025,
-   "contract_decision_us": 6.668021000223234,
-   "cache_key_and_lookup_us": 7.980312482686714,
-   "zeros_like_alloc_us_reference": 33.28083024825901
+   "tensor_meta_x3_us": 3.0677919858135283,
+   "contract_decision_us": 6.98620849289,
+   "cache_key_and_lookup_us": 8.069208008237183,
+   "zeros_like_alloc_us_reference": 34.918750170618296
   }
  ],
  "input_hashes": {
@@ -51,7 +51,7 @@
   "bench/tests/Blocked1DLaunchWitnesses.lean": "71523294d64098963539577834011bb3071748ca3fddb0fd7a2ef7bd15876550",
   "VeriTile/Triton/Launch.lean": "c856d4ce9664baa41d2630800599375becd9b665c944e6219c8c3d24b9299bf1",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
-  "bench/tritonbench_g/add_example/CONTRACT.md": "59bf0991a1a689671b4b403702ed26fb0e8ddcfd572100d4598cefa137561088",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
   "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
   "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
@@ -62,10 +62,10 @@
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
   "scripts/launch_local_check.py": "a99914f9b627d241c0ea7d32a1fe07c4b3e7b4c3bb54dbdab410f370f41ca397",
-  "scripts/launch_invoke.py": "efc2feb3283e3f589a1ee1147383222e4546277c46e40b7686e9e2aa1234bbe1",
+  "scripts/launch_invoke.py": "171bb1893454fca0d148f7d1a854d9fe2b89bf0eb1df11c74fac5345ff789635",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "bb29e2f59b60e9aae700a4a59f140b21acbf6042460054e2f817106acfed38f8",
+  "scripts/test_launch_check.py": "c065777b65651714d185dd7bed1444af343293c91a3ae3e1558a57af75feab73",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
