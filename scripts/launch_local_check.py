@@ -51,7 +51,8 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Composition.lean",
             "bench/tritonbench_g/add_example/AddExample.lean",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
-            "bench/tests/Blocked1DLaunchWitnesses.lean"]
+            "bench/tests/Blocked1DLaunchWitnesses.lean",
+            "bench/tritonbench_g/add_example/improvement/AddReluFused.lean"]
 VAC = "VeriTile.Bench.TritonBenchG.VectorAdditionCustom"
 WIT = "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses"
 # (file, namespace for the inventory, theorems that must be axiom-clean, required inventory)
@@ -109,6 +110,7 @@ WRAPPER_THEOREMS = [f"VeriTile.Bench.TritonBenchG.AddExample.{t}" for t in (
     "Elementwise2.Pre.windows_in_alloc", "Elementwise2.flatAlloc_closed",
     "TensorMeta.offsetOf_eq_linear", "FlatAlloc.flattenState_withGridIndex")]
 
+FUSED = "VeriTile.Bench.TritonBenchG.AddReluFused"
 AUDIT_TARGETS = [
     ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
      HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
@@ -137,6 +139,10 @@ AUDIT_TARGETS = [
         "StridedUnary.Pre.reads_outside_writes")],
      ["relu_strided_buffer_one_tile_io_correctness", "relu_wrapper_one_tile_correctness",
       "relu_wrapper_one_tile_flat_correctness"]),
+    ("bench/tritonbench_g/add_example/improvement/AddReluFused.lean", FUSED,
+     [f"{FUSED}.{t}" for t in ("add_relu_kernel_correctness", "add_relu_wrapper_correctness",
+                              "add_relu_kernel_region_run", "add_relu_kernel_traceSafe")],
+     ["add_relu_kernel_correctness", "add_relu_wrapper_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
@@ -241,6 +247,16 @@ RELU_SURFACE_PRINTS = [
     f"#check @{RELU}.relu_wrong_out_stride_writes_gap_cell",
     f"#check @{RELU}.relu_one_tile_launch_flat",
     f"#check @{RELU}.relu_wrapper_one_tile_flat_correctness"]
+# Fused add + ReLU candidate (frozen from its sorry state, stage 8).
+FUSED_SURFACE_PRINTS = [
+    "#print VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel",
+    "#print VeriTile.Bench.TritonBenchG.AddReluFused.addReluIO",
+    "#print VeriTile.Triton.MaskedKernelIO₂.Implements",
+    "#print VeriTile.Triton.Elementwise2.launch", "#print VeriTile.Triton.Elementwise2.Pre",
+    "#print VeriTile.Triton.Elementwise2.flatAlloc",
+    "#print VeriTile.Triton.TiledActivation.relu",
+    "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_correctness",
+    "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),
@@ -248,7 +264,9 @@ SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluSt
             ("wrapper_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean",
              WRAPPER_SURFACE_PRINTS),
             ("vac_surface.txt", "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
-             VAC_SURFACE_PRINTS)]
+             VAC_SURFACE_PRINTS),
+            ("fused_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
+             FUSED_SURFACE_PRINTS)]
 
 
 def sha(p: Path) -> str:
@@ -278,6 +296,9 @@ def input_files() -> list:
                         # execution harnesses (hashed so their evidence records them)
                         "scripts/launch_interpret.py", "scripts/launch_gpu.py",
                         "scripts/launch_gpu_modal.py", "bench/audit_source.py",
+                        # optimization experiment (stage 8)
+                        "bench/tritonbench_g/add_example/improvement/add_relu_fused.py",
+                        "scripts/launch_fused.py", "scripts/launch_bench.py", "scripts/launch_bench_modal.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
 
 
@@ -309,6 +330,19 @@ HANDOFF = PY_CORE + ["scripts/launch_interpret.py", "scripts/launch_gpu.py", "sc
                      "bench/tritonbench_g/vector_addition_custom/launch_manifest.json"]
 
 
+# The optimization benchmark. launch_local_check.py is deliberately absent: the
+# benchmark imports it only to record input hashes (the recognizer it uses is
+# launch_check.py), so gate-only edits do not make GPU benchmark evidence stale.
+BENCH = ["scripts/launch_check.py", "bench/audit_source.py", "scripts/launch_invoke.py",
+         "scripts/launch_interpret.py", "scripts/launch_fused.py", "scripts/launch_bench.py",
+         "scripts/launch_bench_modal.py",
+         "bench/tritonbench_g/add_example/improvement/add_relu_fused.py",
+         "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
+         "bench/tritonbench_g/add_example/improvement/add_example_block64.py",
+         "bench/tritonbench_g/add_example/AddExample.lean",
+         "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py"]
+
+
 def lean_closure(roots: list, root: Path = REPO) -> list:
     """Repo Lean files transitively imported by `roots` (roots included)."""
     seen, todo = [], list(roots)
@@ -336,6 +370,7 @@ def evidence_deps(name: str, root: Path = REPO):
         + lean("VeriTile/Triton/Launch/StridedUnary.lean"),
         "gpu.json": HANDOFF, "gpu_perf.json": HANDOFF, "gpu_extras.json": HANDOFF,
         "block_sweep.json": HANDOFF, "interpreter.json": HANDOFF,
+        "relu_tune.json": BENCH, "fusion_bench.json": BENCH,
     }.get(name)
     return None if deps is None else sorted(set(deps))
 

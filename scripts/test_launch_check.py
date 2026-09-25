@@ -338,5 +338,36 @@ class EvidenceFreshness(unittest.TestCase):
         self.assertFalse(self.LC.evidence_freshness(
             "official_comparator.json", self.rec("official_comparator.json"), h)[0])
 
+
+class FusedBinding(unittest.TestCase):
+    """The fused candidate's source binding (the parts that need no Triton)."""
+
+    def setUp(self):
+        try:
+            import launch_fused
+        except ImportError as e:  # torch absent on this host
+            self.skipTest(str(e))
+        self.F = launch_fused
+        self.src = launch_fused.FUSED_PY.read_text()
+        self.lean = L.lean_body_statements(launch_fused.FUSED_LEAN.read_text(), "add_relu_kernel")
+
+    def test_body_equals_lean_transcription(self):
+        self.assertEqual(self.F.kernel_statements(self.src, "add_relu_kernel"), self.lean)
+
+    def test_mutants_differ_from_lean(self):
+        for old, new in [("tl.where(z > 0, z, 0)", "tl.where(z >= 0, z, 0)"),
+                         ("tl.where(z > 0, z, 0)", "tl.maximum(z, 0)"), ("z = x + y", "z = x - y")]:
+            self.assertNotEqual(self.F.kernel_statements(self.src.replace(old, new), "add_relu_kernel"), self.lean)
+
+    def test_projection_recognized_by_frozen_recognizer(self):
+        proj = self.F.fused_projection(self.src)
+        k = L.parse_kernel(proj, "add_relu_kernel")
+        launch = L.parse_launch(proj, "add_relu_wrapper", k)
+        self.assertEqual((launch.block, launch.grid_kind, launch.n_source), (64, "cdiv", "x"))
+
+    def test_projection_requires_the_fused_lines(self):
+        with self.assertRaises(L.Unsupported):
+            self.F.fused_projection(self.src.replace("    z = x + y\n", ""))
+
 if __name__ == "__main__":
     unittest.main()
