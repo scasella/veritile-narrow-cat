@@ -260,11 +260,14 @@ I64 = 2 ** 63
 def storage_meta(t) -> TensorMeta:
     """Metadata of a torch tensor or a `StridedBuffer` (trusted extraction):
     capacity counts the elements from the view's data pointer to the end of
-    the underlying storage. Negative strides are reported as-is and rejected."""
+    the underlying storage, and is 0 when the pointer lies outside the storage
+    (e.g. a `StridedBuffer` with a negative offset), so S6 rejects it.
+    Negative strides are reported as-is and rejected."""
     base_t = t.unwrap() if hasattr(t, "unwrap") else t
     st = base_t.untyped_storage()
     es = t.element_size()
-    cap = (st.data_ptr() + st.nbytes() - int(t.data_ptr())) // es
+    ptr, lo, hi = int(t.data_ptr()), st.data_ptr(), st.data_ptr() + st.nbytes()
+    cap = (hi - ptr) // es if lo <= ptr <= hi else 0
     dt = DTYPE_NAMES.get(str(t.dtype).replace("torch.", ""), "other")
     if hasattr(t, "unwrap") and t.dtype != base_t.dtype:
         dt = "other"  # dtype reinterpretation of the base storage is unsupported
@@ -550,7 +553,8 @@ def differential_strided(n_cases: int) -> dict:
     for x, o in cases:
         L = f"(StridedUnary.launch {lean_tm(x)} {lean_tm(o)})"
         body.append(f'#eval IO.println s!"R|{{StridedUnary.check {L}}}|{{{L}.s0}}|{{{L}.tile}}|'
-                    f'{{{L}.numTiles}}|{{{L}.numCtas}}|{{{L}.tilesPerCta}}"')
+                    f'{{{L}.numTiles}}|{{{L}.numCtas}}|{{{L}.tilesPerCta}}|{{{L}.numTasks}}|'
+                    f'{{{L}.inStride}}|{{{L}.outStride}}|{{{L}.grid}}"')
     r = LC.run_lean(head + "\n".join(body) + "\n", timeout=1800)
     if r.returncode != 0:
         raise RuntimeError(r.stdout[-2000:] + r.stderr[-2000:])
@@ -560,13 +564,16 @@ def differential_strided(n_cases: int) -> dict:
     for (x, o), row in zip(cases, rows):
         c = strided_launch(x, o)
         py = [str(all(ok for _, ok in strided_obligations(x, o))).lower(), str(c["s0"]),
-              str(c["tile"]), str(c["numTiles"]), str(c["numCtas"]), str(c["tilesPerCta"])]
+              str(c["tile"]), str(c["numTiles"]), str(c["numCtas"]), str(c["tilesPerCta"]),
+              str(c["numTasks"]), str(c["inStride"]), str(c["outStride"]),
+              "[" + ", ".join(map(str, c["grid"])) + "]"]
         acc += row[0] == "true"
         if py != row:
             mism.append({"case": [astuple(x), astuple(o)], "python": py, "lean": row})
     return {"cases": len(cases), "lean_accepted": acc, "mismatches": mism,
-            "compared": "verdict of StridedUnary.check and the derived s0/tile/numTiles/numCtas/"
-                        "tilesPerCta (Lean #eval vs Python mirror)",
+            "compared": "verdict of StridedUnary.check and every derived launch value passed to the "
+                        "kernel (s0, tile, numTiles, numCtas, tilesPerCta, numTasks, inStride, "
+                        "outStride, grid) — Lean #eval vs Python mirror",
             "input_hashes": __import__("launch_local_check").input_hashes()}
 
 
@@ -697,6 +704,9 @@ def demo() -> dict:
     relu_case("relu_stridedbuffer_negative_stride",
               lambda: (SB(torch.randn(50), shape=(10,), strides=(-1,), offset=9), torch.empty(10)),
               ["S5 pos_strides (negative stride)"])
+    relu_case("relu_stridedbuffer_negative_offset_before_storage",
+              lambda: (SB(torch.randn(50), shape=(10,), strides=(1,), offset=-5), torch.empty(10)),
+              ["S6 in_bounds"], launch=False)
     relu_case("relu_stridedbuffer_dtype_reinterpret",
               lambda: (SB(torch.randn(16), dtype=torch.int32), torch.empty(16)), ["S7 dtype_ok"])
     mutant = RELU_PY.read_text().replace("in0_strides[0], # stride for in0",

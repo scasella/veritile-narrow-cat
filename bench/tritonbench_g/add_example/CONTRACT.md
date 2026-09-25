@@ -105,8 +105,9 @@ discharges the lane-wise bound hypotheses of the existing flat-memory headline
 - Wrapper obligations W1 (`n == out.numel()`: the returned tensor is exactly
   the cells this contract covers) and W2 (`n ≤ t.numel()` for every input
   tensor `t`: the cells read are the tensor's own elements, not merely inside
-  its allocation) are outside this contract; they are checked by the adapter
-  and recorded separately (SOURCE_LINK.md).
+  its allocation) are outside this *launch-level* contract (§1–§3), where the
+  adapter checks them (SOURCE_LINK.md). The wrapper-level contract of §7
+  derives both as theorems.
 
 ## 5. Unsupported / non-goals
 
@@ -149,24 +150,37 @@ own metadata (`VeriTile/Triton/Launch/Blocked1DWrapper.lean`):
   `xs i + ys i` at `out.base / out.elemBytes + i`, every other flat cell
   unchanged (per program this is the upstream `⊨` headline).
 
-How the layout obligations now do formal work: P9 + P12 give the element
-addressing `base / 4`; P10 + P11 give `FlatAlloc.Disjoint`
+How the layout obligations now do formal work (for `add_example`): P9 + P12
+give the element addressing `base / 4`; P10 + P11 give `FlatAlloc.Disjoint`
 (`Elementwise2.Pre.flat_disjoint`); P3 + P4 place every flat window inside its
-allocation (`Pre.windows_in_alloc`); WC with the logical-view lemma
-`TensorMeta.offsetOf_eq_linear` is what P8 (unit stride) stood for.
+allocation (`Pre.windows_in_alloc`, not used by the headline). The logical
+view comes from WC and `TensorMeta.offsetOf_eq_linear`; P8 itself is still
+used by no Lean conclusion.
 
-Remaining assumptions after revision 3: metadata extraction from live tensors
-and the invocation-time Python mirror of the checker (differentially tested
-against the Lean definitions, not proved); the flat model's typed
-element-sized cells (not byte-level memory); hardware executing the programs
+Scope of conjunct (5): it is stated for the flat image `flattenState s` of a
+region state, in which every flat cell outside the three windows is `0`. It
+shows that the checked metadata satisfies the flat bridge's hypotheses and
+what the flattened launch does from such an image; it does not relate the
+windows to arbitrary surrounding memory, so TA-region is narrowed, not
+discharged.
+
+Remaining assumptions after revision 3: TA-transcription (the Lean kernel is
+the Python kernel); TA-region (tensor elements are the region / flat cells,
+see the scope of (5)); metadata extraction from live tensors and the
+invocation-time Python mirror of the checker (differentially tested against
+the Lean definitions, not proved); the flat model's typed element-sized cells
+(not byte-level memory); hardware executing the programs
 equivalently to some whole-program serial order (TA-sched: instruction-level
 interleaving is not modelled — the serial theorem removes the stronger
 merge-from-initial-state presumption, and non-interference is proved for this
 kernel); TA-i32 typing; IEEE-single-add; device placement.
 
-`vector_addition_custom.custom_add` has the same contract on its supported
-rank-1 API (`Elementwise2.checkRank1`, headline `custom_add_correctness`);
-beyond rank 1 its `size(0)` launch provably leaves outputs unwritten
+`vector_addition_custom.custom_add` has a narrower wrapper contract on its
+supported rank-1 API (`Elementwise2.checkRank1`, headline
+`custom_add_correctness`): conjuncts (1) and (3) only — every element of the
+returned tensor written, logical extents respected — with no logical-view,
+serial or flat conjunct, so it still relies on TA-compose. Beyond rank 1 its
+`size(0)` launch provably leaves outputs unwritten
 (`Elementwise2.launchDim0_not_covered`) and is rejected.
 
 ## Revisions

@@ -1951,10 +1951,31 @@ theorem relu_one_tile_program_run
       rw [Nat.add_comm, Nat.add_mul_div_right _ _ hT, Nat.div_eq_of_lt i.1.isLt, Nat.zero_add]
     · exact Or.inl hr
 
+/-- **A wrong stride inside the allocation reads the wrong logical element.**
+Launch the kernel with input stride `1` over a view whose actual stride is
+`2`: every access stays inside the allocation, yet output element `1` is
+`relu` of storage cell `1`, not of the view's element `1` (cell `2`). A bounds
+check cannot see this; the stride-argument correspondence (the wrapper passes
+`in0.stride(0)`, checked by the adapter) is what excludes it. -/
+theorem relu_wrong_stride_reads_wrong_element (in0_ptr out0_ptr : RegionName)
+    (hne : in0_ptr ≠ out0_ptr) (s : BlockState) (hpid : s.pids 0 = 0)
+    (h1 : s.readMem in0_ptr 1 = 5) (h2 : s.readMem in0_ptr 2 = -1) :
+    ∃ s1, exec ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+        1 1 2 2 1 2).toAlgKernel) s = some s1 ∧
+      s1.readMem out0_ptr 1 ≠ TiledActivation.relu (s.readMem in0_ptr (1 * 2)) := by
+  obtain ⟨s1, hexec, hvals, -⟩ := relu_one_tile_region_run in0_ptr out0_ptr 1 1 2 2 1 2
+    (by decide) s (fun i => s.readMem in0_ptr (taskIndex (s.pids 0) 2 i.1 * 1))
+    (fun _ _ => rfl)
+  refine ⟨s1, hexec, ?_⟩
+  have h := hvals (⟨1, by decide⟩, PUnit.unit) (by simp [taskIndex, hpid])
+  simp only [taskIndex, hpid, Nat.zero_mul, Nat.zero_add, Nat.one_mul, Nat.mul_one] at h
+  rw [h, h1, show (1 * 2 : Nat) = 2 from rfl, h2]
+  simp [TiledActivation.relu]
+
 /-- **Whole-wrapper headline (strided ReLU, one-tile branch).** For rank-1
 tensors accepted by the checker, input and output in distinct regions, and an
 input whose logical element `k` (at element offset `k * in_stride` from the
-view's data pointer) reads `xs k`:
+view's data pointer) is the typed real cell `xs k`:
 
 1. every logical output element `k < out.numel`, at `k * out_stride`, holds
    `relu (xs k)`, and every other cell is unchanged — in particular the gap
@@ -1969,7 +1990,7 @@ specification relu_wrapper_one_tile_correctness
     (in0_ptr out0_ptr : RegionName) (hne : in0_ptr ≠ out0_ptr)
     (s : BlockState) (xs : Nat → ℝ)
     (hx : ∀ k, k < out.numel →
-      s.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k) :
+      s.mem in0_ptr (k * (StridedUnary.launch x out).inStride) = MemCell.real (xs k)) :
     Kernel.LaunchCorrectFramed
         ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
           (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
@@ -2016,7 +2037,7 @@ specification relu_wrapper_one_tile_correctness
   rw [hon]
   have hx' : ∀ k, k < (StridedUnary.launch x out).s0 →
       s.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k :=
-    fun k hk => hx k (hon ▸ hk)
+    fun k hk => by simp [BlockState.readMem, hx k (hon ▸ hk)]
   -- per-program frames on the 1-D grid `(num_ctas,)`
   have hprog := fun (t : BlockState)
       (ht : ∀ k, k < (StridedUnary.launch x out).s0 →
@@ -2144,26 +2165,5 @@ specification relu_wrapper_one_tile_correctness
         exact hno ⟨hr, k, hk, ho⟩
       rw [hnw r o hnot]
       exact hframe r o fun ⟨hr, k, hk, ho⟩ => hno ⟨hr, k, hk, ho⟩
-
-/-- **A wrong stride inside the allocation reads the wrong logical element.**
-Launch the kernel with input stride `1` over a view whose actual stride is
-`2`: every access stays inside the allocation, yet output element `1` is
-`relu` of storage cell `1`, not of the view's element `1` (cell `2`). A bounds
-check cannot see this; the stride-argument correspondence (the wrapper passes
-`in0.stride(0)`, checked by the adapter) is what excludes it. -/
-theorem relu_wrong_stride_reads_wrong_element (in0_ptr out0_ptr : RegionName)
-    (hne : in0_ptr ≠ out0_ptr) (s : BlockState) (hpid : s.pids 0 = 0)
-    (h1 : s.readMem in0_ptr 1 = 5) (h2 : s.readMem in0_ptr 2 = -1) :
-    ∃ s1, exec ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
-        1 1 2 2 1 2).toAlgKernel) s = some s1 ∧
-      s1.readMem out0_ptr 1 ≠ TiledActivation.relu (s.readMem in0_ptr (1 * 2)) := by
-  obtain ⟨s1, hexec, hvals, -⟩ := relu_one_tile_region_run in0_ptr out0_ptr 1 1 2 2 1 2
-    (by decide) s (fun i => s.readMem in0_ptr (taskIndex (s.pids 0) 2 i.1 * 1))
-    (fun _ _ => rfl)
-  refine ⟨s1, hexec, ?_⟩
-  have h := hvals (⟨1, by decide⟩, PUnit.unit) (by simp [taskIndex, hpid])
-  simp only [taskIndex, hpid, Nat.zero_mul, Nat.zero_add, Nat.one_mul, Nat.mul_one] at h
-  rw [h, h1, show (1 * 2 : Nat) = 2 from rfl, h2]
-  simp [TiledActivation.relu]
 
 end VeriTile.Bench.TritonBenchG.ReluStridedBuffer

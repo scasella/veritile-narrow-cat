@@ -54,8 +54,10 @@ def rowMajor : List Nat → List Nat
   | _ :: rest => rest.foldr (· * ·) 1 :: rowMajor rest
 
 /-- `is_contiguous()` for the row-major memory format: every dimension of size
-greater than one carries its row-major stride (size-0/1 dimensions are free,
-as in torch). Conservative for empty tensors with unusual strides. -/
+greater than one carries its row-major stride. Size-1 dimensions are free, as
+in torch. Conservative for tensors with a zero-size dimension: torch computes
+contiguous strides with `max(size, 1)` (e.g. `torch.empty(2, 0).stride() ==
+(1, 1)`), which this definition rejects; such tensors have no elements. -/
 def Contiguous (t : TensorMeta) : Prop :=
   t.strides.length = t.shape.length ∧
     ∀ i, i < t.shape.length → 1 < t.shape.getD i 0 →

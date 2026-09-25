@@ -11,6 +11,12 @@ Concrete, kernel-checked witnesses for the `add_example` host-launch contract
 * kernel-mutant witnesses — dropping the store mask, or weakening the mask to
   `offsets <= n_elements`, writes an output cell at index `≥ n`, violating the
   contract's frame clause (cells outside `out[0, n)` are unchanged).
+* wrapper-contract cases (`Elementwise2`) — accepted configurations, and the
+  allocation-safe but tensor-invalid (W2) and partially-written (W1)
+  configurations that the launch checker alone accepts but the wrapper
+  contract rejects;
+* strided unary (`relu_strided_buffer`, one-tile branch) layout cases decided
+  by `StridedUnary.check`.
 
 The mutant kernels are local copies; the upstream transcription in
 `AddExample.lean` is not modified.
@@ -131,6 +137,22 @@ Two configurations that the launch checker alone accepts — every access is
 inside its allocation — but that do not give the caller the intended tensor.
 The wrapper contract (`Elementwise2`) rejects both. -/
 
+/-- Accepted: equal-shape contiguous `(4, 8)` f32 tensors at disjoint aligned
+addresses (the wrapper contract of `add_wrapper`). -/
+theorem add_wrapper_accepts_2d :
+    Elementwise2.check 4 ⟨4096, 4, [4, 8], [8, 1], 32, .f32⟩ ⟨8192, 4, [4, 8], [8, 1], 32, .f32⟩
+      ⟨16384, 4, [4, 8], [8, 1], 32, .f32⟩ = Bool.true := by decide
+
+/-- Accepted: `x` and `y` the same tensor (read-only aliasing). -/
+theorem add_wrapper_accepts_aliased_inputs :
+    Elementwise2.check 4 ⟨4096, 4, [16], [1], 16, .f32⟩ ⟨4096, 4, [16], [1], 16, .f32⟩
+      ⟨8192, 4, [16], [1], 16, .f32⟩ = Bool.true := by decide
+
+/-- Accepted: `custom_add` on rank-1 `n = 37`. -/
+theorem custom_add_accepts_rank1 :
+    Elementwise2.checkRank1 16 ⟨4096, 4, [37], [1], 37, .f32⟩ ⟨8192, 4, [37], [1], 37, .f32⟩
+      ⟨16384, 4, [37], [1], 37, .f32⟩ = Bool.true := by decide
+
 /-- W2: `y` is a 12-element view of 16-element storage while `x` has 16
 elements. Every address stays inside `y`'s allocation (capacity 16), so the
 launch checker accepts; but the kernel reads 4 elements past the tensor `y`. -/
@@ -216,6 +238,9 @@ theorem relu_f16_rejected :
 #axiomsClean i32_offset_wraps
 #axiomsClean unmasked_store_frame_violation
 #axiomsClean offbyone_mask_frame_violation
+#axiomsClean add_wrapper_accepts_2d
+#axiomsClean add_wrapper_accepts_aliased_inputs
+#axiomsClean custom_add_accepts_rank1
 #axiomsClean w2_launch_accepted
 #axiomsClean w2_inputs_not_covered
 #axiomsClean w2_wrapper_rejected

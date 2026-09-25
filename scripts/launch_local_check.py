@@ -134,6 +134,8 @@ AUDIT_TARGETS = [
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
                             "w2_launch_accepted", "w2_inputs_not_covered", "w2_wrapper_rejected",
                             "w1_launch_accepted", "w1_output_not_covered", "w1_wrapper_rejected",
+                            "add_wrapper_accepts_2d", "add_wrapper_accepts_aliased_inputs",
+                            "custom_add_accepts_rank1",
                             "relu_valid_contiguous", "relu_valid_strided", "relu_empty_rejected",
                             "relu_loop_branch_rejected", "relu_stride_out_of_alloc_rejected",
                             "relu_overlap_rejected", "relu_f16_rejected"]], []),

@@ -30,16 +30,20 @@ reads `(s0 − 1)·stride < capacity`.
 | S6 `in_bounds` | `(s0−1)·stride < capacity` for both | every strided element inside its allocation |
 | S7 `dtype_ok` | both f32, 4 bytes | supported dtype; `.to()` casts are erased in Lean; `StridedBuffer` dtype reinterpretation is rejected |
 | S8 `aligned` | data pointers multiples of 4 | element addressing |
-| S9 `spans_disjoint` | input and output byte spans `[ptr, ptr + ((s0−1)·stride+1)·4)` disjoint | no program reads a cell another writes (conservative: interleaved disjoint strided sets are rejected) |
+| S9 `spans_disjoint` | input and output byte spans `[ptr, ptr + ((s0−1)·stride+1)·4)` disjoint | justifies modelling input and output as distinct regions (the headline's `in0_ptr ≠ out0_ptr`, from which non-interference is proved); conservative: interleaved disjoint strided sets are rejected |
 | S10 `offsets_fit` | `ctas · tile ≤ 2^31` | block-pointer offsets are `i32` (Triton 3.8.0) |
 | S11 `addresses_fit` | `(s0−1)·stride·4 < 2^63` | block-pointer shape/strides are `i64` |
 
 `check_ok` / `check_complete` make every rejection a named failed obligation.
+S6, S8, S9 and S11 have no Lean consumer: no flat placement is instantiated
+for this kernel, so they are checked for the real-memory correspondence
+(TA-region) rather than used by a proof.
 
 ## Headline `relu_wrapper_one_tile_correctness` (`ReluStridedBuffer.lean`)
 
 For checked tensors, input and output in distinct regions, and input logical
-element `k` (element offset `k·in_stride` from the data pointer) reading `xs k`:
+element `k` (element offset `k·in_stride` from the data pointer) holding the
+typed real cell `xs k`:
 
 1. every logical output element `k < out.numel`, at `k·out_stride`, holds
    `relu (xs k)`, and **every other cell is unchanged** — including the gap
@@ -89,4 +93,6 @@ Grid-stride-loop branch; negative strides; dtype reinterpretation; empty
 input; flat-memory placement for this kernel (the flat bridge is instantiated
 for `add_example` only); byte-level memory (cells are typed and element-sized);
 instruction-level interleaving (TA-sched); the recognizer (a pinned-pattern
-AST match, trusted and tested) and metadata extraction (trusted).
+AST match, trusted and tested) and metadata extraction (trusted; a view
+pointer outside its storage gets capacity 0 and is rejected by S6);
+TA-transcription and TA-region.

@@ -98,8 +98,10 @@ manifest-built ones:
    differential testing** against the Lean definitions (`#eval`): 3000 + 2000
    randomized near-valid and adversarial cases, 0 mismatches
    (`launch_evidence/invoke_differential*.json`; the gate re-runs 800 + 800).
-4. On acceptance the kernel is launched with exactly the checked `n`, block
-   and grid; on rejection `ContractViolation` names the failed obligations.
+4. On acceptance the checked path **re-issues the launch itself** with exactly
+   the checked `n`, block and grid (it does not call the pinned wrapper
+   function; the recognizer is what ties that launch to the wrapper's text);
+   on rejection `ContractViolation` names the failed obligations.
 
 Host cost on this Mac (arm64, torch CPU tensors, `launch_evidence/invoke_overhead.json`):
 metadata ≈ 3 µs for three tensors, decision ≈ 6 µs (elementwise) / ≈ 1.5 µs

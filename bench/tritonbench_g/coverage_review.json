@@ -4326,7 +4326,7 @@
     {
       "file": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
       "python_file": "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
-      "lean_sha256": "6a12198b1d7330426bb351641b9cdecd39bc9431e2885798f0c69c1f04c42c21",
+      "lean_sha256": "c5ced30e082399ba66c404d42ecb40f034206dc3b108b92dac1e6ee38dcf2663",
       "python_sha256": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
       "declarations": [
         {

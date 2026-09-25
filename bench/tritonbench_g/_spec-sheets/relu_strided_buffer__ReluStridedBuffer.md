@@ -406,7 +406,7 @@ def taskIndex (tile_id0 tile_size0 : Nat) (i : Fin tile_size0) : Nat :=
 /-- **Whole-wrapper headline (strided ReLU, one-tile branch).** For rank-1
 tensors accepted by the checker, input and output in distinct regions, and an
 input whose logical element `k` (at element offset `k * in_stride` from the
-view's data pointer) reads `xs k`:
+view's data pointer) is the typed real cell `xs k`:
 
 1. every logical output element `k < out.numel`, at `k * out_stride`, holds
    `relu (xs k)`, and every other cell is unchanged — in particular the gap
@@ -426,7 +426,7 @@ specification relu_wrapper_one_tile_correctness
     (in0_ptr out0_ptr : RegionName) (hne : in0_ptr ≠ out0_ptr)
     (s : BlockState) (xs : Nat → ℝ)
     (hx : ∀ k, k < out.numel →
-      s.readMem in0_ptr (k * (StridedUnary.launch x out).inStride) = xs k) :
+      s.mem in0_ptr (k * (StridedUnary.launch x out).inStride) = MemCell.real (xs k)) :
     Kernel.LaunchCorrectFramed
         ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
           (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
