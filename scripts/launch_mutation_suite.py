@@ -311,7 +311,7 @@ def pipeline_mutants(scratch: Path):
            f"rc={r.returncode}: {' | '.join(l for l in r.stdout.splitlines() if 'REQUIRED' in l)}")
     # E9 edit inside pinned upstream code (additive-only gate), on a scratch copy
     pin_root = scratch / "pin"
-    for f in LC.ADDITIVE:
+    for f in [*LC.ADDITIVE, *LC.PINNED_EXACT]:
         (pin_root / f).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / f, pin_root / f)
     comp = pin_root / "VeriTile/Triton/Launch/Composition.lean"
