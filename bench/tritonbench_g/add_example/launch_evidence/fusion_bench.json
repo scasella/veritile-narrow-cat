@@ -1,0 +1,1077 @@
+{
+ "kind": "fusion (fused float32 add+ReLU vs unfused checked pipeline, eager, torch.compile)",
+ "device": "cuda",
+ "triton": "3.8.0",
+ "torch": "2.14.0+cu130",
+ "python": "3.12.10",
+ "TRITON_INTERPRET": null,
+ "gpu_name": "NVIDIA L4",
+ "compute_capability": [
+  8,
+  9
+ ],
+ "torch_cuda": "13.0",
+ "nvidia_smi": "NVIDIA L4, 580.95.05, 23034 MiB, 2040 MHz",
+ "relu_num_warps": 4,
+ "candidates": {
+  "fused_checked": "improvement/add_relu_fused.py::add_relu_wrapper via launch_fused.CheckedFusedAddRelu (Elementwise2 contract, BLOCK_SIZE 64; AddReluFused.lean)",
+  "unfused_checked": "checked add_example_block64 add_wrapper -> temporary, then checked strided ReLU (store_cast_fix text, selected num_warps); rank-1 view of the temporary",
+  "eager": "torch.relu(x + y)",
+  "compiled": "torch.compile(lambda x, y: torch.relu(x + y), dynamic=False), warmed per shape"
+ },
+ "sizes": [
+  {
+   "n": 65536,
+   "fused_eq_unfused_bitwise": true,
+   "fused_eq_eager_bitwise": true,
+   "fused_eq_compiled_bitwise": true,
+   "device": {
+    "fused_checked": {
+     "kernel_us": {
+      "median": 1.9025000000000318,
+      "min": 1.884999999999991,
+      "max": 2.1380000000001473,
+      "kernels": [
+       "add_relu_kernel"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.008063999935984612,
+      "median": 0.008224000222980976,
+      "p80": 0.008588800206780435,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "unfused_checked": {
+     "kernel_us": {
+      "median": 3.2309999999999945,
+      "min": 3.169999999999959,
+      "max": 3.582000000000221,
+      "kernels": [
+       "add_kernel",
+       "relu_forward_kernel_rank_1"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.01017600018531084,
+      "median": 0.010751999914646149,
+      "p80": 0.011071999557316303,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "eager": {
+     "kernel_us": {
+      "median": 2.911000000000058,
+      "min": 2.8780000000000427,
+      "max": 3.2630000000000337,
+      "kernels": [
+       "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>)",
+       "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.01071999967098236,
+      "median": 0.010975999757647514,
+      "p80": 0.01134719979017973,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "compiled": {
+     "kernel_us": {
+      "median": 1.47199999999998,
+      "min": 1.4390000000000782,
+      "max": 1.663000000000011,
+      "kernels": [
+       "triton_poi_fused_add_relu_0"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.008191999979317188,
+      "median": 0.008320000022649765,
+      "p80": 0.008832000195980072,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    }
+   },
+   "e2e_us": {
+    "fused_checked": {
+     "p20": 97.44599999805814,
+     "median": 99.03600000171764,
+     "p80": 105.82599999864328,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "unfused_checked": {
+     "p20": 161.55999999867277,
+     "median": 164.45049999802563,
+     "p80": 185.60200000194982,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "eager": {
+     "p20": 34.31200000036938,
+     "median": 34.97199999991096,
+     "p80": 35.98199999998997,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "compiled": {
+     "p20": 84.93500000028575,
+     "median": 86.41999999881023,
+     "p80": 90.58599999889339,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    }
+   },
+   "bytes_moved_ideal": {
+    "fused": 786432,
+    "unfused": 1310720
+   }
+  },
+  {
+   "n": 1048576,
+   "fused_eq_unfused_bitwise": true,
+   "fused_eq_eager_bitwise": true,
+   "fused_eq_compiled_bitwise": true,
+   "device": {
+    "fused_checked": {
+     "kernel_us": {
+      "median": 12.232000000000085,
+      "min": 12.066000000000031,
+      "max": 12.480000000000018,
+      "kernels": [
+       "add_relu_kernel"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.06403200328350067,
+      "median": 0.06560000032186508,
+      "p80": 0.06726399809122086,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "unfused_checked": {
+     "kernel_us": {
+      "median": 17.176999999999964,
+      "min": 16.963999999999942,
+      "max": 17.604000000000042,
+      "kernels": [
+       "add_kernel",
+       "relu_forward_kernel_rank_1"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.07831680029630661,
+      "median": 0.0799039974808693,
+      "p80": 0.08129280060529709,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "eager": {
+     "kernel_us": {
+      "median": 12.189999999999998,
+      "min": 11.93500000000006,
+      "max": 12.753000000000043,
+      "kernels": [
+       "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>)",
+       "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.07500159740447998,
+      "median": 0.0764320008456707,
+      "p80": 0.07760000228881836,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "compiled": {
+     "kernel_us": {
+      "median": 7.038499999999999,
+      "min": 6.815000000000055,
+      "max": 7.391000000000076,
+      "kernels": [
+       "triton_poi_fused_add_relu_0"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.06272000074386597,
+      "median": 0.06406400352716446,
+      "p80": 0.06517119705677032,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    }
+   },
+   "e2e_us": {
+    "fused_checked": {
+     "p20": 99.17599999909044,
+     "median": 100.6219999997171,
+     "p80": 105.82599999864328,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "unfused_checked": {
+     "p20": 162.75999999848523,
+     "median": 165.71050000102616,
+     "p80": 184.39200000130995,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "eager": {
+     "p20": 31.792000001473752,
+     "median": 33.07699999943736,
+     "p80": 34.48200000022439,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "compiled": {
+     "p20": 84.66600000289759,
+     "median": 86.23999999990417,
+     "p80": 90.46499999953994,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    }
+   },
+   "bytes_moved_ideal": {
+    "fused": 12582912,
+    "unfused": 20971520
+   }
+  },
+  {
+   "n": 4194304,
+   "fused_eq_unfused_bitwise": true,
+   "fused_eq_eager_bitwise": true,
+   "fused_eq_compiled_bitwise": true,
+   "device": {
+    "fused_checked": {
+     "kernel_us": {
+      "median": 73.48849999999999,
+      "min": 68.125,
+      "max": 123.56299999999987,
+      "kernels": [
+       "add_relu_kernel"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.23061120510101318,
+      "median": 0.2335679978132248,
+      "p80": 0.23636479675769806,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "unfused_checked": {
+     "kernel_us": {
+      "median": 202.25400000000008,
+      "min": 199.85400000000004,
+      "max": 209.03600000000006,
+      "kernels": [
+       "add_kernel",
+       "relu_forward_kernel_rank_1"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.28654720187187194,
+      "median": 0.28990399837493896,
+      "p80": 0.2916416108608246,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "eager": {
+     "kernel_us": {
+      "median": 214.82799999999997,
+      "min": 212.72000000000003,
+      "max": 217.45499999999993,
+      "kernels": [
+       "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>)",
+       "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.28758400678634644,
+      "median": 0.28998398780822754,
+      "p80": 0.29254400730133057,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "compiled": {
+     "kernel_us": {
+      "median": 86.70350000000008,
+      "min": 70.01800000000003,
+      "max": 119.577,
+      "kernels": [
+       "triton_poi_fused_add_relu_0"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.22406400740146637,
+      "median": 0.22550399601459503,
+      "p80": 0.22764800488948822,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    }
+   },
+   "e2e_us": {
+    "fused_checked": {
+     "p20": 164.10000000277591,
+     "median": 170.14049999986014,
+     "p80": 174.30100000126458,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "unfused_checked": {
+     "p20": 286.1769999995545,
+     "median": 288.6330000020365,
+     "p80": 293.42899999917904,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "eager": {
+     "p20": 233.76400000074682,
+     "median": 235.30950000072437,
+     "p80": 238.80399999853807,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "compiled": {
+     "p20": 129.5779999992419,
+     "median": 132.25800000071786,
+     "p80": 136.56799999850477,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    }
+   },
+   "bytes_moved_ideal": {
+    "fused": 50331648,
+    "unfused": 83886080
+   }
+  },
+  {
+   "n": 16777216,
+   "fused_eq_unfused_bitwise": true,
+   "fused_eq_eager_bitwise": true,
+   "fused_eq_compiled_bitwise": true,
+   "device": {
+    "fused_checked": {
+     "kernel_us": {
+      "median": 797.089,
+      "min": 787.5409999999999,
+      "max": 849.5060000000001,
+      "kernels": [
+       "add_relu_kernel"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.8275712132453918,
+      "median": 0.8288319706916809,
+      "p80": 0.8309119939804077,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "unfused_checked": {
+     "kernel_us": {
+      "median": 1360.7745,
+      "min": 1344.902,
+      "max": 1374.0349999999999,
+      "kernels": [
+       "add_kernel",
+       "relu_forward_kernel_rank_1"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 1.4481536388397216,
+      "median": 1.4536160230636597,
+      "p80": 1.4592447757720945,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "eager": {
+     "kernel_us": {
+      "median": 1419.739,
+      "min": 1409.187,
+      "max": 1431.5029999999997,
+      "kernels": [
+       "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>)",
+       "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 1.451091194152832,
+      "median": 1.4549760222434998,
+      "p80": 1.459020757675171,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "compiled": {
+     "kernel_us": {
+      "median": 835.115,
+      "min": 827.0380000000001,
+      "max": 851.6680000000001,
+      "kernels": [
+       "triton_poi_fused_add_relu_0"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 0.8744447827339172,
+      "median": 0.8791360259056091,
+      "p80": 0.8827391862869263,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    }
+   },
+   "e2e_us": {
+    "fused_checked": {
+     "p20": 903.7460000058672,
+     "median": 906.5059999997516,
+     "p80": 910.72699999728,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "unfused_checked": {
+     "p20": 1493.7830000008034,
+     "median": 1522.5194999999303,
+     "p80": 1529.9650000031306,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "eager": {
+     "p20": 1454.3300000013915,
+     "median": 1458.8199999998608,
+     "p80": 1463.7500000063142,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "compiled": {
+     "p20": 885.105000001829,
+     "median": 888.745500002841,
+     "p80": 893.1449999991514,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    }
+   },
+   "bytes_moved_ideal": {
+    "fused": 201326592,
+    "unfused": 335544320
+   }
+  },
+  {
+   "n": 33554432,
+   "fused_eq_unfused_bitwise": true,
+   "fused_eq_eager_bitwise": true,
+   "fused_eq_compiled_bitwise": true,
+   "device": {
+    "fused_checked": {
+     "kernel_us": {
+      "median": 1611.8424999999997,
+      "min": 1605.9540000000002,
+      "max": 1695.5859999999998,
+      "kernels": [
+       "add_relu_kernel"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 1.6414079666137695,
+      "median": 1.6451520323753357,
+      "p80": 1.6483583927154541,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "unfused_checked": {
+     "kernel_us": {
+      "median": 2758.819,
+      "min": 2741.4280000000003,
+      "max": 2774.221,
+      "kernels": [
+       "add_kernel",
+       "relu_forward_kernel_rank_1"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 2.892979097366333,
+      "median": 2.897536039352417,
+      "p80": 2.9067008018493654,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "eager": {
+     "kernel_us": {
+      "median": 2867.46,
+      "min": 2843.605,
+      "max": 2886.713,
+      "kernels": [
+       "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, false>(int, at::native::(anonymous namespace)::launch_clamp_scalar(at::TensorIteratorBase&, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>)",
+       "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 2.8975807189941403,
+      "median": 2.90393602848053,
+      "p80": 2.9089088439941406,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    },
+    "compiled": {
+     "kernel_us": {
+      "median": 1639.8599999999997,
+      "min": 1593.2569999999998,
+      "max": 1718.5939999999998,
+      "kernels": [
+       "triton_poi_fused_add_relu_0"
+      ],
+      "calls": 30,
+      "method": "torch.profiler CUDA kernel durations, summed per call"
+     },
+     "event_ms": {
+      "p20": 1.7348032474517823,
+      "median": 1.7414559721946716,
+      "p80": 1.7484863996505737,
+      "method": "triton.testing.do_bench(25, 200)"
+     }
+    }
+   },
+   "e2e_us": {
+    "fused_checked": {
+     "p20": 1728.1470000014565,
+     "median": 1731.3524999984509,
+     "p80": 1737.707000003752,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "unfused_checked": {
+     "p20": 2858.2070000027215,
+     "median": 2865.9170000011613,
+     "p80": 2875.007999996626,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "eager": {
+     "p20": 2862.76700000343,
+     "median": 2871.0630000006176,
+     "p80": 2880.517999997778,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    },
+    "compiled": {
+     "p20": 1728.94800000023,
+     "median": 1739.6630000021673,
+     "p80": 1751.5289999963102,
+     "reps": 300,
+     "method": "perf_counter around call + torch.cuda.synchronize()"
+    }
+   },
+   "bytes_moved_ideal": {
+    "fused": 402653184,
+    "unfused": 671088640
+   }
+  }
+ ],
+ "special_values": {
+  "pairs": 144,
+  "fused_eq_unfused_bitwise": true,
+  "fused_eq_eager_bitwise": false,
+  "mismatch_vs_eager": [
+   {
+    "x": "1.5",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-1.5",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "0.0",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-0.0",
+    "y": "-0.0",
+    "fused": "0x0",
+    "eager": "0x80000000"
+   },
+   {
+    "x": "-0.0",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "inf",
+    "y": "-inf",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "inf",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-inf",
+    "y": "inf",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-inf",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "1.5",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "-1.5",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "0.0",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "-0.0",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "inf",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "-inf",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "1.401298464324817e-45",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "-1.401298464324817e-45",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "3.4028234663852886e+38",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "-3.4028234663852886e+38",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "nan",
+    "y": "1.0",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "1.401298464324817e-45",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-1.401298464324817e-45",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "3.4028234663852886e+38",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "-3.4028234663852886e+38",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   },
+   {
+    "x": "1.0",
+    "y": "nan",
+    "fused": "0x0",
+    "eager": "0x7fffffff"
+   }
+  ],
+  "fused_eq_compiled_bitwise": false,
+  "mismatch_vs_compiled": 25
+ },
+ "frame": [
+  {
+   "n": 1,
+   "all_outputs_written": true,
+   "sentinels_intact": true
+  },
+  {
+   "n": 63,
+   "all_outputs_written": true,
+   "sentinels_intact": true
+  },
+  {
+   "n": 64,
+   "all_outputs_written": true,
+   "sentinels_intact": true
+  },
+  {
+   "n": 65,
+   "all_outputs_written": true,
+   "sentinels_intact": true
+  },
+  {
+   "n": 1000,
+   "all_outputs_written": true,
+   "sentinels_intact": true
+  }
+ ],
+ "fused_block_diagnostic": [
+  {
+   "n": 16777216,
+   "BLOCK_SIZE": 64,
+   "kernel_us": {
+    "median": 797.9485,
+    "min": 787.8069999999999,
+    "max": 825.4989999999999,
+    "kernels": [
+     "add_relu_kernel"
+    ],
+    "calls": 30,
+    "method": "torch.profiler CUDA kernel durations, summed per call"
+   },
+   "correct": true
+  },
+  {
+   "n": 16777216,
+   "BLOCK_SIZE": 256,
+   "kernel_us": {
+    "median": 811.0049999999999,
+    "min": 800.2860000000001,
+    "max": 836.692,
+    "kernels": [
+     "add_relu_kernel"
+    ],
+    "calls": 30,
+    "method": "torch.profiler CUDA kernel durations, summed per call"
+   },
+   "correct": true
+  },
+  {
+   "n": 16777216,
+   "BLOCK_SIZE": 1024,
+   "kernel_us": {
+    "median": 844.7505000000001,
+    "min": 835.99,
+    "max": 854.913,
+    "kernels": [
+     "add_relu_kernel"
+    ],
+    "calls": 30,
+    "method": "torch.profiler CUDA kernel durations, summed per call"
+   },
+   "correct": true
+  },
+  {
+   "n": 16777216,
+   "BLOCK_SIZE": 4096,
+   "kernel_us": {
+    "median": 832.693,
+    "min": 813.9290000000001,
+    "max": 846.2429999999999,
+    "kernels": [
+     "add_relu_kernel"
+    ],
+    "calls": 30,
+    "method": "torch.profiler CUDA kernel durations, summed per call"
+   },
+   "correct": true
+  }
+ ],
+ "correctness_ok": true,
+ "summary": {
+  "per_size": [
+   {
+    "n": 65536,
+    "device_kernel_us": {
+     "fused_checked": 1.9025000000000318,
+     "unfused_checked": 3.2309999999999945,
+     "eager": 2.911000000000058,
+     "compiled": 1.47199999999998
+    },
+    "e2e_us": {
+     "fused_checked": 99.03600000171764,
+     "unfused_checked": 164.45049999802563,
+     "eager": 34.97199999991096,
+     "compiled": 86.41999999881023
+    },
+    "device_speedup_fused_vs": {
+     "unfused_checked": 1.698291721419154,
+     "eager": 1.5300919842312797,
+     "compiled": 0.7737187910643655
+    },
+    "e2e_speedup_fused_vs": {
+     "unfused_checked": 1.6605123388987184,
+     "eager": 0.35312411647587166,
+     "compiled": 0.8726119794550607
+    }
+   },
+   {
+    "n": 1048576,
+    "device_kernel_us": {
+     "fused_checked": 12.232000000000085,
+     "unfused_checked": 17.176999999999964,
+     "eager": 12.189999999999998,
+     "compiled": 7.038499999999999
+    },
+    "e2e_us": {
+     "fused_checked": 100.6219999997171,
+     "unfused_checked": 165.71050000102616,
+     "eager": 33.07699999943736,
+     "compiled": 86.23999999990417
+    },
+    "device_speedup_fused_vs": {
+     "unfused_checked": 1.4042674950948206,
+     "eager": 0.9965663832570236,
+     "compiled": 0.575416939175928
+    },
+    "e2e_speedup_fused_vs": {
+     "unfused_checked": 1.6468615213521105,
+     "eager": 0.3287253284523301,
+     "compiled": 0.8570690306309419
+    }
+   },
+   {
+    "n": 4194304,
+    "device_kernel_us": {
+     "fused_checked": 73.48849999999999,
+     "unfused_checked": 202.25400000000008,
+     "eager": 214.82799999999997,
+     "compiled": 86.70350000000008
+    },
+    "e2e_us": {
+     "fused_checked": 170.14049999986014,
+     "unfused_checked": 288.6330000020365,
+     "eager": 235.30950000072437,
+     "compiled": 132.25800000071786
+    },
+    "device_speedup_fused_vs": {
+     "unfused_checked": 2.7521857161324577,
+     "eager": 2.923287317063214,
+     "compiled": 1.1798240541037046
+    },
+    "e2e_speedup_fused_vs": {
+     "unfused_checked": 1.6964391194470088,
+     "eager": 1.3830304953900912,
+     "compiled": 0.7773457818733728
+    }
+   },
+   {
+    "n": 16777216,
+    "device_kernel_us": {
+     "fused_checked": 797.089,
+     "unfused_checked": 1360.7745,
+     "eager": 1419.739,
+     "compiled": 835.115
+    },
+    "e2e_us": {
+     "fused_checked": 906.5059999997516,
+     "unfused_checked": 1522.5194999999303,
+     "eager": 1458.8199999998608,
+     "compiled": 888.745500002841
+    },
+    "device_speedup_fused_vs": {
+     "unfused_checked": 1.7071801266859785,
+     "eager": 1.781154927492413,
+     "compiled": 1.0477060905369413
+    },
+    "e2e_speedup_fused_vs": {
+     "unfused_checked": 1.6795470741510234,
+     "eager": 1.6092778205552534,
+     "compiled": 0.9804077413752194
+    }
+   },
+   {
+    "n": 33554432,
+    "device_kernel_us": {
+     "fused_checked": 1611.8424999999997,
+     "unfused_checked": 2758.819,
+     "eager": 2867.46,
+     "compiled": 1639.8599999999997
+    },
+    "e2e_us": {
+     "fused_checked": 1731.3524999984509,
+     "unfused_checked": 2865.9170000011613,
+     "eager": 2871.0630000006176,
+     "compiled": 1739.6630000021673
+    },
+    "device_speedup_fused_vs": {
+     "unfused_checked": 1.711593409405696,
+     "eager": 1.778995156164452,
+     "compiled": 1.0173822814574005
+    },
+    "e2e_speedup_fused_vs": {
+     "unfused_checked": 1.655305317665655,
+     "eager": 1.6582775604639648,
+     "compiled": 1.0048000046228158
+    }
+   }
+  ],
+  "regressions_fused_slower_by_more_than_2pct": [
+   {
+    "n": 65536,
+    "metric": "device_speedup_fused_vs",
+    "vs": "compiled",
+    "ratio": 0.7737187910643655
+   },
+   {
+    "n": 65536,
+    "metric": "e2e_speedup_fused_vs",
+    "vs": "eager",
+    "ratio": 0.35312411647587166
+   },
+   {
+    "n": 65536,
+    "metric": "e2e_speedup_fused_vs",
+    "vs": "compiled",
+    "ratio": 0.8726119794550607
+   },
+   {
+    "n": 1048576,
+    "metric": "device_speedup_fused_vs",
+    "vs": "compiled",
+    "ratio": 0.575416939175928
+   },
+   {
+    "n": 1048576,
+    "metric": "e2e_speedup_fused_vs",
+    "vs": "eager",
+    "ratio": 0.3287253284523301
+   },
+   {
+    "n": 1048576,
+    "metric": "e2e_speedup_fused_vs",
+    "vs": "compiled",
+    "ratio": 0.8570690306309419
+   },
+   {
+    "n": 4194304,
+    "metric": "e2e_speedup_fused_vs",
+    "vs": "compiled",
+    "ratio": 0.7773457818733728
+   }
+  ]
+ },
+ "exit_code": 0,
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Serial.lean": "f79aef0c55c04905e544fff60db59b3e5ba78a4498180f1934e7dcc6eacb5776",
+  "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
+  "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
+  "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
+  "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
+  "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "95d43e33ae40d3823ada1b117a32ad2edcaa0df2b2d83a2fed24dd52f3d4340f",
+  "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
+  "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
+  "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
+  "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
+  "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
+  "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
+  "scripts/launch_local_check.py": "bcca7aee66c4f7a27807559307a382d6abb29e9dfec8529ef051a39f42621d94",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
+  "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
+  "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
+  "scripts/test_launch_check.py": "08b659aba67cc3d29d2ee539914aa80fb6ac9bfc20bbf0a67cc3674d872670f3",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
+  "bench/tritonbench_g/add_example/improvement/add_relu_fused.py": "1721d008dc13c60cf1793ee6fc5b964ec5ab3cd2fca4f89c50bed76c59558437",
+  "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
+  "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
+  "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ }
+}

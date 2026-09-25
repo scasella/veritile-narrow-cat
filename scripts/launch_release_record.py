@@ -178,6 +178,22 @@ def main() -> int:
         if dv:
             w(f"| {fname} | host | {what}: {dv['cases']} cases, {len(dv['mismatches'])} mismatches "
               f"| {freshness(dv, hashes, fname)} |")
+    rt = load("relu_tune.json")
+    if rt:
+        w(f"| relu_tune.json | {rt.get('gpu_name')} CC {rt.get('compute_capability')}, Triton {rt['triton']}, "
+          f"torch {rt['torch']} | checked ReLU num_warps sweep {rt['search_space']['num_warps']}: all correct "
+          f"{rt['all_correct']}; selected num_warps {rt.get('selected_num_warps')} ({rt.get('selection_rule')}) "
+          f"| {freshness(rt, hashes, 'relu_tune.json')} |")
+    fb = load("fusion_bench.json")
+    if fb:
+        big = [x for x in fb["summary"]["per_size"] if x["n"] >= 2 ** 24]
+        sp = "; ".join(f"n={x['n']}: device x{x['device_speedup_fused_vs']['unfused_checked']:.2f} vs unfused, "
+                       f"x{x['device_speedup_fused_vs']['compiled']:.2f} vs compiled; end-to-end "
+                       f"x{x['e2e_speedup_fused_vs']['unfused_checked']:.2f} / x{x['e2e_speedup_fused_vs']['compiled']:.2f}"
+                       for x in big)
+        w(f"| fusion_bench.json | {fb.get('gpu_name')}, Triton {fb['triton']}, torch {fb['torch']} | correctness "
+          f"{fb['correctness_ok']}; {sp}; regressions listed: "
+          f"{len(fb['summary']['regressions_fused_slower_by_more_than_2pct'])} | {freshness(fb, hashes, 'fusion_bench.json')} |")
     ov = load("invoke_overhead.json")
     if ov:
         r0 = ov["rows"][0]
