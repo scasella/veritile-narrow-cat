@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-24T23:59:37Z",
- "git_head": "a236734b7ca15484df632c0a5d80240673f1740f",
+ "generated": "2026-09-25T00:11:53Z",
+ "git_head": "e795353c71cc01f2e4f1c04a8889bbd3878964ea",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -81,15 +81,15 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 3.8
+   "elapsed_s": 0.7
   },
   "build": {
    "status": "passed",
-   "scope": "lake build in working tree (incremental; use --fresh for final evidence)",
+   "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0",
-   "elapsed_s": 155.7
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-masp6720",
+   "elapsed_s": 604.1
   },
   "placeholder_scan": {
    "status": "passed",
@@ -106,15 +106,15 @@
    "evidence": "git diff vs pin",
    "reason": "no undeclared or non-additive changes",
    "elapsed_s": 0.1,
-   "worktree_clean": false
+   "worktree_clean": true
   },
   "upstream_static_gates": {
-   "status": "failed",
+   "status": "passed",
    "scope": "bench/check_proof_gap_manifest.py; check-artifact.sh's kernel-manifest validator; committed spec sheets current",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
-   "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0, uncommitted sheet changes: M bench/tritonbench_g/_spec-sheets/INDEX.md\n M bench/tritonbench_g/_spec-sheets/add_example__AddExample.md\n M bench/tritonbench_g/_spec-sheets/vector_addition_custom__VectorAdditionCustom.md",
-   "elapsed_s": 6.1
+   "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0",
+   "elapsed_s": 5.2
   },
   "kernel_file_axioms": {
    "status": "passed",
@@ -122,7 +122,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
    "reason": "3 files, axiom-clean 23 theorems",
-   "elapsed_s": 37.6,
+   "elapsed_s": 23.3,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -170,7 +170,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 10.3
+   "elapsed_s": 8.7
   },
   "source_link_adapter": {
    "status": "passed",
@@ -178,7 +178,7 @@
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "3 manifests, 36 cases, 26 accepted, all verdicts kernel-checked",
-   "elapsed_s": 7.1
+   "elapsed_s": 6.3
   },
   "adapter_tests": {
    "status": "passed",
@@ -186,7 +186,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 2.5
+   "elapsed_s": 2.2
   },
   "official_comparator": {
    "status": "not_run",
@@ -213,10 +213,11 @@
    "elapsed_s": 0.0
   }
  },
- "fresh_workspace": false,
+ "fresh_workspace": true,
  "full_library_build": {
   "status": "not_run",
   "reason": "only the lite subset needed by these files is built (VeriTile.Triton + audit/common modules); default `lake build` / VeriTileFull (TrustReport, ApproxGeLU) not run"
  },
- "note": "adapter_results.json records per-run torch data_ptr bases; they differ run to run"
+ "note": "adapter_results.json records per-run torch data_ptr bases; they differ run to run",
+ "fresh_workspace_matches_repo": true
 }
