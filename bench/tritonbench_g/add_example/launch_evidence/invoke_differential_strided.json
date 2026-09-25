@@ -29,7 +29,7 @@
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
   "scripts/launch_local_check.py": "a99914f9b627d241c0ea7d32a1fe07c4b3e7b4c3bb54dbdab410f370f41ca397",
-  "scripts/launch_invoke.py": "171bb1893454fca0d148f7d1a854d9fe2b89bf0eb1df11c74fac5345ff789635",
+  "scripts/launch_invoke.py": "1b655dfd133f89fe83c0ba312bddf0f01fc82f0d229f027637f61be394211e6e",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
   "scripts/test_launch_check.py": "c065777b65651714d185dd7bed1444af343293c91a3ae3e1558a57af75feab73",

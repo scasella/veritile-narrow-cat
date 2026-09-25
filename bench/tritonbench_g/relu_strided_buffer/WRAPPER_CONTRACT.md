@@ -85,7 +85,14 @@ the arguments swapped is `unsupported` (unit tests + interpreter demo).
   inputs rejected before launch. The interpreter needs a derived text
   (device guard → `nullcontext`; store cast to the pointer's element type)
   and cannot receive `StridedBuffer` arguments (verdict only).
-- No GPU run of this consumer yet.
+- NVIDIA L4 via Modal, Triton 3.8.0 (`launch_evidence/gpu_wrapper.json`, one device):
+  **the pinned kernel text does not compile** — `out0.to(out0_bptr.type.element_ty)`
+  fails because a block-pointer type has no `element_ty` in Triton 3.8.0. With a
+  labelled single-change variant (store cast to `out0_ptr.type.element_ty`;
+  device guard kept), contiguous, input-strided, output-strided (gap cells
+  intact) and `StridedBuffer` (offset 5, stride 3) invocations equal
+  `torch.relu`, and the pinned wrapper function (same variant) agrees with the
+  checked path; all rejection cases rejected before launch.
 
 ## Not covered / trusted
 
