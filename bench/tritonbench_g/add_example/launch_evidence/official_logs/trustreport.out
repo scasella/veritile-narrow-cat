@@ -373,3 +373,6 @@ VeriTile.Triton.Kernel.runSerial_agrees_merge: axiom footprint ⊆ standard base
  Classical.choice])
 VeriTile.Triton.StridedUnary.check_complete: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
 VeriTile.Triton.StridedUnary.check_ok: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
+VeriTile.Triton.StridedUnary.Pre.addr_bytes: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
+VeriTile.Triton.StridedUnary.Pre.flat_disjoint: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
+VeriTile.Triton.StridedUnary.Pre.reads_outside_writes: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])

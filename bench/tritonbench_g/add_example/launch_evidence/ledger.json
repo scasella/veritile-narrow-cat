@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T15:52:57Z",
- "git_head": "68a586507811e20d8f9082ddeeb35a15d3598c30",
+ "generated": "2026-09-25T17:58:28Z",
+ "git_head": "2c2cc14adc5c8b5acb6aeaa01d8d7ee0a9cf445b",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -8,13 +8,14 @@
   "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
   "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
   "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
   "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
-  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "c5ced30e082399ba66c404d42ecb40f034206dc3b108b92dac1e6ee38dcf2663",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
   "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
-  "bench/tests/Blocked1DLaunchWitnesses.lean": "71523294d64098963539577834011bb3071748ca3fddb0fd7a2ef7bd15876550",
-  "VeriTile/Triton/Launch.lean": "c856d4ce9664baa41d2630800599375becd9b665c944e6219c8c3d24b9299bf1",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
@@ -26,11 +27,15 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "a99914f9b627d241c0ea7d32a1fe07c4b3e7b4c3bb54dbdab410f370f41ca397",
-  "scripts/launch_invoke.py": "1b655dfd133f89fe83c0ba312bddf0f01fc82f0d229f027637f61be394211e6e",
+  "scripts/launch_local_check.py": "6ad131771412cda7a5d87141044472c9d790c12e2fb0927ed8ea1ec1d77b08ef",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "c065777b65651714d185dd7bed1444af343293c91a3ae3e1558a57af75feab73",
+  "scripts/test_launch_check.py": "63a244b639dce2dcb62bc6b101260a0bc902ddf97fcdefd90b9f465bf6e8aba9",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
@@ -68,19 +73,19 @@
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
-   "status": "passed",
+   "status": "failed",
    "scope": "real Triton launch on a supported NVIDIA/AMD GPU",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/gpu.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['bench/audit_source.py', 'scripts/launch_gpu.py', 'scripts/launch_gpu_modal.py', 'scripts/launch_interpret.py']",
    "elapsed_s": 0.0
   },
   "gpu_performance": {
-   "status": "passed",
+   "status": "failed",
    "scope": "steady-state timing on a supported GPU",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/gpu_perf.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['bench/audit_source.py', 'scripts/launch_gpu.py', 'scripts/launch_gpu_modal.py', 'scripts/launch_interpret.py']",
    "elapsed_s": 0.0
   }
  },
@@ -98,8 +103,8 @@
    "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-ueks9z6u",
-   "elapsed_s": 457.7
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-jsq61njh",
+   "elapsed_s": 495.8
   },
   "placeholder_scan": {
    "status": "passed",
@@ -115,7 +120,7 @@
    "assumptions": "",
    "evidence": "git diff vs pin",
    "reason": "no undeclared or non-additive changes",
-   "elapsed_s": 0.1,
+   "elapsed_s": 0.3,
    "worktree_clean": false
   },
   "upstream_static_gates": {
@@ -124,15 +129,15 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
    "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0",
-   "elapsed_s": 4.7
+   "elapsed_s": 4.8
   },
   "kernel_file_axioms": {
    "status": "passed",
    "scope": "AddExample.lean, VectorAdditionCustom.lean, Blocked1DLaunchWitnesses.lean elaborate; listed theorems' axioms ⊆ {propext, Classical.choice, Quot.sound}; headline inventory",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
-   "reason": "4 files, axiom-clean 78 theorems",
-   "elapsed_s": 35.9,
+   "reason": "4 files, axiom-clean 90 theorems",
+   "elapsed_s": 41.0,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -166,13 +171,16 @@
     "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": {
      "rc": 0,
      "missing": [],
-     "inventory": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_grid_stride_compute_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_grid_stride_exec_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_compute_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_exec_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_grid_stride_io_correctnessR,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_one_tile_io_correctness,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_output_summary_general,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_correctness",
+     "inventory": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_grid_stride_compute_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_grid_stride_exec_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_compute_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_exec_correct,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_grid_stride_io_correctnessR,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_one_tile_io_correctness,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_output_summary_general,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_correctness,\n VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_flat_correctness",
      "ok": true,
      "statement_surfaces": {
       "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_correctness": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.withGridIndex, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Grid.mk, VeriTile.Triton.GridIndex, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.Kernel.memReal, VeriTile.Triton.Kernel.runSerial, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName, VeriTile.Triton.StridedUnary.Launch.grid, VeriTile.Triton.StridedUnary.Launch.inStride, VeriTile.Triton.StridedUnary.Launch.numCtas, VeriTile.Triton.StridedUnary.Launch.numTasks, VeriTile.Triton.StridedUnary.Launch.outStride, VeriTile.Triton.StridedUnary.Launch.s0, VeriTile.Triton.StridedUnary.Launch.tile, VeriTile.Triton.StridedUnary.Launch.tilesPerCta, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta, VeriTile.Triton.TensorMeta.numel, VeriTile.Triton.TiledActivation.relu",
       "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_program_run": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.pids, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.Blocked1D.addrWrites, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.MemCell, VeriTile.Triton.RegionName, VeriTile.Triton.TiledActivation.relu, VeriTile.Triton.exec",
       "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrong_stride_reads_wrong_element": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.pids, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.RegionName, VeriTile.Triton.TiledActivation.relu, VeriTile.Triton.exec",
-      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_one_tile_io_correctness": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.reluOneTileIO, VeriTile.Triton.MaskedTileKernelIO₁.Implements, VeriTile.Triton.MaskedTileKernelIO₁.shape, VeriTile.Triton.RegionName, VeriTile.Triton.TileIndex, VeriTile.Triton.TiledActivation.relu"
+      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_one_tile_io_correctness": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.reluOneTileIO, VeriTile.Triton.MaskedTileKernelIO₁.Implements, VeriTile.Triton.MaskedTileKernelIO₁.shape, VeriTile.Triton.RegionName, VeriTile.Triton.TileIndex, VeriTile.Triton.TiledActivation.relu",
+      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrong_out_stride_writes_gap_cell": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.pids, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.RegionName, VeriTile.Triton.exec",
+      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_launch_flat": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.undef, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.FlatAlloc.addr, VeriTile.Triton.FlatAlloc.flat, VeriTile.Triton.FlatAlloc.flattenKernel, VeriTile.Triton.FlatAlloc.flattenState, VeriTile.Triton.Grid.mk, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionName, VeriTile.Triton.StridedUnary.Launch.grid, VeriTile.Triton.StridedUnary.Launch.inStride, VeriTile.Triton.StridedUnary.Launch.numTasks, VeriTile.Triton.StridedUnary.Launch.outStride, VeriTile.Triton.StridedUnary.Launch.s0, VeriTile.Triton.StridedUnary.Launch.tile, VeriTile.Triton.StridedUnary.Launch.tilesPerCta, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.flatAlloc, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta, VeriTile.Triton.TensorMeta.numel, VeriTile.Triton.TiledActivation.relu",
+      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_flat_correctness": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.undef, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.FlatAlloc.Disjoint, VeriTile.Triton.FlatAlloc.addr, VeriTile.Triton.FlatAlloc.extent, VeriTile.Triton.FlatAlloc.flat, VeriTile.Triton.FlatAlloc.flattenKernel, VeriTile.Triton.FlatAlloc.flattenState, VeriTile.Triton.Grid.mk, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionName, VeriTile.Triton.StridedUnary.Launch.grid, VeriTile.Triton.StridedUnary.Launch.inStride, VeriTile.Triton.StridedUnary.Launch.numTasks, VeriTile.Triton.StridedUnary.Launch.outStride, VeriTile.Triton.StridedUnary.Launch.s0, VeriTile.Triton.StridedUnary.Launch.tile, VeriTile.Triton.StridedUnary.Launch.tilesPerCta, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.flatAlloc, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta, VeriTile.Triton.TensorMeta.base, VeriTile.Triton.TensorMeta.capacity, VeriTile.Triton.TensorMeta.elemBytes, VeriTile.Triton.TensorMeta.numel, VeriTile.Triton.TensorMeta.offsetOf, VeriTile.Triton.TiledActivation.relu"
      }
     },
     "bench/tests/Blocked1DLaunchWitnesses.lean": {
@@ -202,7 +210,10 @@
       "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_loop_branch_rejected": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
       "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_stride_out_of_alloc_rejected": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
       "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_overlap_rejected": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
-      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_f16_rejected": "VeriTile.Triton.ElemDType.f16, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk"
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_f16_rejected": "VeriTile.Triton.ElemDType.f16, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_offset5_stride3_accepted": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_offset5_stride3_flat_placement": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.FlatAlloc.Disjoint, VeriTile.Triton.RegionName, VeriTile.Triton.StridedUnary.flatAlloc, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk",
+      "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses.relu_interleaved_rejected": "VeriTile.Triton.ElemDType.f32, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta.mk"
      }
     }
    }
@@ -213,7 +224,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 14.8
+   "elapsed_s": 15.8
   },
   "source_link_adapter": {
    "status": "passed",
@@ -221,7 +232,7 @@
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "4 manifests, 47 cases, 37 accepted, all verdicts kernel-checked",
-   "elapsed_s": 6.9
+   "elapsed_s": 7.5
   },
   "adapter_tests": {
    "status": "passed",
@@ -229,7 +240,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 1.9
+   "elapsed_s": 2.1
   },
   "invocation_mirror": {
    "status": "passed",
@@ -237,7 +248,7 @@
    "assumptions": "the runtime path uses the mirror; trusted by this differential test, not proved",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/invoke_differential.json",
    "reason": "elementwise rc=0, strided rc=0 (0 = no mismatch)",
-   "elapsed_s": 21.3
+   "elapsed_s": 23.5
   },
   "official_comparator": {
    "status": "passed",
@@ -248,19 +259,27 @@
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
-   "status": "passed",
+   "status": "failed",
    "scope": "real Triton launch on a supported NVIDIA/AMD GPU",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/gpu.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['bench/audit_source.py', 'scripts/launch_gpu.py', 'scripts/launch_gpu_modal.py', 'scripts/launch_interpret.py']",
    "elapsed_s": 0.0
   },
   "gpu_performance": {
-   "status": "passed",
+   "status": "failed",
    "scope": "steady-state timing on a supported GPU",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/gpu_perf.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['bench/audit_source.py', 'scripts/launch_gpu.py', 'scripts/launch_gpu_modal.py', 'scripts/launch_interpret.py']",
+   "elapsed_s": 0.0
+  },
+  "gpu_wrapper": {
+   "status": "failed",
+   "scope": "checked wrapper invocations on CUDA tensors",
+   "assumptions": "",
+   "evidence": "bench/tritonbench_g/add_example/launch_evidence/gpu_wrapper.json",
+   "reason": "STALE evidence: changed ['scripts/launch_invoke.py', 'scripts/launch_local_check.py']; not hashed by the record ['bench/audit_source.py', 'scripts/launch_gpu.py', 'scripts/launch_gpu_modal.py', 'scripts/launch_interpret.py']",
    "elapsed_s": 0.0
   }
  },

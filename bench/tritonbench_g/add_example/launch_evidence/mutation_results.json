@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T17:24:36Z",
- "elapsed_s": 25.7,
+ "generated": "2026-09-25T17:48:36Z",
+ "elapsed_s": 42.4,
  "counts": {
   "accepted": 13,
   "violated_obligation": 12,
@@ -17,7 +17,7 @@
   "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
   "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
   "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
-  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "5fe6fa419948a6496c01b4136d83e135a31a8cf94b37910724b7b996e5e46706",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
   "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
   "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",

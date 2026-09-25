@@ -2,7 +2,7 @@
  "exit_code": 0,
  "environment": "Docker Desktop 7.0.12-linuxkit arm64 VM on macOS; ubuntu:24.04 container, systemd PID 1, --privileged --cgroupns=host; Landlock ABI 8; systemd --user sandbox with RestrictAddressFamilies=~AF_UNIX verified (negative control: AF_UNIX socket -> EAFNOSUPPORT)",
  "tools": "scripts/setup-comparator.sh pins: comparator 2a00b30d, landrun 5283024a; Go 1.26.8 (sha256-pinned)",
- "audited_commit": "68a586507811e20d8f9082ddeeb35a15d3598c30",
+ "audited_commit": "2c2cc14adc5c8b5acb6aeaa01d8d7ee0a9cf445b",
  "commands": [
   "check_comparator.py --file bench/tritonbench_g/add_example/AddExample.lean --trust",
   "check_comparator.py --file bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean --trust",
@@ -11,15 +11,7 @@
   "check_comparator.py --library"
  ],
  "results": {
-  "comparator-check-70zxu2xv/File_c55c6efcac6cf60aa87bc1a9-qh31rdbf": {
-   "source": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
-   "mode": "source-replay",
-   "theorem_count": 347,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-e88oa0t6/File_ec20d19f4a7fe8214248393a-sspnq1tg": {
+  "comparator-check-8zfcnayx/File_ec20d19f4a7fe8214248393a-dsqjsdka": {
    "source": "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
    "mode": "source-replay",
    "theorem_count": 35,
@@ -27,7 +19,23 @@
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
   },
-  "comparator-check-fkv5r2ek/File_1703a39fb50fd4921926c685-vtkeyb11": {
+  "comparator-check-lqv5s9bw/Library-aoy_9xl5": {
+   "source": "proven library manifest",
+   "mode": "source-replay",
+   "theorem_count": 132,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-myzykcpn/File_d3d8431bb20df0f5dd4f61aa-_f7p5q4i": {
+   "source": "bench/tests/Blocked1DLaunchWitnesses.lean",
+   "mode": "source-replay",
+   "theorem_count": 27,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-u7l30mrc/File_1703a39fb50fd4921926c685-vv48gosb": {
    "source": "bench/tritonbench_g/add_example/AddExample.lean",
    "mode": "source-replay",
    "theorem_count": 48,
@@ -35,18 +43,10 @@
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
   },
-  "comparator-check-t3fd0yqe/Library-u239yney": {
-   "source": "proven library manifest",
+  "comparator-check-yao0sji5/File_c55c6efcac6cf60aa87bc1a9-la6suj2l": {
+   "source": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
    "mode": "source-replay",
-   "theorem_count": 129,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-zm0n5r6v/File_d3d8431bb20df0f5dd4f61aa-uxu1cj6f": {
-   "source": "bench/tests/Blocked1DLaunchWitnesses.lean",
-   "mode": "source-replay",
-   "theorem_count": 24,
+   "theorem_count": 355,
    "comparator_exit": 0,
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
@@ -72,13 +72,14 @@
   "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
   "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
   "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
   "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
-  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "c5ced30e082399ba66c404d42ecb40f034206dc3b108b92dac1e6ee38dcf2663",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
   "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
-  "bench/tests/Blocked1DLaunchWitnesses.lean": "71523294d64098963539577834011bb3071748ca3fddb0fd7a2ef7bd15876550",
-  "VeriTile/Triton/Launch.lean": "c856d4ce9664baa41d2630800599375becd9b665c944e6219c8c3d24b9299bf1",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
@@ -90,11 +91,15 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "a99914f9b627d241c0ea7d32a1fe07c4b3e7b4c3bb54dbdab410f370f41ca397",
-  "scripts/launch_invoke.py": "1b655dfd133f89fe83c0ba312bddf0f01fc82f0d229f027637f61be394211e6e",
+  "scripts/launch_local_check.py": "6ad131771412cda7a5d87141044472c9d790c12e2fb0927ed8ea1ec1d77b08ef",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "c065777b65651714d185dd7bed1444af343293c91a3ae3e1558a57af75feab73",
+  "scripts/test_launch_check.py": "63a244b639dce2dcb62bc6b101260a0bc902ddf97fcdefd90b9f465bf6e8aba9",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
