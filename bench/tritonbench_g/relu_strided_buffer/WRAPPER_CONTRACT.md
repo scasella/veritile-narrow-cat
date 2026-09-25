@@ -138,8 +138,12 @@ nothing about NaN. Characterization on the Triton 3.8.0 CPU interpreter
 (`work/submissions/relu_compat/characterize_values.json`, interpreter only,
 not GPU): the kernel returns `+0.0` for NaN inputs (`arith.cmpf ogt` is false
 for NaN) where `torch.relu` returns NaN; `-0.0`, `±inf`, denormals and
-`±FLT_MAX` are bitwise equal to `torch.relu`. "Equals `torch.relu`" in the
-evidence below means on finite test inputs; NaN is outside the contract.
+`±FLT_MAX` are bitwise equal to CPU `torch.relu`. On CUDA (L4, torch
+2.14.0+cu130; `launch_evidence/fusion_bench.json`, special values) eager
+`torch.relu(-0.0)` returns `-0.0` while the Triton `tl.where` ReLU returns
+`+0.0`, so torch's own signed-zero result is device-dependent. "Equals
+`torch.relu`" in the evidence below means on finite, nonzero-signed test
+inputs; NaN and the sign of zero are outside the contract.
 
 ## Evidence
 
