@@ -34,17 +34,23 @@ def load(name: str) -> dict | None:
     return json.loads(f.read_text()) if f.exists() else None
 
 
-def freshness(ev: dict | None, hashes: dict) -> str:
+def freshness(ev: dict | None, hashes: dict, name: str = "") -> str:
+    """Current iff every file this evidence depends on (LC.evidence_deps: a
+    declared subset, or the whole input set) has the hash its record states."""
     if ev is None:
         return "absent"
-    ih = ev.get("input_hashes") or {}
-    if not ih:
+    if not ev.get("input_hashes"):
         return "no input hashes"
-    stale = sorted(k for k, v in ih.items() if hashes.get(k) != v)
-    missing = sorted(set(hashes) - set(ih))
+    current, stale, unhashed = LC.evidence_freshness(name, ev, hashes)
+    scope = "whole input set" if LC.evidence_deps(name) is None else f"{len(LC.evidence_deps(name))} dependencies"
+    if current:
+        return f"current ({scope})"
+    out = []
     if stale:
-        return "STALE: " + ", ".join(stale)
-    return "current" + (f" (does not cover: {', '.join(missing)})" if missing else "")
+        out.append("changed: " + ", ".join(stale))
+    if unhashed:
+        out.append("not hashed by the record: " + ", ".join(unhashed))
+    return f"STALE ({scope}) — " + "; ".join(out)
 
 
 def main() -> int:
@@ -76,7 +82,7 @@ def main() -> int:
     w("## Local gate (`launch_local_check.py`)\n")
     if led:
         w(f"Ledger generated {led['generated']} at git head `{led['git_head'][:12]}`; fresh workspace: "
-          f"{led.get('fresh_workspace')}; ledger inputs: {freshness(led, hashes)}.\n")
+          f"{led.get('fresh_workspace')}; ledger inputs: {freshness(led, hashes, "ledger.json")}.\n")
         w("| step | status | reason |\n|---|---|---|")
         for k, s in led["steps"].items():
             w(f"| {k} | {s['status']} | {s.get('reason') or s.get('evidence', '')} |")
@@ -86,7 +92,7 @@ def main() -> int:
     w("## Official comparator and upstream gates (Linux container)\n")
     if oc:
         w(f"Audited commit `{oc['audited_commit'][:12]}`; exit_code {oc['exit_code']}; inputs: "
-          f"{freshness(oc, hashes)}. Environment: {oc['environment']}. Tools: {oc['tools']}.\n")
+          f"{freshness(oc, hashes, "official_comparator.json")}. Environment: {oc['environment']}. Tools: {oc['tools']}.\n")
         w("| target | mode | theorems accepted |\n|---|---|---|")
         for r in oc["results"].values():
             w(f"| {r['source']} | {r['mode']} | {r['theorem_count'] if r['accepted'] else 'REJECTED'} |")
@@ -109,7 +115,7 @@ def main() -> int:
     w("## Adversarial suite (`mutation_results.json`)\n")
     if mu:
         c = mu["counts"]
-        w(f"{sum(c.values())} cases, undetected: {len(mu['undetected'])}; inputs: {freshness(mu, hashes)}. "
+        w(f"{sum(c.values())} cases, undetected: {len(mu['undetected'])}; inputs: {freshness(mu, hashes, "mutation_results.json")}. "
           "Classes (these are not all bugs found):\n")
         desc = {"accepted": "valid controls and benign edits that must be accepted",
                 "violated_obligation": "configurations/mutants rejected by a named obligation",
@@ -127,7 +133,7 @@ def main() -> int:
     if it:
         w(f"| interpreter.json | Triton {it['triton']} CPU interpreter | exit {it['exit_code']}; "
           + "; ".join(f"{Path(k).name}: {'pass' if v['passed'] else 'FAIL'} ({v['source']})"
-                      for k, v in it["cases"].items()) + f" | {freshness(it, hashes)} |")
+                      for k, v in it["cases"].items()) + f" | {freshness(it, hashes, "interpreter.json")} |")
     w1 = load("w1_probe_vector_addition_custom.json")
     if w1:
         w(f"| w1_probe_vector_addition_custom.json | Triton {w1['triton']} CPU interpreter | W1 partial output "
@@ -136,20 +142,54 @@ def main() -> int:
     if g:
         w(f"| gpu.json | {g.get('gpu_name')} CC {g.get('compute_capability')}, Triton {g['triton']}, "
           f"torch {g['torch']} | exit {g['exit_code']}; {sum(1 for c in g.get('cases', {}).values() if c['bitwise_equal'] and c['sentinels_intact'])}"
-          f"/{len(g.get('cases', {}))} cases bitwise equal with intact sentinels | {freshness(g, hashes)} |")
+          f"/{len(g.get('cases', {}))} cases bitwise equal with intact sentinels | {freshness(g, hashes, "gpu.json")} |")
     if gp:
         w(f"| gpu_perf.json | same device | exit {gp['exit_code']}; kernel n={gp['n']} median "
           f"{gp['kernel_steady_state']['median_ms']:.3f} ms; torch x+y {gp['torch_x_plus_y_reference']['median_ms']:.3f} ms "
-          f"| {freshness(gp, hashes)} |")
+          f"| {freshness(gp, hashes, "gpu_perf.json")} |")
     if gx:
         w(f"| gpu_extras.json | same device | vector_addition_custom passed: {gx['vector_addition_custom']['passed']}; "
-          f"W1 partial output reproduced on GPU: {gx['w1_probe']['w1_finding_confirmed']} | {freshness(gx, hashes)} |")
+          f"W1 partial output reproduced on GPU: {gx['w1_probe']['w1_finding_confirmed']} | {freshness(gx, hashes, "gpu_extras.json")} |")
     bs = load("block_sweep.json")
     if bs:
         w(f"| block_sweep.json | same device class | selected BLOCK {bs['selected_block']}; all correct: "
-          f"{all(v['correct'] for v in bs['blocks'].values())} | {freshness(bs, hashes)} |")
-    w("\nGPU results describe one device and one software stack; interpreter results are "
-      "interpreter evidence only.\n")
+          f"{all(v['correct'] for v in bs['blocks'].values())} | {freshness(bs, hashes, "block_sweep.json")} |")
+    for fname, label in (("invoke_interpreter.json", "Triton CPU interpreter"),
+                         ("gpu_wrapper.json", "CUDA")):
+        iv = load(fname)
+        if not iv:
+            continue
+        backend = (f"{iv.get('gpu_name')} CC {iv.get('compute_capability')}, " if iv.get("gpu_name") else "") \
+            + f"{label}, Triton {iv['triton']}, torch {iv['torch']}"
+        n_ok = sum(bool(r["as_expected"]) for r in iv["cases"])
+        complete = ("case list complete" if "missing_cases" in iv and not (iv["missing_cases"] or iv.get("unexpected_cases"))
+                    else "case-list completeness not recorded (older harness)")
+        pin = iv.get("relu_pinned_text") or {}
+        pinned = (f"pinned ReLU text: {pin.get('status')} ({pin.get('error_type')})" if pin
+                  else "pinned ReLU text: " + (lambda t: t[t.find("AttributeError"):].split("')")[0]
+                                               if "AttributeError" in t else t)(
+                      iv.get("relu_pinned_on_device") or "not probed"))
+        w(f"| {fname} | {backend} | {n_ok}/{len(iv['cases'])} as expected; all_as_expected "
+          f"{iv['all_as_expected']}; {complete}; {pinned}; ReLU text run: {iv.get('relu_source')} "
+          f"| {freshness(iv, hashes, fname)} |")
+    for fname, what in (("invoke_differential.json", "Elementwise2 mirror vs Lean #eval"),
+                        ("invoke_differential_strided.json", "StridedUnary mirror vs Lean #eval")):
+        dv = load(fname)
+        if dv:
+            w(f"| {fname} | host | {what}: {dv['cases']} cases, {len(dv['mismatches'])} mismatches "
+              f"| {freshness(dv, hashes, fname)} |")
+    ov = load("invoke_overhead.json")
+    if ov:
+        r0 = ov["rows"][0]
+        w(f"| invoke_overhead.json | {ov['host']}, torch {ov['torch']} | host-side check cost only (kernel "
+          f"not included): elementwise metadata {r0['tensor_meta_x3_us']:.1f} µs + decision "
+          f"{r0['contract_decision_us']:.1f} µs; strided metadata "
+          f"{ov['strided_relu']['storage_meta_x2_us']:.1f} µs + decision "
+          f"{ov['strided_relu']['contract_decision_us']:.1f} µs | {freshness(ov, hashes, 'invoke_overhead.json')} |")
+    w("\nFreshness is judged per evidence file against the files it depends on "
+      "(`launch_local_check.evidence_deps`); the official comparator, ledger and mutation suite "
+      "depend on the whole input set. GPU results describe one device and one software stack; "
+      "interpreter results are interpreter evidence only.\n")
     a.out.write_text("\n".join(L) + "\n")
     return 0
 

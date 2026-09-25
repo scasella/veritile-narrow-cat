@@ -69,8 +69,10 @@ theorem flatAlloc_out (flat in0 out0 : RegionName) (c : Launch) :
       (flatAlloc flat in0 out0 c).extent out0 = spanCells c.s0 c.outStride := by
   simp [flatAlloc]
 
+namespace Pre
+
 /-- **The checked conditions discharge `FlatAlloc.Disjoint`** (S7, S8, S9). -/
-theorem Pre.flat_disjoint {x out : TensorMeta} (h : Pre (launch x out))
+theorem flat_disjoint {x out : TensorMeta} (h : Pre (launch x out))
     (flat in0 out0 : RegionName) (hne : in0 ≠ out0) :
     (flatAlloc flat in0 out0 (launch x out)).Disjoint := by
   obtain ⟨-, ebx, -, ebo⟩ := h.dtype_ok
@@ -95,7 +97,7 @@ theorem Pre.flat_disjoint {x out : TensorMeta} (h : Pre (launch x out))
   · exact absurd rfl hrr
 
 /-- **S6: each modelled span lies inside its tensor's allocation.** -/
-theorem Pre.span_in_alloc {x out : TensorMeta} (h : Pre (launch x out))
+theorem span_in_alloc {x out : TensorMeta} (h : Pre (launch x out))
     (flat in0 out0 : RegionName) (hne : in0 ≠ out0) :
     (flatAlloc flat in0 out0 (launch x out)).extent in0 ≤ x.capacity ∧
       (flatAlloc flat in0 out0 (launch x out)).extent out0 ≤ out.capacity := by
@@ -106,7 +108,7 @@ theorem Pre.span_in_alloc {x out : TensorMeta} (h : Pre (launch x out))
 
 /-- **Cell/byte correspondence** (S1, S7, S8): four times the flat cell
 address of logical element `k` is that element's byte address. -/
-theorem Pre.addr_bytes {x out : TensorMeta} (h : Pre (launch x out))
+theorem addr_bytes {x out : TensorMeta} (h : Pre (launch x out))
     (flat in0 out0 : RegionName) (hne : in0 ≠ out0) (k : Nat) :
     4 * (flatAlloc flat in0 out0 (launch x out)).addr in0 (k * (launch x out).inStride)
         = x.base + x.elemBytes * x.offsetOf [k] ∧
@@ -130,7 +132,7 @@ theorem Pre.addr_bytes {x out : TensorMeta} (h : Pre (launch x out))
 
 /-- **Read/write separation in flat memory**: no input logical element shares
 a cell with an output logical element. -/
-theorem Pre.reads_outside_writes {x out : TensorMeta} (h : Pre (launch x out))
+theorem reads_outside_writes {x out : TensorMeta} (h : Pre (launch x out))
     (flat in0 out0 : RegionName) (hne : in0 ≠ out0) :
     ∀ k j, k < (launch x out).s0 → j < (launch x out).s0 →
       (flatAlloc flat in0 out0 (launch x out)).addr in0 (k * (launch x out).inStride)
@@ -152,6 +154,8 @@ theorem Pre.reads_outside_writes {x out : TensorMeta} (h : Pre (launch x out))
   generalize ((launch x out).s0 - 1) * (launch x out).inStride = A at *
   generalize ((launch x out).s0 - 1) * (launch x out).outStride = B at *
   omega
+
+end Pre
 
 end StridedUnary
 

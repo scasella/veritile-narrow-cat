@@ -90,8 +90,18 @@ manifest-built ones:
    binding) and compares the kernel body with its Lean transcription; it
    refuses sources that do not map to the Lean contract. `recognize_relu` does
    the same for `relu_forward_wrapper_rank_1`: modelled wrapper statements,
-   the pinned tile heuristic, the pinned kernel and helper text (the text
-   `ReluStridedBuffer.lean` transcribes), and the stride-argument correspondence.
+   the pinned tile heuristic, the kernel and helper text, and the
+   stride-argument correspondence. Exactly two kernel texts are accepted, each
+   by its own hash: the pinned text (which `ReluStridedBuffer.lean`
+   transcribes; it does not compile with Triton 3.8.0) and `store_cast_fix`,
+   which changes only the store cast's destination to
+   `out0_ptr.type.element_ty`. The checked path recognizes and loads the same
+   text it runs. The derived text is justified within S7 (f32 → f32 identity
+   cast; no conversion in the frontend's output), not by the model's cast
+   erasure (`relu_strided_buffer/WRAPPER_CONTRACT.md`). Every demo run re-tries
+   the pinned text and records its outcome and traceback as the regression row
+   `relu_pinned_text_known_failure`; a run with a missing, extra or duplicate
+   case fails.
 2. `tensor_meta` / `storage_meta` read `TensorMeta` from the live tensors
    (`data_ptr`, shape, strides, capacity to the end of the storage, dtype;
    `StridedBuffer` supported). **Trusted**, not verified.
