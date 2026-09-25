@@ -97,9 +97,13 @@ state whose input cells `i < n` hold typed real values `xs i`, `ys i`:
 every program terminates and is trace-safe for bounds covering the checked
 capacities; the programs' write sets are pairwise disjoint and compose into
 one final memory (`GridLaunchedOrdinary`) in which `out_ptr[i] = xs i + ys i`
-for every `i < n`, while every other cell is unchanged; and every lane offset
-and mask the launch computes in Triton's `i32` arithmetic equals its ℕ
-counterpart used by the model. -/
+for every `i < n`, while every other cell is unchanged; and, as arithmetic
+facts about `c`, every lane offset and mask evaluated in two's-complement
+`i32` equals its ℕ counterpart used by the model (the model itself computes
+over ℕ; that Triton evaluates these expressions in `i32` is the trusted
+assumption TA-i32). Obligations used: P1–P3 (first conjunct), P4 (second),
+P5–P7 (third); P8–P10 justify the translation assumptions TA-region and
+TA-compose (`CONTRACT.md` §2). -/
 ```
 </details>
 

@@ -184,6 +184,10 @@ def parse_kernel(src: str, name: str) -> KernelSummary:
     out = stores[0][0]
     if out in loads:
         raise Unsupported("in-place update (output pointer also loaded) is not modelled")
+    # Config inputs are listed in load order and the Lean theorems bind them positionally to the
+    # kernel's pointer parameters in signature order; require the two orders to agree.
+    if loads != [p for p in params if p in loads]:
+        raise Unsupported(f"pointer loads {loads} are not in signature order")
     return KernelSummary(name, params, loads, out, n_param, block_param, stmts)
 
 
@@ -233,7 +237,7 @@ def parse_launch(src: str, wrapper: str, kernel: KernelSummary) -> LaunchSummary
     wparams = [a.arg for a in fn.args.args]
     consts: dict[str, int] = {}
     nvars: dict[str, str] = {}
-    grids: dict[str, tuple[str, int | None]] = {}
+    grids: dict[str, tuple[str, int | None, tuple[str, int] | None]] = {}
     allocs: dict[str, str] = {}
     launch: ast.Call | None = None
 
@@ -258,7 +262,7 @@ def parse_launch(src: str, wrapper: str, kernel: KernelSummary) -> LaunchSummary
             return consts[e.id]
         return None
 
-    def grid_of(e: ast.AST) -> tuple[str, int | None]:
+    def grid_of(e: ast.AST) -> tuple[str, int | None, tuple[str, int] | None]:
         if isinstance(e, ast.Name) and e.id in grids:
             return grids[e.id]
         if isinstance(e, ast.Tuple):
@@ -267,19 +271,21 @@ def parse_launch(src: str, wrapper: str, kernel: KernelSummary) -> LaunchSummary
             return grid_axis(e.elts[0])
         raise Unsupported(f"unrecognized grid expression: {ast.unparse(e)}")
 
-    def grid_axis(e: ast.AST) -> tuple[str, int | None]:
+    def grid_axis(e: ast.AST) -> tuple[str, int | None, tuple[str, int] | None]:
+        # Returns (kind, literal, (count source, block value) used by the formula); the
+        # caller checks the formula's count source and block value against the launch.
         if isinstance(e, ast.Name) and e.id in grids:
             return grids[e.id]
         lit = int_of(e)
         if lit is not None:
-            return ("literal", lit)
+            return ("literal", lit, None)
         u = _normalize(ast.unparse(e))
         for nv, src_ in nvars.items():
-            for bname, _ in consts.items():
+            for bname, bval in consts.items():
                 if u in (f"({nv}+{bname}-1)//{bname}", f"triton.cdiv({nv},{bname})"):
-                    return ("cdiv", None)
+                    return ("cdiv", None, (src_, bval))
                 if u == f"{nv}//{bname}":
-                    return ("floordiv", None)
+                    return ("floordiv", None, (src_, bval))
         raise Unsupported(f"unrecognized grid axis formula: {ast.unparse(e)}")
 
     wbody = list(fn.body)
@@ -315,7 +321,7 @@ def parse_launch(src: str, wrapper: str, kernel: KernelSummary) -> LaunchSummary
             raise Unsupported(f"unmodelled wrapper statement: {ast.unparse(st).splitlines()[0]}")
     if launch is None:
         raise Unsupported(f"no launch of {kernel.name} in {wrapper}")
-    grid_kind, grid_lit = grid_of(launch.func.slice)
+    grid_kind, grid_lit, grid_terms = grid_of(launch.func.slice)
     binding: dict[str, str] = {}
     if len(launch.args) > len(kernel.params):
         raise Unsupported("too many launch arguments")
@@ -336,6 +342,9 @@ def parse_launch(src: str, wrapper: str, kernel: KernelSummary) -> LaunchSummary
     if nexpr not in nvars:
         raise Unsupported(f"element count bound to unrecognized {nexpr!r}")
     n_source = nvars[nexpr]
+    if grid_terms is not None and grid_terms != (n_source, block):
+        raise Unsupported(f"grid formula uses count {grid_terms[0]!r} / block {grid_terms[1]} but the "
+                          f"kernel is launched with count {n_source!r} / block {block}")
     out_var = binding[kernel.out_param]
     if out_var not in allocs:
         raise Unsupported(f"output {out_var!r} is not a fresh *_like allocation")
@@ -537,7 +546,12 @@ def analyze(manifest_path: Path) -> dict:
         wrapper_ob[case["name"]] = {
             # W1 (adapter-checked, NOT part of the Lean contract): the wrapper returns the
             # whole output tensor, so every element of it must be one the kernel writes.
-            "W1 output_fully_written": configs[case["name"]]["n"] == out_meta["numel"]}
+            "W1 output_fully_written": configs[case["name"]]["n"] == out_meta["numel"],
+            # W2 (adapter-checked, NOT part of the Lean contract): P4 bounds addresses by the
+            # allocation (memory safety); for the result to be `x + y` of the *tensors*, every
+            # input tensor must itself hold the n elements read.
+            "W2 inputs_cover_n": all(configs[case["name"]]["n"] <= metas[launch.arg_binding[p]]["numel"]
+                                     for p in kern.ptr_params)}
     verdicts = lean_verdicts(configs)
     for case in man["cases"]:
         n = case["name"]

@@ -223,6 +223,9 @@
    "expect": "reject",
    "expect_failures": [
     "P4 lanes_in_bounds"
+   ],
+   "expect_wrapper_failures": [
+    "W2 inputs_cover_n"
    ]
   },
   {
@@ -393,6 +396,26 @@
    "expect": "reject",
    "expect_failures": [
     "P1 grid_rank"
+   ]
+  },
+  {
+   "name": "M10_y_view_of_larger_storage",
+   "kind": "wrapper-fault",
+   "note": "y.numel()=12 < n=16 but y's storage holds 16 elements: P4 (allocation bounds) holds, so the launch is memory-safe, but the kernel reads 4 elements past the tensor y. Rejected by adapter obligation W2 (independent review finding).",
+   "tensors": {
+    "x": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 12,
+     "dtype": "float32",
+     "pad": 4
+    }
+   },
+   "expect": "accept",
+   "expect_wrapper_failures": [
+    "W2 inputs_cover_n"
    ]
   }
  ]

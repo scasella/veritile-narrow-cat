@@ -41,6 +41,13 @@ add_kernel_launch_applicable                  lane hypotheses of `⊨`, per laun
 add_kernel_launch_initial_output_irrelevant   zero-fill of `out` is dead
 ```
 
+This file carries two `specification`s: the upstream per-program headline
+`add_kernel_correctness`, kept verbatim (this contribution only appends to
+upstream files), and the launch headline `add_kernel_launch_correctness`,
+appended last. The launch headline does not restate `addIO ⊨ …`;
+`add_kernel_launch_applicable` connects the two by discharging the per-lane
+hypotheses of `⊨` for every launched program.
+
 The headline is stated on the kernel's masked **IO signature** `addIO`
 (`MaskedKernelIO₂`): which buffer is which argument, where program `pid`
 reads/writes its `BLOCK_SIZE`-lane window, and the active-lane predicate
@@ -452,7 +459,10 @@ theorem add_kernel_launch_framed
 both input regions (P10 + TA-region), launching from `s` or from `s` with the
 output buffer overwritten by arbitrary cells `init` (e.g. zeros) yields, in
 both cases, a framed whole-grid launch realizing the same values
-`xs i + ys i` at every output cell `i < n`. -/
+`xs i + ys i` at every output cell `i < n` (it applies
+`add_kernel_launch_framed` to both states). That the *returned tensor* is then
+fully determined also needs wrapper obligation W1 (`n == out.numel()`), which
+the adapter checks outside Lean. -/
 theorem add_kernel_launch_initial_output_irrelevant
     (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
     (in_ptr0 in_ptr1 out_ptr : RegionName)
@@ -488,9 +498,13 @@ state whose input cells `i < n` hold typed real values `xs i`, `ys i`:
 every program terminates and is trace-safe for bounds covering the checked
 capacities; the programs' write sets are pairwise disjoint and compose into
 one final memory (`GridLaunchedOrdinary`) in which `out_ptr[i] = xs i + ys i`
-for every `i < n`, while every other cell is unchanged; and every lane offset
-and mask the launch computes in Triton's `i32` arithmetic equals its ℕ
-counterpart used by the model. -/
+for every `i < n`, while every other cell is unchanged; and, as arithmetic
+facts about `c`, every lane offset and mask evaluated in two's-complement
+`i32` equals its ℕ counterpart used by the model (the model itself computes
+over ℕ; that Triton evaluates these expressions in `i32` is the trusted
+assumption TA-i32). Obligations used: P1–P3 (first conjunct), P4 (second),
+P5–P7 (third); P8–P10 justify the translation assumptions TA-region and
+TA-compose (`CONTRACT.md` §2). -/
 specification add_kernel_launch_correctness
     (c : Blocked1DLaunch) (hc : Blocked1DLaunch.check c = Bool.true)
     (bx by_ : BufMeta) (hin : c.inputs = [bx, by_])

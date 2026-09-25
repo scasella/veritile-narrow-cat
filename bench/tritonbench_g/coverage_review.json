@@ -26,7 +26,7 @@
     {
       "file": "bench/tritonbench_g/add_example/AddExample.lean",
       "python_file": "bench/tritonbench_g/add_example/add_example.py",
-      "lean_sha256": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
+      "lean_sha256": "2fb9978d20e2c97b7279a395dcfa3c5f68ccadc50dcf9ffaaa54d26ca0d6d16f",
       "python_sha256": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
       "declarations": [
         {

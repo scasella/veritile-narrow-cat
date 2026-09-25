@@ -92,9 +92,23 @@ for `add_wrapper` (`n = x.numel()`, `out = zeros_like(x)`), and it fails for
 `empty_like` entries (manifest case `F1_2d_input_partial_output`; emulator
 witness in REPORT; reproduced on the pinned file under the Triton CPU
 interpreter by `scripts/launch_w1_probe.py` →
-`launch_evidence/w1_probe_vector_addition_custom.json`, interpreter evidence only). The kernel checker correctly *accepts* that launch — it is
-memory-safe and correct on `out[0, n)` — which is exactly why W1 is recorded
-separately.
+`launch_evidence/w1_probe_vector_addition_custom.json`, interpreter evidence only;
+also reproduced on an NVIDIA L4, `launch_evidence/gpu_extras.json` → `w1_probe`).
+The kernel checker correctly *accepts* that launch — it is memory-safe and
+correct on `out[0, n)` — which is exactly why W1 is recorded separately.
+
+**W2 `inputs_cover_n`: `n ≤ t.numel()` for every input tensor `t`.** P4 bounds
+addresses by the allocation (`capacity` = storage elements past the tensor's
+offset), which is the memory-safety notion. A short input that is a view of a
+larger buffer passes P4 while the kernel reads elements past the tensor; W2
+catches it (manifest case `M10_y_view_of_larger_storage`). Added after the
+separate-model review.
+
+**Adapter recognition checks added after review.** A `cdiv`/floor grid formula
+must use the same element-count source and block value that are passed to the
+kernel (a formula with another constant or another tensor's count is
+`unsupported`), and the kernel's pointer loads must appear in signature order
+(the Lean theorems bind inputs positionally).
 
 ## Additional consumers
 

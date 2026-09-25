@@ -103,6 +103,11 @@ def config_faults():
     import torch
     res = L.analyze(MAN)
     for name, c in res["cases"].items():
+        if c["accepted"] and c["wrapper_failures"]:
+            record(name, "config-fault", name,
+                   "violated_obligation" if c["matches_expectation"] else "infrastructure_failure",
+                   f"Pre holds (memory-safe) but adapter wrapper obligation fails: {c['wrapper_failures']}")
+            continue
         if c["accepted"]:
             record(name, "valid-control", "none", "accepted",
                    f"n={c['config']['n']} grid={c['config']['grid']}; Pre proved via check_ok")
@@ -180,6 +185,12 @@ def source_mutants():
         "S5_load_other_kwarg": ("x = tl.load(in_ptr0 + offsets, mask=mask)",
                                 "x = tl.load(in_ptr0 + offsets, mask=mask, other=0.0)"),
         "S6_helper_call": ("output = x + y", "output = my_add(x, y)"),
+        "S8_grid_other_block_const": ("num_blocks = (n_elements + BLOCK_SIZE - 1) // BLOCK_SIZE",
+                                      "B2 = 8\n    num_blocks = (n_elements + B2 - 1) // B2"),
+        "S9_grid_other_count": ("num_blocks = (n_elements + BLOCK_SIZE - 1) // BLOCK_SIZE",
+                                "m = y.numel()\n    num_blocks = (m + BLOCK_SIZE - 1) // BLOCK_SIZE"),
+        "S10_load_order_swapped": ("    x = tl.load(in_ptr0 + offsets, mask=mask)\n    y = tl.load(in_ptr1 + offsets, mask=mask)",
+                                   "    y = tl.load(in_ptr1 + offsets, mask=mask)\n    x = tl.load(in_ptr0 + offsets, mask=mask)"),
         "S7_launch_option": ("add_kernel[(num_blocks,)](x, y, out, n_elements, BLOCK_SIZE)",
                              "add_kernel[(num_blocks,)](x, y, out, n_elements, BLOCK_SIZE, num_warps=8)"),
     }

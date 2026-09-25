@@ -55,6 +55,15 @@ view), `capacity` (elements addressable from `base` inside its allocation),
 | P9 `dtype_ok` | every buffer `dtype = f32 ∧ elemBytes = 4` | supported dtype domain v1 |
 | P10 `out_disjoint` | the byte ranges `[base, base + n*elemBytes)` of `out` and of each input do not intersect | non-overlapping output storage |
 
+Which obligations the Lean conclusions use (§3): P1–P3 the framed
+correctness conjunct, P4 the trace-safety conjunct, P5–P7 the i32 conjunct.
+P8–P10 appear in no Lean conclusion; they are checked because they justify the
+translation assumptions of §4 — P8 and P9 that element `i` of each buffer is
+the cell `(region, i)` holding an f32 (TA-region), P10 that the output is
+disjoint from the inputs (TA-region, TA-compose). `capacity` bounds addresses
+by the *allocation* (memory safety); that each input *tensor* holds the `n`
+elements read is wrapper obligation W2 (§4).
+
 Soundness theorem shape: `Blocked1DLaunch.check c = true → Blocked1DLaunch.Pre c`
 (`check_ok`), plus completeness `Pre c → check c = true` (`check_complete`), so
 a rejection is a checked failure of a named obligation, and the checker is not
@@ -71,7 +80,9 @@ region names `in_ptr0 in_ptr1 out_ptr`, and an initial state whose input cells
 reliance on totalized reads), the grid `[g]` launch composes (disjoint frames,
 `GridLaunchedOrdinary`) into a final memory with output correctness and
 preservation as in §1, and every program is `TraceSafe` for any region bounds
-at least the checked capacities. Separately, `add_kernel_launch_applicable`
+at least the checked capacities, and the i32 offset/mask values equal their ℕ
+counterparts as arithmetic facts about `c` (TA-i32 is what ties them to the
+kernel's execution). Separately, `add_kernel_launch_applicable`
 discharges the lane-wise bound hypotheses of the existing flat-memory headline
 `add_kernel_correctness` for every launched program.
 
@@ -91,19 +102,29 @@ discharges the lane-wise bound hypotheses of the existing flat-memory headline
   (existing upstream structural scan + this project's AST matcher; trusted,
   tested, not proved).
 - IEEE-single-add (numerics), device/driver behavior, and compiler correctness.
-- Wrapper obligation W1 (`n == out.numel()`: the returned tensor is exactly
-  the cells this contract covers) is outside this contract; it is checked by
-  the adapter and recorded separately (SOURCE_LINK.md).
+- Wrapper obligations W1 (`n == out.numel()`: the returned tensor is exactly
+  the cells this contract covers) and W2 (`n ≤ t.numel()` for every input
+  tensor `t`: the cells read are the tensor's own elements, not merely inside
+  its allocation) are outside this contract; they are checked by the adapter
+  and recorded separately (SOURCE_LINK.md).
 
 ## 5. Unsupported / non-goals
 
 Grids of rank ≠ 1; non-power-of-two blocks; strided or non-contiguous inputs;
 dtypes other than f32; in-place or partially overlapping output; `n ≥ 2^31`;
 autotuning; multi-stream concurrency with other kernels; IEEE NaN/overflow;
-performance.
+performance; device placement (all tensors on one CUDA device is assumed, not
+checked — the adapter reads metadata from CPU tensors built from the manifest).
 
 ## 6. Concrete valid configurations (nonempty domain)
 
 `n ∈ {16, 8, 32, 0}`, `block = 4`, `grid = [cdiv(n,4)]` (the file's own test
 cases), fresh contiguous f32 tensors; also `n = 5, block = 4, grid = [3]`
 (over-provisioned) and `vector_addition_custom`'s `block = 16`.
+
+## Revisions
+
+- Doc revision 2 (2026-09-25, after a separate-model review): obligation-use
+  mapping in §2, i32 conjunct described as arithmetic under TA-i32 (§3),
+  wrapper obligation W2 (§4), device placement listed as a non-goal (§5).
+  No Lean statement changed.

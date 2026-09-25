@@ -99,6 +99,29 @@ class WrapperRecognition(unittest.TestCase):
                      "num_blocks = n_elements // BLOCK_SIZE")
         self.assertEqual(L.parse_launch(src, "add_wrapper", self.k).grid_kind, "floordiv")
 
+    def test_grid_with_other_block_constant_rejected(self):
+        src = mutate("num_blocks = (n_elements + BLOCK_SIZE - 1) // BLOCK_SIZE",
+                     "B2 = 8\n    num_blocks = (n_elements + B2 - 1) // B2")
+        with self.assertRaises(L.Unsupported):
+            L.parse_launch(src, "add_wrapper", self.k)
+
+    def test_grid_with_other_count_rejected(self):
+        src = mutate("num_blocks = (n_elements + BLOCK_SIZE - 1) // BLOCK_SIZE",
+                     "m = y.numel()\n    num_blocks = (m + BLOCK_SIZE - 1) // BLOCK_SIZE")
+        with self.assertRaises(L.Unsupported):
+            L.parse_launch(src, "add_wrapper", self.k)
+
+    def test_grid_with_same_count_alias_accepted(self):
+        src = mutate("num_blocks = (n_elements + BLOCK_SIZE - 1) // BLOCK_SIZE",
+                     "m = x.numel()\n    num_blocks = (m + BLOCK_SIZE - 1) // BLOCK_SIZE")
+        self.assertEqual(L.parse_launch(src, "add_wrapper", self.k).grid_kind, "cdiv")
+
+    def test_load_order_must_match_signature(self):
+        src = mutate("    x = tl.load(in_ptr0 + offsets, mask=mask)\n    y = tl.load(in_ptr1 + offsets, mask=mask)",
+                     "    y = tl.load(in_ptr1 + offsets, mask=mask)\n    x = tl.load(in_ptr0 + offsets, mask=mask)")
+        with self.assertRaises(L.Unsupported):
+            L.parse_kernel(src, "add_kernel")
+
     def test_launch_option_rejected(self):
         src = mutate("add_kernel[(num_blocks,)](x, y, out, n_elements, BLOCK_SIZE)",
                      "add_kernel[(num_blocks,)](x, y, out, n_elements, BLOCK_SIZE, num_warps=8)")

@@ -3,7 +3,10 @@
 Both candidates change only the host wrapper. The `@triton.jit` kernel text is
 byte-identical to the pinned `../add_example.py`, and every manifest
 configuration is accepted by the proved checker (verdicts kernel-checked), so
-`add_kernel_launch_correctness` applies to those launches unchanged.
+`add_kernel_launch_correctness` applies to those launches unchanged, under the
+same translation assumptions (TA-*, CONTRACT.md §4). Wrapper obligations W1
+(`n == out.numel()`, needed for `empty_like` to return only written cells) and
+W2 hold for every manifest configuration.
 
 | file | change vs pinned | Lean / checker basis |
 |---|---|---|
@@ -13,7 +16,9 @@ configuration is accepted by the proved checker (verdicts kernel-checked), so
 ## GPU evidence (NVIDIA L4 via Modal, Triton 3.8.0, torch 2.14.0+cu130 — this device only)
 
 `../launch_evidence/block_sweep.json` (`modal run scripts/launch_gpu_modal.py --mode sweep`)
-sweeps BLOCK ∈ {4, 16, …, 4096} over the `empty_like` wrapper text. Selection rule, fixed in
+sweeps BLOCK ∈ {4, 16, …, 4096} over the `empty_like` wrapper text. It was run twice
+(`block_sweep_run1.json` at `104ab827`; `block_sweep.json` at `d3cdb079`); the table below is
+run 1. Selection rule, fixed in
 `scripts/launch_gpu.py` before the run: smallest BLOCK within 2 % of the minimum median
 `empty_like`-wrapper time at n = 2^24, among BLOCKs whose correctness cases all pass. All nine
 BLOCKs were bitwise equal to torch `x + y` with intact sentinels; the rule selected **64**. The
@@ -26,6 +31,9 @@ End-to-end wrapper medians (`triton.testing.do_bench`, warmup 25, rep 200):
 | 2^16 | 25.6 µs | 24.6 µs | 8.2 µs | 9.2 µs |
 | 2^20 | 260 µs | 247 µs | 63.5 µs | 63.5 µs |
 | 2^24 | 3.81 ms | 3.55 ms | 0.890 ms | 0.886 ms |
+
+Run 2 replicated it: all BLOCKs correct, rule again selected 64; at 2^24 pinned 3.83 ms,
+empty_like only 3.60 ms, block64 0.891 ms, torch 0.884 ms.
 
 On this L4 the block64 wrapper matches torch's own `x + y` (≈ 225 GB/s effective at 2^24);
 every BLOCK from 64 to 4096 lands within 2 % of it at 2^24, so the gain comes from leaving the

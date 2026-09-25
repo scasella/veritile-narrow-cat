@@ -125,6 +125,9 @@
    "expect": "reject",
    "expect_failures": [
     "P4 lanes_in_bounds"
+   ],
+   "expect_wrapper_failures": [
+    "W2 inputs_cover_n"
    ]
   }
  ]
