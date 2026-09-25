@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T11:26:40Z",
- "git_head": "aefc15bebbe391a103c00acc43071d2f9d25391b",
+ "generated": "2026-09-25T11:42:00Z",
+ "git_head": "104ab827aa2c11f63dbcc4999e3d607307544b88",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -81,7 +81,7 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 3.3
+   "elapsed_s": 3.2
   },
   "build": {
    "status": "passed",
@@ -89,7 +89,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
    "reason": "rc=0",
-   "elapsed_s": 98.3
+   "elapsed_s": 99.4
   },
   "placeholder_scan": {
    "status": "passed",
@@ -106,7 +106,7 @@
    "evidence": "git diff vs pin",
    "reason": "no undeclared or non-additive changes",
    "elapsed_s": 0.1,
-   "worktree_clean": true
+   "worktree_clean": false
   },
   "upstream_static_gates": {
    "status": "passed",
@@ -122,7 +122,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
    "reason": "3 files, axiom-clean 23 theorems",
-   "elapsed_s": 32.3,
+   "elapsed_s": 33.1,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -170,7 +170,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 8.2
+   "elapsed_s": 8.3
   },
   "source_link_adapter": {
    "status": "passed",
@@ -186,7 +186,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 2.1
+   "elapsed_s": 2.2
   },
   "official_comparator": {
    "status": "passed",

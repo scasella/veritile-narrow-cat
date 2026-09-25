@@ -1,9 +1,9 @@
 # add_example — contract-preserving improvement candidates
 
 Both candidates change only the host wrapper. The `@triton.jit` kernel text is
-byte-identical to the pinned `../add_example.py`, and every launch they make is
-accepted by the proved checker, so `add_kernel_launch_correctness` applies to it
-unchanged.
+byte-identical to the pinned `../add_example.py`, and every manifest
+configuration is accepted by the proved checker (verdicts kernel-checked), so
+`add_kernel_launch_correctness` applies to those launches unchanged.
 
 | file | change vs pinned | Lean / checker basis |
 |---|---|---|
@@ -31,4 +31,6 @@ On this L4 the block64 wrapper matches torch's own `x + y` (≈ 225 GB/s effecti
 every BLOCK from 64 to 4096 lands within 2 % of it at 2^24, so the gain comes from leaving the
 BLOCK = 4 regime, not from fine tuning. Other GPUs, drivers or Triton versions were not
 measured; no general speedup claim is made. Run-to-run variation between the HANDOFF §B run and
-the sweep was ≈ 1.5 % for the same configuration.
+the sweep, same configuration: bare kernel ≈ 1.5 %, BLOCK 4 wrappers ≈ 3–4 %. The `empty_like`
+gain at BLOCK 4 replicated in both runs in direction and size (5.9 % and 6.7 % at 2^24), so it is
+not noise even though it is close to that spread.
