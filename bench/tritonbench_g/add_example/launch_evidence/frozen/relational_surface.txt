@@ -1,0 +1,195 @@
+def VeriTile.Triton.Blocked1D.ProgramRuns : VeriTile.Triton.Kernel →
+  VeriTile.Triton.RegionName → ℕ → ℕ → (VeriTile.Triton.BlockState → Prop) → (ℕ → ℝ) → Prop :=
+fun k R n B pre F =>
+  ∀ (t : VeriTile.Triton.BlockState),
+    pre t →
+      ∃ f,
+        VeriTile.Triton.exec k t = some f ∧
+          (∀ o < n, o / B = t.pid → f.readMem R o = F o) ∧
+            ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+              ¬VeriTile.Triton.Blocked1D.blockWrites R n B t.pid (r, o) → f.mem r o = t.mem r o
+@VeriTile.Triton.Blocked1D.launch_of_programRuns : ∀ {k : VeriTile.Triton.Kernel} {R : VeriTile.Triton.RegionName}
+  {n B g : ℕ} {pre : VeriTile.Triton.BlockState → Prop} {F : ℕ → ℝ},
+  0 < B →
+    n ≤ g * B →
+      ∀ (s : VeriTile.Triton.BlockState),
+        VeriTile.Triton.Blocked1D.ProgramRuns k R n B pre F →
+          (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)), pre (s.withGridIndex idx)) →
+            ∃ sF,
+              Nonempty (k.GridLaunchedOrdinary (VeriTile.Triton.Blocked1D.line g) s sF) ∧
+                (∀ o < n, sF.readMem R o = F o) ∧
+                  ∀ (r : VeriTile.Triton.RegionName) (o : ℕ), ¬(r = R ∧ o < n) → sF.mem r o = s.mem r o
+@VeriTile.Triton.Blocked1D.fused_agrees_two_launch : ∀ {kA kB kF : VeriTile.Triton.Kernel}
+  {T O : VeriTile.Triton.RegionName} {n B g : ℕ},
+  0 < B →
+    n ≤ g * B →
+      ∀ {preA preF : VeriTile.Triton.BlockState → Prop} {F : ℕ → ℝ} {G : ℝ → ℝ} (s : VeriTile.Triton.BlockState),
+        VeriTile.Triton.Blocked1D.ProgramRuns kA T n B preA F →
+          (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)), preA (s.withGridIndex idx)) →
+            (VeriTile.Triton.Blocked1D.ProgramRuns kB O n B (fun t => ∀ o < n, t.readMem T o = F o) fun o => G (F o)) →
+              (VeriTile.Triton.Blocked1D.ProgramRuns kF O n B preF fun o => G (F o)) →
+                (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)), preF (s.withGridIndex idx)) →
+                  ∃ sT sU sF,
+                    Nonempty (kA.GridLaunchedOrdinary (VeriTile.Triton.Blocked1D.line g) s sT) ∧
+                      Nonempty (kB.GridLaunchedOrdinary (VeriTile.Triton.Blocked1D.line g) sT sU) ∧
+                        Nonempty (kF.GridLaunchedOrdinary (VeriTile.Triton.Blocked1D.line g) s sF) ∧
+                          (∀ o < n, sF.readMem O o = sU.readMem O o) ∧
+                            (∀ o < n, sF.readMem O o = G (F o)) ∧
+                              ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                                ¬(r = T ∧ o < n) → ¬(r = O ∧ o < n) → sF.mem r o = sU.mem r o
+def VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_kernel : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName → VeriTile.Triton.RegionName → ℕ → ℕ → VeriTile.Triton.ComputeKernel :=
+fun in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE =>
+  VeriTile.Triton.ComputeKernel.mk [in_ptr0, in_ptr1] [out_ptr]
+    [VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "pid"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.programId 0)),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "block_start"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "pid") (VeriTile.Triton.Op.constNat BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarL
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "block_start")
+            (VeriTile.Triton.Op.arange BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets")
+            (VeriTile.Triton.Op.constNat n_elements))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr0
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr1
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "z"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.real VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x")
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"
+        (VeriTile.Triton.ComputeExpr.alg
+          ((VeriTile.Triton.Op.gt VeriTile.Triton.ComparableDType.real VeriTile.Triton.Broadcast.scalarR
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "z")
+                (VeriTile.Triton.Op.const 0)).where
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "z")
+            ((VeriTile.Triton.Op.const 0).broadcast [BLOCK_SIZE]))),
+      VeriTile.Triton.ComputeStmt.store VeriTile.Triton.TileDType.real [BLOCK_SIZE]
+        (VeriTile.Triton.MemAccess.region out_ptr
+          (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"))
+        (VeriTile.Triton.MaskOpt.mask (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"))]
+def VeriTile.Bench.TritonBenchG.AddReluRelational.add_kernel : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName → VeriTile.Triton.RegionName → ℕ → ℕ → VeriTile.Triton.ComputeKernel :=
+fun in_ptr0 in_ptr1 out_ptr n_elements BLOCK_SIZE =>
+  VeriTile.Triton.ComputeKernel.mk [in_ptr0, in_ptr1] [out_ptr]
+    [VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "pid"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.programId 0)),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "block_start"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "pid") (VeriTile.Triton.Op.constNat BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarL
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "block_start")
+            (VeriTile.Triton.Op.arange BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets")
+            (VeriTile.Triton.Op.constNat n_elements))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr0
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr1
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.real VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x")
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "y"))),
+      VeriTile.Triton.ComputeStmt.store VeriTile.Triton.TileDType.real [BLOCK_SIZE]
+        (VeriTile.Triton.MemAccess.region out_ptr
+          (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"))
+        (VeriTile.Triton.MaskOpt.mask (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"))]
+def VeriTile.Bench.TritonBenchG.AddReluRelational.relu_kernel : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName → ℕ → ℕ → VeriTile.Triton.ComputeKernel :=
+fun in_ptr out_ptr n_elements BLOCK_SIZE =>
+  VeriTile.Triton.ComputeKernel.mk [in_ptr] [out_ptr]
+    [VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "pid"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.programId 0)),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "block_start"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "pid") (VeriTile.Triton.Op.constNat BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarL
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "block_start")
+            (VeriTile.Triton.Op.arange BLOCK_SIZE))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets")
+            (VeriTile.Triton.Op.constNat n_elements))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region in_ptr
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+            (VeriTile.Triton.MaskOpt.mask
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"
+        (VeriTile.Triton.ComputeExpr.alg
+          ((VeriTile.Triton.Op.gt VeriTile.Triton.ComparableDType.real VeriTile.Triton.Broadcast.scalarR
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x")
+                (VeriTile.Triton.Op.const 0)).where
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "x")
+            ((VeriTile.Triton.Op.const 0).broadcast [BLOCK_SIZE]))),
+      VeriTile.Triton.ComputeStmt.store VeriTile.Triton.TileDType.real [BLOCK_SIZE]
+        (VeriTile.Triton.MemAccess.region out_ptr
+          (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK_SIZE] "offsets"))
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK_SIZE] "output"))
+        (VeriTile.Triton.MaskOpt.mask (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK_SIZE] "mask"))]
+VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_fusion_relational : ∀ (c : VeriTile.Triton.Blocked1DLaunch),
+  c.check = «true» →
+    ∀ (x y T O : VeriTile.Triton.RegionName) (s : VeriTile.Triton.BlockState) (xs ys : ℕ → ℝ),
+      (∀ o < c.n, s.readMem x o = xs o) →
+        (∀ o < c.n, s.readMem y o = ys o) →
+          ∃ sT sU sF,
+            Nonempty
+                (VeriTile.Triton.Kernel.GridLaunchedOrdinary
+                  (VeriTile.Bench.TritonBenchG.AddReluRelational.add_kernel x y T c.n c.block).toAlgKernel
+                  { dims := c.grid } s sT) ∧
+              Nonempty
+                  (VeriTile.Triton.Kernel.GridLaunchedOrdinary
+                    (VeriTile.Bench.TritonBenchG.AddReluRelational.relu_kernel T O c.n c.block).toAlgKernel
+                    { dims := c.grid } sT sU) ∧
+                Nonempty
+                    (VeriTile.Triton.Kernel.GridLaunchedOrdinary
+                      (VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_kernel x y O c.n c.block).toAlgKernel
+                      { dims := c.grid } s sF) ∧
+                  (∀ o < c.n, sF.readMem O o = sU.readMem O o) ∧
+                    (∀ o < c.n, sF.readMem O o = VeriTile.Triton.TiledActivation.relu (xs o + ys o)) ∧
+                      ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                        ¬(r = T ∧ o < c.n) → ¬(r = O ∧ o < c.n) → sF.mem r o = sU.mem r o

@@ -405,5 +405,23 @@ class FastContract(unittest.TestCase):
                 self.assertEqual(FA.raw_meta(x), (mx.base, mx.elemBytes, mx.shape, mx.strides,
                                                   mx.capacity, mx.dtype))
 
+
+class RelationalTranscriptions(unittest.TestCase):
+    """AddReluRelational.lean restates three kernels; each must equal its source."""
+
+    def test_kernel_copies_equal_sources(self):
+        imp = REPO / "bench/tritonbench_g/add_example/improvement"
+        rel = (imp / "AddReluRelational.lean").read_text()
+        body = lambda text, k: L.lean_body_statements(text, k)  # noqa: E731
+        self.assertEqual(body(rel, "add_relu_kernel"),
+                         body((imp / "AddReluFused.lean").read_text(), "add_relu_kernel"))
+        self.assertEqual(body(rel, "add_kernel"),
+                         body((REPO / "bench/tritonbench_g/add_example/AddExample.lean").read_text(), "add_kernel"))
+        import launch_fused as F
+        self.assertEqual(body(rel, "add_kernel"),
+                         F.kernel_statements((imp / "add_example_block64.py").read_text(), "add_kernel"))
+        self.assertEqual(body(rel, "relu_kernel"),
+                         F.kernel_statements((imp / "relu_masked.py").read_text(), "relu_kernel"))
+
 if __name__ == "__main__":
     unittest.main()

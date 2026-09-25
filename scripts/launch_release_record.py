@@ -194,6 +194,17 @@ def main() -> int:
         w(f"| fusion_bench.json | {fb.get('gpu_name')}, Triton {fb['triton']}, torch {fb['torch']} | correctness "
           f"{fb['correctness_ok']}; {sp}; regressions listed: "
           f"{len(fb['summary']['regressions_fused_slower_by_more_than_2pct'])} | {freshness(fb, hashes, 'fusion_bench.json')} |")
+    for fname, what in (("latency_ladder.json", "latency ladder (checked fused call decomposed; single + repeated)"),
+                        ("block_search.json", "block search (checked end-to-end, small/medium + held-out sizes)"),
+                        ("validation.json", "validation of the stage-9 checked-execution changes"),
+                        ("workload_probe.json", "workload probe (selection evidence)"),
+                        ("fast_check_differential.json", "fast Elementwise2.check vs mirror and Lean")):
+        ev = load(fname)
+        if ev:
+            ok = ev.get("correct", ev.get("correctness_ok", not (ev.get("mismatches_vs_mirror") or
+                                                                 ev.get("mismatches_vs_lean"))))
+            w(f"| {fname} | {ev.get('gpu_name', 'host')} | {what}; correct {ok} "
+              f"| {freshness(ev, hashes, fname)} |")
     ov = load("invoke_overhead.json")
     if ov:
         r0 = ov["rows"][0]

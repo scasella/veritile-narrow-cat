@@ -52,7 +52,9 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "bench/tritonbench_g/add_example/AddExample.lean",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
             "bench/tests/Blocked1DLaunchWitnesses.lean",
-            "bench/tritonbench_g/add_example/improvement/AddReluFused.lean"]
+            "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
+            "VeriTile/Triton/Launch/Relational.lean",
+            "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean"]
 VAC = "VeriTile.Bench.TritonBenchG.VectorAdditionCustom"
 WIT = "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses"
 # (file, namespace for the inventory, theorems that must be axiom-clean, required inventory)
@@ -63,6 +65,7 @@ UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 _AE = "bench/tritonbench_g/add_example/"
 ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
                   "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/StridedUnaryFlat.lean",
+                  "VeriTile/Triton/Launch/Relational.lean",
                   "VeriTile/Triton/Launch/Line3.lean",
                   "bench/tritonbench_g/relu_strided_buffer/WRAPPER_CONTRACT.md",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
@@ -111,6 +114,7 @@ WRAPPER_THEOREMS = [f"VeriTile.Bench.TritonBenchG.AddExample.{t}" for t in (
     "TensorMeta.offsetOf_eq_linear", "FlatAlloc.flattenState_withGridIndex")]
 
 FUSED = "VeriTile.Bench.TritonBenchG.AddReluFused"
+REL = "VeriTile.Bench.TritonBenchG.AddReluRelational"
 AUDIT_TARGETS = [
     ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
      HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
@@ -144,6 +148,11 @@ AUDIT_TARGETS = [
                               "add_relu_wrapper_correctness_block",
                               "add_relu_kernel_region_run", "add_relu_kernel_traceSafe")],
      ["add_relu_kernel_correctness", "add_relu_wrapper_correctness"]),
+    ("bench/tritonbench_g/add_example/improvement/AddReluRelational.lean", REL,
+     [f"{REL}.{t}" for t in ("add_relu_fusion_relational", "add_kernel_programRuns",
+                            "relu_kernel_programRuns", "add_relu_kernel_programRuns")]
+     + [f"VeriTile.Triton.Blocked1D.{t}" for t in ("launch_of_programRuns", "fused_agrees_two_launch")],
+     ["add_relu_fusion_relational"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
@@ -260,6 +269,15 @@ FUSED_SURFACE_PRINTS = [
     "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness",
     # stage 9: every block size the contract accepts
     "#check @VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness_block"]
+# Fused-versus-unfused relational theorem (frozen from its sorry state, stage 10).
+REL_SURFACE_PRINTS = [
+    "#print VeriTile.Triton.Blocked1D.ProgramRuns",
+    "#check @VeriTile.Triton.Blocked1D.launch_of_programRuns",
+    "#check @VeriTile.Triton.Blocked1D.fused_agrees_two_launch",
+    "#print VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_kernel",
+    "#print VeriTile.Bench.TritonBenchG.AddReluRelational.add_kernel",
+    "#print VeriTile.Bench.TritonBenchG.AddReluRelational.relu_kernel",
+    "#check @VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_fusion_relational"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),
@@ -269,7 +287,9 @@ SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluSt
             ("vac_surface.txt", "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
              VAC_SURFACE_PRINTS),
             ("fused_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
-             FUSED_SURFACE_PRINTS)]
+             FUSED_SURFACE_PRINTS),
+            ("relational_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
+             REL_SURFACE_PRINTS)]
 
 
 def sha(p: Path) -> str:
@@ -304,7 +324,8 @@ def input_files() -> list:
                         "scripts/launch_fused.py", "scripts/launch_bench.py", "scripts/launch_bench_modal.py",
                         # checked-execution latency (stage 9)
                         "scripts/launch_fast.py", "scripts/launch_latency.py", "scripts/launch_latency_modal.py",
-                        "scripts/launch_probe.py",
+                        "scripts/launch_probe.py", "scripts/launch_select.py",
+                        "bench/tritonbench_g/add_example/improvement/relu_masked.py",
                         "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                         "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]

@@ -13,7 +13,7 @@ A failure means a `proven` theorem's transitive proof depends on `sorryAx`
 or a non-standard axiom (footprint outside {propext, Classical.choice,
 Quot.sound}) — a real soundness finding, NOT something to paper over.
 
-Coverage: 132 library theorems across 16 modules.
+Coverage: 134 library theorems across 17 modules.
 Standalone bench ports + bench/examples are audited by bench/audit_trust.sh.
 -/
 import VeriTile.Meta.StatementAudit
@@ -30,6 +30,7 @@ import VeriTile.Triton.Launch.Blocked1DConfig
 import VeriTile.Triton.Launch.Blocked1DFlat
 import VeriTile.Triton.Launch.Blocked1DWrapper
 import VeriTile.Triton.Launch.Line3
+import VeriTile.Triton.Launch.Relational
 import VeriTile.Triton.Launch.Serial
 import VeriTile.Triton.Launch.StridedUnary
 import VeriTile.Triton.Launch.StridedUnaryFlat
@@ -188,6 +189,10 @@ import VeriTile.Triton.Launch.StridedUnaryFlat
 
 -- VeriTile.Triton.Launch.Line3
 #axiomsClean VeriTile.Triton.Blocked1D.mergeFrames_liftFrames
+
+-- VeriTile.Triton.Launch.Relational
+#axiomsClean VeriTile.Triton.Blocked1D.fused_agrees_two_launch
+#axiomsClean VeriTile.Triton.Blocked1D.launch_of_programRuns
 
 -- VeriTile.Triton.Launch.Serial
 #axiomsClean VeriTile.Triton.Kernel.runSerial_agrees_merge
