@@ -125,11 +125,58 @@ theorem offbyone_mask_frame_violation (a b o : RegionName) (s : BlockState)
     (injective_offset_singleton 4) ((⟨1, by decide⟩ : Fin 4), PUnit.unit)]
   simp [BlockState.readMem, ha, hb]
 
+/-! ## Wrapper-contract witnesses
+
+Two configurations that the launch checker alone accepts — every access is
+inside its allocation — but that do not give the caller the intended tensor.
+The wrapper contract (`Elementwise2`) rejects both. -/
+
+/-- W2: `y` is a 12-element view of 16-element storage while `x` has 16
+elements. Every address stays inside `y`'s allocation (capacity 16), so the
+launch checker accepts; but the kernel reads 4 elements past the tensor `y`. -/
+def w2X : TensorMeta := ⟨4096, 4, [16], [1], 16, .f32⟩
+def w2Y : TensorMeta := ⟨8192, 4, [12], [1], 16, .f32⟩
+def w2Out : TensorMeta := ⟨12288, 4, [16], [1], 16, .f32⟩
+
+theorem w2_launch_accepted :
+    Blocked1DLaunch.check (Elementwise2.launch 4 w2X w2Y w2Out) = Bool.true := by decide
+
+theorem w2_inputs_not_covered :
+    ¬ Elementwise2.InputsCover (Elementwise2.launch 4 w2X w2Y w2Out) [w2X, w2Y] := by
+  intro h
+  have : (Elementwise2.launch 4 w2X w2Y w2Out).n ≤ w2Y.numel := h w2Y (by simp)
+  revert this
+  decide
+
+theorem w2_wrapper_rejected : Elementwise2.check 4 w2X w2Y w2Out = Bool.false := by decide
+
+/-- W1: `custom_add` on `(4, 8)` tensors launches over `size(0) = 4`. The
+launch is accepted (memory-safe, correct on `out[0, 4)`), but 28 of the 32
+returned elements are never written; the rank-1 wrapper contract rejects it. -/
+def w1A : TensorMeta := ⟨4096, 4, [4, 8], [8, 1], 32, .f32⟩
+def w1B : TensorMeta := ⟨8192, 4, [4, 8], [8, 1], 32, .f32⟩
+def w1C : TensorMeta := ⟨16384, 4, [4, 8], [8, 1], 32, .f32⟩
+
+theorem w1_launch_accepted :
+    Blocked1DLaunch.check (Elementwise2.launchDim0 16 w1A w1B w1C) = Bool.true := by decide
+
+theorem w1_output_not_covered :
+    ¬ Elementwise2.OutputCovered (Elementwise2.launchDim0 16 w1A w1B w1C) w1C :=
+  Elementwise2.launchDim0_not_covered 16 w1A w1B w1C 4 [8] rfl (by decide) (by decide)
+
+theorem w1_wrapper_rejected : Elementwise2.checkRank1 16 w1A w1B w1C = Bool.false := by decide
+
 #axiomsClean testCase1_pre
 #axiomsClean emptyCase_pre
 #axiomsClean i32_n_truncated
 #axiomsClean i32_offset_wraps
 #axiomsClean unmasked_store_frame_violation
 #axiomsClean offbyone_mask_frame_violation
+#axiomsClean w2_launch_accepted
+#axiomsClean w2_inputs_not_covered
+#axiomsClean w2_wrapper_rejected
+#axiomsClean w1_launch_accepted
+#axiomsClean w1_output_not_covered
+#axiomsClean w1_wrapper_rejected
 
 end VeriTile.Bench.Tests.Blocked1DLaunchWitnesses

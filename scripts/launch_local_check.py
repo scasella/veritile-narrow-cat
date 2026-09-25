@@ -106,11 +106,15 @@ AUDIT_TARGETS = [
      ["add_kernel_correctness", "add_kernel_launch_correctness", "add_wrapper_correctness"]),
     ("bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean", VAC,
      [f"{VAC}.add_kernel_correctness", f"{VAC}.add_kernel_launch_correctness",
-      f"{VAC}.add_kernel_launch_applicable"],
-     ["add_kernel_correctness", "add_kernel_launch_correctness"]),
+      f"{VAC}.add_kernel_launch_applicable", f"{VAC}.custom_add_correctness"]
+     + [f"VeriTile.Triton.Elementwise2.{t}" for t in (
+        "checkRank1_ok", "checkRank1_complete", "launchDim0_eq", "launchDim0_not_covered")],
+     ["add_kernel_correctness", "add_kernel_launch_correctness", "custom_add_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
-                            "unmasked_store_frame_violation", "offbyone_mask_frame_violation"]], []),
+                            "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
+                            "w2_launch_accepted", "w2_inputs_not_covered", "w2_wrapper_rejected",
+                            "w1_launch_accepted", "w1_output_not_covered", "w1_wrapper_rejected"]], []),
 ]
 
 # Protected surface: printed from the elaborated environment and compared

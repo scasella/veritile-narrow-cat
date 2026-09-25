@@ -478,6 +478,27 @@ specification custom_add_correctness
           Kernel.TraceSafe bounds
             ((_add_kernel A B C (c.shape.headD 0) 16).toAlgKernel)
             (s.withGridIndex idx)) := by
-  sorry
+  obtain ⟨hr, hpre⟩ := Elementwise2.checkRank1_ok 16 a b c hc
+  have hdim := Elementwise2.launchDim0_eq hr hpre
+  have hL := hpre.launch
+  have hc' : Blocked1DLaunch.check (Elementwise2.launch 16 a b c) = Bool.true :=
+    Blocked1DLaunch.check_complete _ hL
+  have hW1 : a.numel = c.numel := hpre.output_covered
+  have hbn : a.numel = b.numel := by simp [TensorMeta.numel, hpre.same_shape.1]
+  have hhead : c.shape.headD 0 = a.numel := congrArg Blocked1DLaunch.n hdim
+  rw [hdim, hhead]
+  have hx' : ∀ i, i < (Elementwise2.launch 16 a b c).n →
+      s.mem A i = MemCell.real (xs i) := hx
+  have hy' : ∀ i, i < (Elementwise2.launch 16 a b c).n →
+      s.mem B i = MemCell.real (ys i) := fun i hi =>
+    hy i (by change i < a.numel at hi; omega)
+  refine ⟨?_, ?_⟩
+  · rw [← hW1]
+    exact add_kernel_launch_framed _ hc' A B C s xs ys hx' hy'
+  · intro bounds b0 b1 b2
+    rw [hL.grid_eq]
+    intro idx
+    apply add_kernel_traceSafe <;> intro j hj <;>
+      rw [Blocked1D.withGridIndex_pid_line] at hj ⊢ <;> omega
 
 end VeriTile.Bench.TritonBenchG.VectorAdditionCustom

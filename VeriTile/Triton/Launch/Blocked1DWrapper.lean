@@ -203,16 +203,27 @@ def checkRank1 (B : Nat) (x y out : TensorMeta) : Bool :=
 
 theorem checkRank1_ok (B : Nat) (x y out : TensorMeta) (h : checkRank1 B x y out = true) :
     Rank1 x y out ∧ Pre B x y out := by
-  sorry
+  simp only [checkRank1, Bool.and_eq_true, beq_iff_eq] at h
+  obtain ⟨⟨⟨h1, h2⟩, h3⟩, h4⟩ := h
+  exact ⟨⟨h1, h2, h3⟩, check_ok B x y out h4⟩
 
 theorem checkRank1_complete (B : Nat) (x y out : TensorMeta) (hr : Rank1 x y out)
     (h : Pre B x y out) : checkRank1 B x y out = true := by
-  sorry
+  simp only [checkRank1, Bool.and_eq_true, beq_iff_eq]
+  exact ⟨⟨⟨hr.1, hr.2.1⟩, hr.2.2⟩, check_complete B x y out h⟩
 
 /-- On rank-1 tensors of equal shape the dim-0 launch is the `numel` launch. -/
 theorem launchDim0_eq {B : Nat} {x y out : TensorMeta} (hr : Rank1 x y out)
     (h : Pre B x y out) : launchDim0 B x y out = Elementwise2.launch B x y out := by
-  sorry
+  have hs := h.same_shape.2
+  have hn : out.shape.headD 0 = x.numel := by
+    unfold TensorMeta.numel
+    rw [← hs]
+    have ho := hr.2.2
+    match hsh : out.shape, ho with
+    | [d], _ => simp
+  unfold launchDim0 Elementwise2.launch
+  rw [hn]
 
 /-- **W1 fails beyond rank 1.** If the returned tensor has a leading dimension
 `d0 > 0` followed by dimensions of product greater than one, the dim-0 launch
@@ -220,7 +231,12 @@ does not cover it: `n = d0 < numel`. -/
 theorem launchDim0_not_covered (B : Nat) (x y out : TensorMeta) (d0 : Nat) (rest : List Nat)
     (hs : out.shape = d0 :: rest) (hd0 : 0 < d0) (hrest : 1 < rest.foldr (· * ·) 1) :
     ¬ OutputCovered (launchDim0 B x y out) out := by
-  sorry
+  unfold OutputCovered launchDim0 TensorMeta.numel
+  rw [hs]
+  intro h
+  have hlt : d0 * 1 < d0 * rest.foldr (· * ·) 1 := Nat.mul_lt_mul_of_pos_left hrest hd0
+  simp only [List.headD_cons, List.foldr_cons, Nat.mul_one] at h hlt
+  omega
 
 end Elementwise2
 
