@@ -299,6 +299,8 @@ def input_files() -> list:
                         # optimization experiment (stage 8)
                         "bench/tritonbench_g/add_example/improvement/add_relu_fused.py",
                         "scripts/launch_fused.py", "scripts/launch_bench.py", "scripts/launch_bench_modal.py",
+                        # checked-execution latency (stage 9)
+                        "scripts/launch_fast.py", "scripts/launch_latency.py", "scripts/launch_latency_modal.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
 
 
@@ -343,6 +345,10 @@ BENCH = ["scripts/launch_check.py", "bench/audit_source.py", "scripts/launch_inv
          "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py"]
 
 
+LATENCY = [f for f in BENCH if f not in ("scripts/launch_bench.py", "scripts/launch_bench_modal.py")] + [
+    "scripts/launch_fast.py", "scripts/launch_latency.py", "scripts/launch_latency_modal.py"]
+
+
 def lean_closure(roots: list, root: Path = REPO) -> list:
     """Repo Lean files transitively imported by `roots` (roots included)."""
     seen, todo = [], list(roots)
@@ -371,6 +377,7 @@ def evidence_deps(name: str, root: Path = REPO):
         "gpu.json": HANDOFF, "gpu_perf.json": HANDOFF, "gpu_extras.json": HANDOFF,
         "block_sweep.json": HANDOFF, "interpreter.json": HANDOFF,
         "relu_tune.json": BENCH, "fusion_bench.json": BENCH,
+        "latency_ladder.json": LATENCY, "block_search.json": LATENCY,
     }.get(name)
     return None if deps is None else sorted(set(deps))
 
