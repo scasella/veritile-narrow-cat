@@ -80,7 +80,40 @@ changes the ledger `input_hashes`; external evidence carrying other hashes is
 reported `STALE` and fails any `--require-*` invocation. Changes to protected
 definitions or headline statements fail the frozen-contract step.
 
+## Invocation binding (whole-wrapper milestone)
+
+`scripts/launch_invoke.py` checks the **actual** tensors of a call, not
+manifest-built ones:
+
+1. `CheckedWrapper` binds to the pinned wrapper through `parse_launch`
+   (block constant, `n` rule, `cdiv` grid over `*_like(x)`, kernel argument
+   binding) and refuses sources that do not map to the Lean contract;
+   `recognize_relu` does the same for `relu_forward_wrapper_rank_1`, including
+   the stride-argument correspondence.
+2. `tensor_meta` / `storage_meta` read `TensorMeta` from the live tensors
+   (`data_ptr`, shape, strides, capacity to the end of the storage, dtype;
+   `StridedBuffer` supported). **Trusted**, not verified.
+3. The contract is decided by a Python transliteration of the Lean checkers
+   (`Elementwise2.check`, `checkRank1`, `StridedUnary.check`). **Trusted by
+   differential testing** against the Lean definitions (`#eval`): 3000 + 2000
+   randomized near-valid and adversarial cases, 0 mismatches
+   (`launch_evidence/invoke_differential*.json`; the gate re-runs 800 + 800).
+4. On acceptance the kernel is launched with exactly the checked `n`, block
+   and grid; on rejection `ContractViolation` names the failed obligations.
+
+Host cost on this Mac (arm64, torch CPU tensors, `launch_evidence/invoke_overhead.json`):
+metadata ≈ 3 µs for three tensors, decision ≈ 6 µs (elementwise) / ≈ 1.5 µs
+(strided). A verdict cache keyed on the full metadata tuple (data pointers
+included — shapes alone are not a sound key) costs ≈ 7.7 µs per lookup, more
+than deciding, so the recommended path decides on every call. GPU launch
+overhead was not measured in the same setting.
+
 ## Wrapper obligation outside the Lean contract (W1)
+
+*Update (CONTRACT §7):* W1 and W2 are now derived in Lean from the wrapper
+preconditions (`Elementwise2.Pre.output_covered` / `inputs_cover`) and the
+whole-wrapper headlines conclude over every element of the returned tensor.
+The adapter-level W1/W2 checks below remain as the manifest-path diagnostics.
 
 The Lean contract speaks about `out[0, n)` where `n` is the `n_elements`
 argument. Whether the wrapper *returns* exactly those cells is a separate,

@@ -122,9 +122,59 @@ checked — the adapter reads metadata from CPU tensors built from the manifest)
 cases), fresh contiguous f32 tensors; also `n = 5, block = 4, grid = [3]`
 (over-provisioned) and `vector_addition_custom`'s `block = 16`.
 
+## 7. Whole-wrapper contract (revision 3)
+
+What the caller of `add_wrapper(x, y)` receives, stated from the tensors'
+own metadata (`VeriTile/Triton/Launch/Blocked1DWrapper.lean`):
+
+- `TensorMeta`: data pointer (bytes), element size, shape, element strides,
+  capacity (elements addressable from the data pointer inside the
+  allocation), dtype. `Elementwise2.launch 4 x y out` is the launch the
+  wrapper derives (`n = x.numel()`, `BLOCK_SIZE = 4`, `cdiv` grid).
+- `Elementwise2.Pre` (decided by `Elementwise2.check`, with `check_ok` /
+  `check_complete`): WA equal shapes (the supported API), WC all tensors
+  contiguous, P12 element-aligned data pointers, P11 inputs identical or
+  byte-disjoint, and P1–P10 of the derived launch.
+- **W1 and W2 are theorems**, not adapter checks: `Pre.output_covered`
+  (`n = out.numel`) and `Pre.inputs_cover` (`n ≤ t.numel` for both inputs).
+- Headline `add_wrapper_correctness` (`AddExample.lean`): (1) every element
+  `i < out.numel` of the returned tensor holds `xs i + ys i`, all other cells
+  unchanged; (2) for every in-shape multi-index the three tensors address the
+  same row-major element below `out.numel`; (3) every program is trace-safe for
+  bounds equal to the tensors' own element counts; (4) running the programs
+  serially in **any** complete order gives the same result
+  (`Kernel.runSerial_agrees_merge`); (5) in the flat memory placed at the
+  tensors' element addresses `base / elemBytes`, the checked conditions
+  discharge `FlatAlloc.Disjoint` and closure and the flattened launch writes
+  `xs i + ys i` at `out.base / out.elemBytes + i`, every other flat cell
+  unchanged (per program this is the upstream `⊨` headline).
+
+How the layout obligations now do formal work: P9 + P12 give the element
+addressing `base / 4`; P10 + P11 give `FlatAlloc.Disjoint`
+(`Elementwise2.Pre.flat_disjoint`); P3 + P4 place every flat window inside its
+allocation (`Pre.windows_in_alloc`); WC with the logical-view lemma
+`TensorMeta.offsetOf_eq_linear` is what P8 (unit stride) stood for.
+
+Remaining assumptions after revision 3: metadata extraction from live tensors
+and the invocation-time Python mirror of the checker (differentially tested
+against the Lean definitions, not proved); the flat model's typed
+element-sized cells (not byte-level memory); hardware executing the programs
+equivalently to some whole-program serial order (TA-sched: instruction-level
+interleaving is not modelled — the serial theorem removes the stronger
+merge-from-initial-state presumption, and non-interference is proved for this
+kernel); TA-i32 typing; IEEE-single-add; device placement.
+
+`vector_addition_custom.custom_add` has the same contract on its supported
+rank-1 API (`Elementwise2.checkRank1`, headline `custom_add_correctness`);
+beyond rank 1 its `size(0)` launch provably leaves outputs unwritten
+(`Elementwise2.launchDim0_not_covered`) and is rejected.
+
 ## Revisions
 
 - Doc revision 2 (2026-09-25, after a separate-model review): obligation-use
   mapping in §2, i32 conjunct described as arithmetic under TA-i32 (§3),
   wrapper obligation W2 (§4), device placement listed as a non-goal (§5).
   No Lean statement changed.
+- Doc revision 3 (2026-09-25, whole-wrapper milestone): §7 added. It
+  describes new theorems; no obligation, reference or relation of §1–§6
+  changed. Review: same-agent, then a separate-model review (see REPORT).

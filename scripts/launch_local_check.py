@@ -61,6 +61,7 @@ UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 _AE = "bench/tritonbench_g/add_example/"
 ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
                   "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/Line3.lean",
+                  "bench/tritonbench_g/relu_strided_buffer/WRAPPER_CONTRACT.md",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
                                       "launch_manifest.json", "launch_evidence/", "improvement/",
                                       ".gitignore")),
