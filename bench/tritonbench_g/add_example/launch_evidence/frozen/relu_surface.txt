@@ -1,0 +1,270 @@
+def VeriTile.Triton.StridedUnary.nextPow2Aux : ℕ → ℕ → ℕ → ℕ :=
+fun x x_1 x_2 =>
+  Nat.brecOn (motive := fun x => ℕ → ℕ → ℕ) x
+    (fun x f x_3 x_4 =>
+      (match (motive := (x : ℕ) → ℕ → ℕ → Nat.below (motive := fun x => ℕ → ℕ → ℕ) x → ℕ) x, x_3, x_4 with
+        | 0, p, x => fun x => p
+        | fuel.succ, p, n => fun x => if n ≤ p then p else x.1 (2 * p) n)
+        f)
+    x_1 x_2
+def VeriTile.Triton.StridedUnary.nextPow2 : ℕ → ℕ :=
+fun n => if n ≤ 1 then n else VeriTile.Triton.StridedUnary.nextPow2Aux 64 1 n
+def VeriTile.Triton.StridedUnary.cdiv : ℕ → ℕ → ℕ :=
+fun a b => (a + b - 1) / b
+structure VeriTile.Triton.StridedUnary.Launch : Type
+number of parameters: 0
+fields:
+  VeriTile.Triton.StridedUnary.Launch.s0 : ℕ
+  VeriTile.Triton.StridedUnary.Launch.numTasks : ℕ
+  VeriTile.Triton.StridedUnary.Launch.tile : ℕ
+  VeriTile.Triton.StridedUnary.Launch.numTiles : ℕ
+  VeriTile.Triton.StridedUnary.Launch.numCtas : ℕ
+  VeriTile.Triton.StridedUnary.Launch.tilesPerCta : ℕ
+  VeriTile.Triton.StridedUnary.Launch.grid : List ℕ
+  VeriTile.Triton.StridedUnary.Launch.inStride : ℕ
+  VeriTile.Triton.StridedUnary.Launch.outStride : ℕ
+  VeriTile.Triton.StridedUnary.Launch.input : VeriTile.Triton.TensorMeta
+  VeriTile.Triton.StridedUnary.Launch.output : VeriTile.Triton.TensorMeta
+constructor:
+  VeriTile.Triton.StridedUnary.Launch.mk (s0 numTasks tile numTiles numCtas tilesPerCta : ℕ) (grid : List ℕ)
+    (inStride outStride : ℕ) (input output : VeriTile.Triton.TensorMeta) : VeriTile.Triton.StridedUnary.Launch
+def VeriTile.Triton.StridedUnary.launch : VeriTile.Triton.TensorMeta →
+  VeriTile.Triton.TensorMeta → VeriTile.Triton.StridedUnary.Launch :=
+fun x out =>
+  have s0 := out.shape.headD 0;
+  have tile := min 512 (VeriTile.Triton.StridedUnary.nextPow2 s0);
+  have tiles := VeriTile.Triton.StridedUnary.cdiv s0 tile;
+  have ctas := min 65536 tiles;
+  { s0 := s0, numTasks := out.numel, tile := tile, numTiles := tiles, numCtas := ctas,
+    tilesPerCta := VeriTile.Triton.StridedUnary.cdiv tiles ctas, grid := [ctas, 1, 1], inStride := x.strides.headD 0,
+    outStride := out.strides.headD 0, input := x, output := out }
+def VeriTile.Triton.StridedUnary.spanEnd : VeriTile.Triton.TensorMeta → ℕ → ℕ → ℕ :=
+fun t s0 stride => t.base + ((s0 - 1) * stride + 1) * t.elemBytes
+structure VeriTile.Triton.StridedUnary.Pre (c : VeriTile.Triton.StridedUnary.Launch) : Prop
+number of parameters: 1
+fields:
+  VeriTile.Triton.StridedUnary.Pre.rank1 : VeriTile.Triton.StridedUnary.Rank1 c
+  VeriTile.Triton.StridedUnary.Pre.same_shape : VeriTile.Triton.StridedUnary.SameShape c
+  VeriTile.Triton.StridedUnary.Pre.nonempty : VeriTile.Triton.StridedUnary.NonEmpty c
+  VeriTile.Triton.StridedUnary.Pre.one_tile : VeriTile.Triton.StridedUnary.OneTile c
+  VeriTile.Triton.StridedUnary.Pre.pos_strides : VeriTile.Triton.StridedUnary.PosStrides c
+  VeriTile.Triton.StridedUnary.Pre.in_bounds : VeriTile.Triton.StridedUnary.InBounds c
+  VeriTile.Triton.StridedUnary.Pre.dtype_ok : VeriTile.Triton.StridedUnary.DTypeOk c
+  VeriTile.Triton.StridedUnary.Pre.aligned : VeriTile.Triton.StridedUnary.Aligned c
+  VeriTile.Triton.StridedUnary.Pre.spans_disjoint : VeriTile.Triton.StridedUnary.SpansDisjoint c
+  VeriTile.Triton.StridedUnary.Pre.offsets_fit : VeriTile.Triton.StridedUnary.OffsetsFit c
+  VeriTile.Triton.StridedUnary.Pre.addresses_fit : VeriTile.Triton.StridedUnary.AddressesFit c
+constructor:
+  VeriTile.Triton.StridedUnary.Pre.mk {c : VeriTile.Triton.StridedUnary.Launch}
+    (rank1 : VeriTile.Triton.StridedUnary.Rank1 c) (same_shape : VeriTile.Triton.StridedUnary.SameShape c)
+    (nonempty : VeriTile.Triton.StridedUnary.NonEmpty c) (one_tile : VeriTile.Triton.StridedUnary.OneTile c)
+    (pos_strides : VeriTile.Triton.StridedUnary.PosStrides c) (in_bounds : VeriTile.Triton.StridedUnary.InBounds c)
+    (dtype_ok : VeriTile.Triton.StridedUnary.DTypeOk c) (aligned : VeriTile.Triton.StridedUnary.Aligned c)
+    (spans_disjoint : VeriTile.Triton.StridedUnary.SpansDisjoint c)
+    (offsets_fit : VeriTile.Triton.StridedUnary.OffsetsFit c)
+    (addresses_fit : VeriTile.Triton.StridedUnary.AddressesFit c) : VeriTile.Triton.StridedUnary.Pre c
+def VeriTile.Triton.StridedUnary.Rank1 : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => c.input.shape.length = 1 ∧ c.output.shape.length = 1 ∧ c.input.strides.length = 1 ∧ c.output.strides.length = 1
+def VeriTile.Triton.StridedUnary.SameShape : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => c.input.shape = c.output.shape
+def VeriTile.Triton.StridedUnary.NonEmpty : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => 0 < c.s0
+def VeriTile.Triton.StridedUnary.OneTile : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => c.numTiles ≤ 65536
+def VeriTile.Triton.StridedUnary.PosStrides : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => 0 < c.inStride ∧ 0 < c.outStride
+def VeriTile.Triton.StridedUnary.InBounds : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => (c.s0 - 1) * c.inStride < c.input.capacity ∧ (c.s0 - 1) * c.outStride < c.output.capacity
+def VeriTile.Triton.StridedUnary.DTypeOk : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c =>
+  c.input.dtype = VeriTile.Triton.ElemDType.f32 ∧
+    c.input.elemBytes = 4 ∧ c.output.dtype = VeriTile.Triton.ElemDType.f32 ∧ c.output.elemBytes = 4
+def VeriTile.Triton.StridedUnary.Aligned : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => c.input.base % 4 = 0 ∧ c.output.base % 4 = 0
+def VeriTile.Triton.StridedUnary.SpansDisjoint : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c =>
+  VeriTile.Triton.StridedUnary.spanEnd c.output c.s0 c.outStride ≤ c.input.base ∨
+    VeriTile.Triton.StridedUnary.spanEnd c.input c.s0 c.inStride ≤ c.output.base
+def VeriTile.Triton.StridedUnary.OffsetsFit : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c => c.numCtas * c.tile ≤ VeriTile.Triton.StridedUnary.i32Limit
+def VeriTile.Triton.StridedUnary.AddressesFit : VeriTile.Triton.StridedUnary.Launch → Prop :=
+fun c =>
+  (c.s0 - 1) * c.inStride * 4 < VeriTile.Triton.StridedUnary.i64Limit ∧
+    (c.s0 - 1) * c.outStride * 4 < VeriTile.Triton.StridedUnary.i64Limit
+VeriTile.Triton.StridedUnary.check_ok : ∀ (c : VeriTile.Triton.StridedUnary.Launch),
+  VeriTile.Triton.StridedUnary.check c = «true» → VeriTile.Triton.StridedUnary.Pre c
+VeriTile.Triton.StridedUnary.check_complete : ∀ (c : VeriTile.Triton.StridedUnary.Launch),
+  VeriTile.Triton.StridedUnary.Pre c → VeriTile.Triton.StridedUnary.check c = «true»
+@VeriTile.Triton.StridedUnary.Pre.derived : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    have c := VeriTile.Triton.StridedUnary.launch x out;
+    0 < c.tile ∧
+      c.numCtas = c.numTiles ∧ c.tilesPerCta = 1 ∧ c.s0 ≤ c.numCtas * c.tile ∧ c.numTasks = c.s0 ∧ x.numel = c.s0
+@VeriTile.Triton.StridedUnary.Pre.i32_offset_toInt : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    ∀ {pid i : ℕ},
+      pid < (VeriTile.Triton.StridedUnary.launch x out).numCtas →
+        i < (VeriTile.Triton.StridedUnary.launch x out).tile →
+          (BitVec.ofNat 32 pid * BitVec.ofNat 32 (VeriTile.Triton.StridedUnary.launch x out).tile +
+                BitVec.ofNat 32 i).toInt =
+            ↑(pid * (VeriTile.Triton.StridedUnary.launch x out).tile + i)
+@[reducible] def VeriTile.Triton.Blocked1D.line3 : ℕ → VeriTile.Triton.Grid :=
+fun g => { dims := [g, 1, 1] }
+def VeriTile.Triton.Blocked1D.toLine : {g : ℕ} →
+  VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line3 g) →
+    VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g) :=
+fun {g} idx => VeriTile.Triton.Blocked1D.indexOf ↑(idx ⟨0, ⋯⟩) ⋯
+@VeriTile.Triton.Blocked1D.toLine_bijective : ∀ {g : ℕ}, Function.Bijective VeriTile.Triton.Blocked1D.toLine
+@VeriTile.Triton.Blocked1D.withGridIndex_toLine : ∀ {g : ℕ} (s : VeriTile.Triton.BlockState)
+  (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line3 g)),
+  s.withGridIndex idx = s.withGridIndex (VeriTile.Triton.Blocked1D.toLine idx)
+def VeriTile.Triton.Blocked1D.liftFrames : {k : VeriTile.Triton.Kernel} →
+  {g : ℕ} →
+    {s : VeriTile.Triton.BlockState} →
+      k.GridFrames (VeriTile.Triton.Blocked1D.line g) s → k.GridFrames (VeriTile.Triton.Blocked1D.line3 g) s :=
+fun {k} {g} {s} frames idx =>
+  { final := (frames (VeriTile.Triton.Blocked1D.toLine idx)).final,
+    writes := (frames (VeriTile.Triton.Blocked1D.toLine idx)).writes, h_exec := ⋯, h_writeWithin := ⋯ }
+@VeriTile.Triton.Blocked1D.liftFrames_disjoint : ∀ {k : VeriTile.Triton.Kernel} {g : ℕ} {s : VeriTile.Triton.BlockState}
+  {frames : k.GridFrames (VeriTile.Triton.Blocked1D.line g) s},
+  VeriTile.Triton.Kernel.GridWritesDisjoint frames →
+    VeriTile.Triton.Kernel.GridWritesDisjoint (VeriTile.Triton.Blocked1D.liftFrames frames)
+@VeriTile.Triton.Blocked1D.mergeFrames_liftFrames : ∀ {k : VeriTile.Triton.Kernel} {g : ℕ}
+  {s : VeriTile.Triton.BlockState} {frames : k.GridFrames (VeriTile.Triton.Blocked1D.line g) s},
+  VeriTile.Triton.Kernel.GridWritesDisjoint frames →
+    VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line3 g) s
+        (VeriTile.Triton.Blocked1D.liftFrames frames) =
+      VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line g) s frames
+@VeriTile.Triton.Blocked1D.liftFrames_robust : ∀ {k : VeriTile.Triton.Kernel} {g : ℕ} {s : VeriTile.Triton.BlockState}
+  {frames : k.GridFrames (VeriTile.Triton.Blocked1D.line g) s},
+  VeriTile.Triton.Kernel.FrameRobust frames →
+    VeriTile.Triton.Kernel.FrameRobust (VeriTile.Triton.Blocked1D.liftFrames frames)
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_correctness : ∀
+  (x out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.StridedUnary.check (VeriTile.Triton.StridedUnary.launch x out) = «true» →
+    ∀ (in0_ptr out0_ptr : VeriTile.Triton.RegionName),
+      in0_ptr ≠ out0_ptr →
+        ∀ (s : VeriTile.Triton.BlockState) (xs : ℕ → ℝ),
+          (∀ k < out.numel, s.readMem in0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) = xs k) →
+            (VeriTile.Triton.Kernel.LaunchCorrectFramed
+                (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr
+                    out0_ptr (VeriTile.Triton.StridedUnary.launch x out).inStride
+                    (VeriTile.Triton.StridedUnary.launch x out).outStride (VeriTile.Triton.StridedUnary.launch x out).s0
+                    (VeriTile.Triton.StridedUnary.launch x out).numTasks
+                    (VeriTile.Triton.StridedUnary.launch x out).tilesPerCta
+                    (VeriTile.Triton.StridedUnary.launch x out).tile).toAlgKernel
+                { dims := (VeriTile.Triton.StridedUnary.launch x out).grid } s
+                (fun k =>
+                  if k < out.numel then some (out0_ptr, k * (VeriTile.Triton.StridedUnary.launch x out).outStride)
+                  else none)
+                fun k => VeriTile.Triton.TiledActivation.relu (xs k)) ∧
+              (∀ (bounds : VeriTile.Triton.RegionBounds),
+                  ((VeriTile.Triton.StridedUnary.launch x out).s0 - 1) *
+                        (VeriTile.Triton.StridedUnary.launch x out).inStride <
+                      bounds in0_ptr →
+                    ((VeriTile.Triton.StridedUnary.launch x out).s0 - 1) *
+                          (VeriTile.Triton.StridedUnary.launch x out).outStride <
+                        bounds out0_ptr →
+                      ∀ (idx : VeriTile.Triton.GridIndex { dims := (VeriTile.Triton.StridedUnary.launch x out).grid }),
+                        VeriTile.Triton.Kernel.TraceSafe bounds
+                          (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface
+                              in0_ptr out0_ptr (VeriTile.Triton.StridedUnary.launch x out).inStride
+                              (VeriTile.Triton.StridedUnary.launch x out).outStride
+                              (VeriTile.Triton.StridedUnary.launch x out).s0
+                              (VeriTile.Triton.StridedUnary.launch x out).numTasks
+                              (VeriTile.Triton.StridedUnary.launch x out).tilesPerCta
+                              (VeriTile.Triton.StridedUnary.launch x out).tile).toAlgKernel
+                          (s.withGridIndex idx)) ∧
+                (∀ (L : List (VeriTile.Triton.GridIndex { dims := (VeriTile.Triton.StridedUnary.launch x out).grid })),
+                    L.Nodup →
+                      (∀ (idx : VeriTile.Triton.GridIndex { dims := (VeriTile.Triton.StridedUnary.launch x out).grid }),
+                          idx ∈ L) →
+                        ∃ m,
+                          VeriTile.Triton.Kernel.runSerial
+                                (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface
+                                    in0_ptr out0_ptr (VeriTile.Triton.StridedUnary.launch x out).inStride
+                                    (VeriTile.Triton.StridedUnary.launch x out).outStride
+                                    (VeriTile.Triton.StridedUnary.launch x out).s0
+                                    (VeriTile.Triton.StridedUnary.launch x out).numTasks
+                                    (VeriTile.Triton.StridedUnary.launch x out).tilesPerCta
+                                    (VeriTile.Triton.StridedUnary.launch x out).tile).toAlgKernel
+                                s L s.mem =
+                              some m ∧
+                            (∀ k < out.numel,
+                                VeriTile.Triton.Kernel.memReal m out0_ptr
+                                    (k * (VeriTile.Triton.StridedUnary.launch x out).outStride) =
+                                  VeriTile.Triton.TiledActivation.relu (xs k)) ∧
+                              ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                                ¬(r = out0_ptr ∧
+                                      ∃ k < out.numel, k * (VeriTile.Triton.StridedUnary.launch x out).outStride = o) →
+                                  m r o = s.mem r o) ∧
+                  ∀ (pid i : ℕ),
+                    pid < (VeriTile.Triton.StridedUnary.launch x out).numCtas →
+                      i < (VeriTile.Triton.StridedUnary.launch x out).tile →
+                        (BitVec.ofNat 32 pid * BitVec.ofNat 32 (VeriTile.Triton.StridedUnary.launch x out).tile +
+                              BitVec.ofNat 32 i).toInt =
+                          ↑(pid * (VeriTile.Triton.StridedUnary.launch x out).tile + i)
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrong_stride_reads_wrong_element : ∀
+  (in0_ptr out0_ptr : VeriTile.Triton.RegionName),
+  in0_ptr ≠ out0_ptr →
+    ∀ (s : VeriTile.Triton.BlockState),
+      s.pids 0 = 0 →
+        s.readMem in0_ptr 1 = 5 →
+          s.readMem in0_ptr 2 = -1 →
+            ∃ s1,
+              VeriTile.Triton.exec
+                    (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr
+                        out0_ptr 1 1 2 2 1 2).toAlgKernel
+                    s =
+                  some s1 ∧
+                s1.readMem out0_ptr 1 ≠ VeriTile.Triton.TiledActivation.relu (s.readMem in0_ptr (1 * 2))
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_strided_buffer_one_tile_io_correctness : ∀
+  (in0_ptr out0_ptr : VeriTile.Triton.RegionName) (in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 : ℕ),
+  0 < out0_stride0 →
+    (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.reluOneTileIO in0_ptr out0_ptr in0_stride0 out0_stride0 s0 num_tasks
+          tiles_per_cta tile_size0).Implements
+      fun _pid xs i => VeriTile.Triton.TiledActivation.relu (xs i)
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_region_run : ∀
+  (in0_ptr out0_ptr : VeriTile.Triton.RegionName) (in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 : ℕ),
+  0 < out0_stride0 →
+    ∀ (s₀ : VeriTile.Triton.BlockState) (xs : VeriTile.Triton.TileIndex [tile_size0] → ℝ),
+      (∀ (i : VeriTile.Triton.TileIndex [tile_size0]),
+          VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 < s0 →
+            s₀.readMem in0_ptr
+                (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 * in0_stride0) =
+              xs i) →
+        ∃ s1,
+          VeriTile.Triton.exec
+                (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr
+                    out0_ptr in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0).toAlgKernel
+                s₀ =
+              some s1 ∧
+            (∀ (i : VeriTile.Triton.TileIndex [tile_size0]),
+                VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 < s0 →
+                  s1.readMem out0_ptr
+                      (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 *
+                        out0_stride0) =
+                    VeriTile.Triton.TiledActivation.relu (xs i)) ∧
+              ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                (r ≠ out0_ptr ∨
+                    ∀ (i : VeriTile.Triton.TileIndex [tile_size0]),
+                      VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 < s0 →
+                        o ≠
+                          VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s₀.pids 0) tile_size0 i.1 *
+                            out0_stride0) →
+                  s1.mem r o = s₀.mem r o
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_traceSafe : ∀
+  (in0_ptr out0_ptr : VeriTile.Triton.RegionName) (in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0 : ℕ)
+  (bounds : VeriTile.Triton.RegionBounds) (s : VeriTile.Triton.BlockState),
+  (∀ (i : Fin tile_size0),
+      VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s.pids 0) tile_size0 i < s0 →
+        VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s.pids 0) tile_size0 i * in0_stride0 <
+          bounds in0_ptr) →
+    (∀ (i : Fin tile_size0),
+        VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s.pids 0) tile_size0 i < s0 →
+          VeriTile.Bench.TritonBenchG.ReluStridedBuffer.taskIndex (s.pids 0) tile_size0 i * out0_stride0 <
+            bounds out0_ptr) →
+      VeriTile.Triton.Kernel.TraceSafe bounds
+        (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+            in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0).toAlgKernel
+        s

@@ -169,8 +169,36 @@ WRAPPER_SURFACE_PRINTS = [
     "#check @VeriTile.Triton.Elementwise2.checkRank1_complete",
     "#check @VeriTile.Triton.Elementwise2.launchDim0_eq",
     "#check @VeriTile.Triton.Elementwise2.launchDim0_not_covered"]
+RELU = "VeriTile.Bench.TritonBenchG.ReluStridedBuffer"
+# Strided one-tile ReLU wrapper contract (frozen from its sorry state, stage 6).
+RELU_SURFACE_PRINTS = [
+    "#print VeriTile.Triton.StridedUnary.nextPow2Aux", "#print VeriTile.Triton.StridedUnary.nextPow2",
+    "#print VeriTile.Triton.StridedUnary.cdiv", "#print VeriTile.Triton.StridedUnary.Launch",
+    "#print VeriTile.Triton.StridedUnary.launch", "#print VeriTile.Triton.StridedUnary.spanEnd",
+    "#print VeriTile.Triton.StridedUnary.Pre", "#print VeriTile.Triton.StridedUnary.Rank1",
+    "#print VeriTile.Triton.StridedUnary.SameShape", "#print VeriTile.Triton.StridedUnary.NonEmpty",
+    "#print VeriTile.Triton.StridedUnary.OneTile", "#print VeriTile.Triton.StridedUnary.PosStrides",
+    "#print VeriTile.Triton.StridedUnary.InBounds", "#print VeriTile.Triton.StridedUnary.DTypeOk",
+    "#print VeriTile.Triton.StridedUnary.Aligned", "#print VeriTile.Triton.StridedUnary.SpansDisjoint",
+    "#print VeriTile.Triton.StridedUnary.OffsetsFit", "#print VeriTile.Triton.StridedUnary.AddressesFit",
+    "#check @VeriTile.Triton.StridedUnary.check_ok", "#check @VeriTile.Triton.StridedUnary.check_complete",
+    "#check @VeriTile.Triton.StridedUnary.Pre.derived",
+    "#check @VeriTile.Triton.StridedUnary.Pre.i32_offset_toInt",
+    "#print VeriTile.Triton.Blocked1D.line3", "#print VeriTile.Triton.Blocked1D.toLine",
+    "#check @VeriTile.Triton.Blocked1D.toLine_bijective",
+    "#check @VeriTile.Triton.Blocked1D.withGridIndex_toLine",
+    "#print VeriTile.Triton.Blocked1D.liftFrames",
+    "#check @VeriTile.Triton.Blocked1D.liftFrames_disjoint",
+    "#check @VeriTile.Triton.Blocked1D.mergeFrames_liftFrames",
+    "#check @VeriTile.Triton.Blocked1D.liftFrames_robust",
+    f"#check @{RELU}.relu_wrapper_one_tile_correctness",
+    f"#check @{RELU}.relu_wrong_stride_reads_wrong_element",
+    f"#check @{RELU}.relu_strided_buffer_one_tile_io_correctness",
+    f"#check @{RELU}.relu_one_tile_region_run", f"#check @{RELU}.relu_one_tile_traceSafe"]
 # (frozen snapshot name, file, prints)
-SURFACES = [("launch_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean", SURFACE_PRINTS),
+SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
+             RELU_SURFACE_PRINTS),
+            ("launch_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean", SURFACE_PRINTS),
             ("wrapper_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean",
              WRAPPER_SURFACE_PRINTS),
             ("vac_surface.txt", "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
