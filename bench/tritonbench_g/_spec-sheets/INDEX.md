@@ -1,6 +1,6 @@
 # Spec-sheet index
 
-- 173 kernels, 350 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
+- 173 kernels, 351 headline theorems, 0 with self-ref tokens, 0 with no summary theorem found.
 - Ranked by **review-cost** proxy `score = 3·defs + flat_offset_reads + stmt_lines + hyps` (hardest specs to audit first). Documented single-read element accessors (docstring + body = one `readMem`, optionally boundary-masked) are exempt from `flat_offset_reads` and count 1 (not 3) in the `defs` term — they are readability aids, not tax.
 
 | score | kernel | defs | flat-reads | stmt-lines | hyps | flags |
@@ -19,6 +19,7 @@
 | 180 | [matmul_dequantize__MatmulDequantize.md](matmul_dequantize__MatmulDequantize.md) | 40 | 0 | 67 | 3 |  |
 | 171 | [flash_decode2_phi__FlashDecode2Phi.md](flash_decode2_phi__FlashDecode2Phi.md) | 21 | 0 | 104 | 4 |  |
 | 164 | [chunk_gated_attention__ChunkGatedAttention.md](chunk_gated_attention__ChunkGatedAttention.md) | 29 | 0 | 83 | 4 |  |
+| 160 | [relu_strided_buffer__ReluStridedBuffer.md](relu_strided_buffer__ReluStridedBuffer.md) | 6 | 0 | 131 | 13 |  |
 | 154 | [context_attn_bloom__ContextAttnBloom.md](context_attn_bloom__ContextAttnBloom.md) | 35 | 0 | 47 | 8 |  |
 | 152 | [mixed_sparse_attention__MixedSparseAttention.md](mixed_sparse_attention__MixedSparseAttention.md) | 34 | 0 | 43 | 13 |  |
 | 152 | [rope_transform__RopeTransform.md](rope_transform__RopeTransform.md) | 20 | 0 | 90 | 2 |  |
@@ -43,7 +44,6 @@
 | 125 | [kldiv_ops__KldivOps.md](kldiv_ops__KldivOps.md) | 13 | 0 | 82 | 4 |  |
 | 124 | [fused_recurrent_hgrn__FusedRecurrentHgrn.md](fused_recurrent_hgrn__FusedRecurrentHgrn.md) | 20 | 0 | 70 | 2 |  |
 | 123 | [int_scaled_matmul__IntScaledMatmul.md](int_scaled_matmul__IntScaledMatmul.md) | 26 | 0 | 44 | 3 |  |
-| 122 | [relu_strided_buffer__ReluStridedBuffer.md](relu_strided_buffer__ReluStridedBuffer.md) | 6 | 0 | 97 | 9 |  |
 | 121 | [fused_rwkv6_kernel__FusedRwkv6Kernel.md](fused_rwkv6_kernel__FusedRwkv6Kernel.md) | 20 | 0 | 64 | 3 |  |
 | 120 | [attention_fwd_triton2__AttentionFwdTriton2.md](attention_fwd_triton2__AttentionFwdTriton2.md) | 19 | 5 | 49 | 9 |  |
 | 119 | [parallel_retention_attention__ParallelRetentionAttention.md](parallel_retention_attention__ParallelRetentionAttention.md) | 29 | 0 | 35 | 11 |  |

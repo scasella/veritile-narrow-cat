@@ -45,6 +45,7 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Blocked1DWrapper.lean",
             "VeriTile/Triton/Launch/Blocked1DFlat.lean",
             "VeriTile/Triton/Launch/StridedUnary.lean",
+            "VeriTile/Triton/Launch/StridedUnaryFlat.lean",
             "VeriTile/Triton/Launch/Line3.lean",
             "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
             "VeriTile/Triton/Launch/Composition.lean",
@@ -60,7 +61,8 @@ UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 # Paths this project adds (anything else changed vs the pin fails the gate).
 _AE = "bench/tritonbench_g/add_example/"
 ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
-                  "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/Line3.lean",
+                  "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/StridedUnaryFlat.lean",
+                  "VeriTile/Triton/Launch/Line3.lean",
                   "bench/tritonbench_g/relu_strided_buffer/WRAPPER_CONTRACT.md",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
                                       "launch_manifest.json", "launch_evidence/", "improvement/",
@@ -122,13 +124,19 @@ AUDIT_TARGETS = [
      "VeriTile.Bench.TritonBenchG.ReluStridedBuffer",
      [f"VeriTile.Bench.TritonBenchG.ReluStridedBuffer.{t}" for t in (
         "relu_wrapper_one_tile_correctness", "relu_one_tile_program_run",
-        "relu_wrong_stride_reads_wrong_element", "relu_strided_buffer_one_tile_io_correctness")]
+        "relu_wrong_stride_reads_wrong_element", "relu_strided_buffer_one_tile_io_correctness",
+        "relu_wrong_out_stride_writes_gap_cell", "relu_one_tile_launch_flat",
+        "relu_wrapper_one_tile_flat_correctness")]
      + [f"VeriTile.Triton.{t}" for t in (
         "StridedUnary.check_ok", "StridedUnary.check_complete", "StridedUnary.Pre.derived",
         "StridedUnary.Pre.i32_offset_toInt", "Blocked1D.toLine_bijective",
         "Blocked1D.withGridIndex_toLine", "Blocked1D.liftFrames_disjoint",
-        "Blocked1D.mergeFrames_liftFrames", "Blocked1D.liftFrames_robust")],
-     ["relu_strided_buffer_one_tile_io_correctness", "relu_wrapper_one_tile_correctness"]),
+        "Blocked1D.mergeFrames_liftFrames", "Blocked1D.liftFrames_robust",
+        "StridedUnary.flatAlloc_closed", "StridedUnary.offsetOf_rank1", "StridedUnary.Pre.flat_disjoint",
+        "StridedUnary.Pre.span_in_alloc", "StridedUnary.Pre.addr_bytes",
+        "StridedUnary.Pre.reads_outside_writes")],
+     ["relu_strided_buffer_one_tile_io_correctness", "relu_wrapper_one_tile_correctness",
+      "relu_wrapper_one_tile_flat_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
@@ -138,7 +146,9 @@ AUDIT_TARGETS = [
                             "custom_add_accepts_rank1",
                             "relu_valid_contiguous", "relu_valid_strided", "relu_empty_rejected",
                             "relu_loop_branch_rejected", "relu_stride_out_of_alloc_rejected",
-                            "relu_overlap_rejected", "relu_f16_rejected"]], []),
+                            "relu_overlap_rejected", "relu_f16_rejected",
+                            "relu_offset5_stride3_accepted", "relu_offset5_stride3_flat_placement",
+                            "relu_interleaved_rejected"]], []),
 ]
 
 # Protected surface: printed from the elaborated environment and compared
@@ -218,7 +228,19 @@ RELU_SURFACE_PRINTS = [
     f"#check @{RELU}.relu_wrapper_one_tile_correctness",
     f"#check @{RELU}.relu_wrong_stride_reads_wrong_element",
     f"#check @{RELU}.relu_strided_buffer_one_tile_io_correctness",
-    f"#check @{RELU}.relu_one_tile_region_run", f"#check @{RELU}.relu_one_tile_traceSafe"]
+    f"#check @{RELU}.relu_one_tile_region_run", f"#check @{RELU}.relu_one_tile_traceSafe",
+    # stage 7: flat-memory placement of the one-tile wrapper contract
+    "#print VeriTile.Triton.StridedUnary.spanCells", "#print VeriTile.Triton.StridedUnary.flatAlloc",
+    "#print VeriTile.Triton.FlatAlloc.Disjoint", "#print VeriTile.Triton.FlatAlloc.addr",
+    "#check @VeriTile.Triton.StridedUnary.flatAlloc_closed",
+    "#check @VeriTile.Triton.StridedUnary.offsetOf_rank1",
+    "#check @VeriTile.Triton.StridedUnary.Pre.flat_disjoint",
+    "#check @VeriTile.Triton.StridedUnary.Pre.span_in_alloc",
+    "#check @VeriTile.Triton.StridedUnary.Pre.addr_bytes",
+    "#check @VeriTile.Triton.StridedUnary.Pre.reads_outside_writes",
+    f"#check @{RELU}.relu_wrong_out_stride_writes_gap_cell",
+    f"#check @{RELU}.relu_one_tile_launch_flat",
+    f"#check @{RELU}.relu_wrapper_one_tile_flat_correctness"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),

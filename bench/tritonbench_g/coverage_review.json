@@ -4326,7 +4326,7 @@
     {
       "file": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
       "python_file": "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
-      "lean_sha256": "c5ced30e082399ba66c404d42ecb40f034206dc3b108b92dac1e6ee38dcf2663",
+      "lean_sha256": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
       "python_sha256": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
       "declarations": [
         {
@@ -4384,6 +4384,26 @@
             }
           ],
           "scope": "Whole-wrapper contract of relu_forward_wrapper_rank_1, one-tile branch, for rank-1 positive-stride tensors accepted by StridedUnary.check (non-empty, one-tile branch, strided elements inside each allocation, f32, aligned, disjoint spans, i32 offsets, i64 addresses): every strided output element relu of the matching strided input element, gap cells and input unchanged, strided extents, serial orders, over the wrapper's (num_ctas,1,1) grid; per-program proofs reused unchanged. Grid-stride branch, negative strides, dtype reinterpretation and empty input are rejected. Exact-R model; .to() casts erased. Same-agent review."
+        },
+        {
+          "declaration": "relu_wrapper_one_tile_flat_correctness",
+          "coverage_level": "full_value_candidate",
+          "numeric_model": "mathematical",
+          "python_functions": [
+            {
+              "name": "heuristics_for_tile_size",
+              "line": 7
+            },
+            {
+              "name": "relu_forward_wrapper_rank_1",
+              "line": 81
+            },
+            {
+              "name": "relu_forward_kernel_rank_1",
+              "line": 121
+            }
+          ],
+          "scope": "Whole-wrapper contract of relu_forward_wrapper_rank_1, one-tile branch, in flat memory: for rank-1 tensors accepted by StridedUnary.check, the flat placement built from their own metadata (each region at base/4 over its strided span) satisfies FlatAlloc.Disjoint (S7/S8/S9), lies inside each allocation (S6), maps logical element k to byte base + 4*offsetOf [k], and separates input from output cells; the translated (num_ctas,1,1) launch writes relu at every logical output cell and leaves every other flat cell (gap cells, input span, outside) unchanged. Reuses relu_strided_buffer_one_tile_io_correctness unchanged. Typed element-sized cells, not bytes; exact-R model; .to() casts erased (cast-fixed source text justified separately). Serial-order agreement stays in the region-model headline. Same-agent review."
         }
       ]
     },

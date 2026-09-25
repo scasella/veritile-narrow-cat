@@ -270,3 +270,175 @@ VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_traceSafe : ∀
         (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
             in0_stride0 out0_stride0 s0 num_tasks tiles_per_cta tile_size0).toAlgKernel
         s
+def VeriTile.Triton.StridedUnary.spanCells : ℕ → ℕ → ℕ :=
+fun s0 stride => (s0 - 1) * stride + 1
+def VeriTile.Triton.StridedUnary.flatAlloc : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName →
+    VeriTile.Triton.RegionName → VeriTile.Triton.StridedUnary.Launch → VeriTile.Triton.FlatAlloc :=
+fun flat in0 out0 c =>
+  { flat := flat, regions := [in0, out0],
+    base := fun r =>
+      if r = out0 then c.output.base / c.output.elemBytes else if r = in0 then c.input.base / c.input.elemBytes else 0,
+    extent := fun r =>
+      if r = out0 then VeriTile.Triton.StridedUnary.spanCells c.s0 c.outStride
+      else if r = in0 then VeriTile.Triton.StridedUnary.spanCells c.s0 c.inStride else 0 }
+def VeriTile.Triton.FlatAlloc.Disjoint : VeriTile.Triton.FlatAlloc → Prop :=
+fun A =>
+  ∀ r ∈ A.regions, ∀ r' ∈ A.regions, r ≠ r' → A.base r + A.extent r ≤ A.base r' ∨ A.base r' + A.extent r' ≤ A.base r
+def VeriTile.Triton.FlatAlloc.addr : VeriTile.Triton.FlatAlloc → VeriTile.Triton.RegionName → ℕ → ℕ :=
+fun A r o => A.base r + o
+VeriTile.Triton.StridedUnary.flatAlloc_closed : ∀ (flat in0 out0 : VeriTile.Triton.RegionName)
+  (c : VeriTile.Triton.StridedUnary.Launch),
+  ∀ r ∉ (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 c).regions,
+    (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 c).extent r = 0
+VeriTile.Triton.StridedUnary.offsetOf_rank1 : ∀ (t : VeriTile.Triton.TensorMeta),
+  t.strides.length = 1 → ∀ (k : ℕ), t.offsetOf [k] = k * t.strides.headD 0
+@VeriTile.Triton.StridedUnary.Pre.flat_disjoint : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    ∀ (flat in0 out0 : VeriTile.Triton.RegionName),
+      in0 ≠ out0 →
+        (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).Disjoint
+@VeriTile.Triton.StridedUnary.Pre.span_in_alloc : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    ∀ (flat in0 out0 : VeriTile.Triton.RegionName),
+      in0 ≠ out0 →
+        (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).extent in0 ≤
+            x.capacity ∧
+          (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).extent
+              out0 ≤
+            out.capacity
+@VeriTile.Triton.StridedUnary.Pre.addr_bytes : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    ∀ (flat in0 out0 : VeriTile.Triton.RegionName),
+      in0 ≠ out0 →
+        ∀ (k : ℕ),
+          4 *
+                (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).addr
+                  in0 (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) =
+              x.base + x.elemBytes * x.offsetOf [k] ∧
+            4 *
+                (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).addr
+                  out0 (k * (VeriTile.Triton.StridedUnary.launch x out).outStride) =
+              out.base + out.elemBytes * out.offsetOf [k]
+@VeriTile.Triton.StridedUnary.Pre.reads_outside_writes : ∀ {x out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.StridedUnary.Pre (VeriTile.Triton.StridedUnary.launch x out) →
+    ∀ (flat in0 out0 : VeriTile.Triton.RegionName),
+      in0 ≠ out0 →
+        ∀ (k j : ℕ),
+          k < (VeriTile.Triton.StridedUnary.launch x out).s0 →
+            j < (VeriTile.Triton.StridedUnary.launch x out).s0 →
+              (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).addr
+                  in0 (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) ≠
+                (VeriTile.Triton.StridedUnary.flatAlloc flat in0 out0 (VeriTile.Triton.StridedUnary.launch x out)).addr
+                  out0 (j * (VeriTile.Triton.StridedUnary.launch x out).outStride)
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrong_out_stride_writes_gap_cell : ∀
+  (in0_ptr out0_ptr : VeriTile.Triton.RegionName),
+  in0_ptr ≠ out0_ptr →
+    ∀ (s : VeriTile.Triton.BlockState),
+      s.pids 0 = 0 →
+        s.readMem in0_ptr 1 = 5 →
+          s.readMem out0_ptr 1 = 7 →
+            ∃ s1,
+              VeriTile.Triton.exec
+                    (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr
+                        out0_ptr 1 1 2 2 1 2).toAlgKernel
+                    s =
+                  some s1 ∧
+                s1.readMem out0_ptr 1 = 5 ∧ s1.readMem out0_ptr 1 ≠ s.readMem out0_ptr 1
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_one_tile_launch_flat : ∀ (x out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.StridedUnary.check (VeriTile.Triton.StridedUnary.launch x out) = «true» →
+    ∀ (flat in0_ptr out0_ptr : VeriTile.Triton.RegionName),
+      in0_ptr ≠ out0_ptr →
+        ∀ (s : VeriTile.Triton.BlockState),
+          (s.undef = fun x x_1 => 0) →
+            ∀ (xs : ℕ → ℝ),
+              (∀ k < out.numel,
+                  s.mem in0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) =
+                    VeriTile.Triton.MemCell.real (xs k)) →
+                ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                          (VeriTile.Triton.StridedUnary.launch x out)).flattenKernel
+                      (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface in0_ptr
+                          out0_ptr (VeriTile.Triton.StridedUnary.launch x out).inStride
+                          (VeriTile.Triton.StridedUnary.launch x out).outStride
+                          (VeriTile.Triton.StridedUnary.launch x out).s0
+                          (VeriTile.Triton.StridedUnary.launch x out).numTasks
+                          (VeriTile.Triton.StridedUnary.launch x out).tilesPerCta
+                          (VeriTile.Triton.StridedUnary.launch x out).tile).toAlgKernel).LaunchCorrectFramed
+                  { dims := (VeriTile.Triton.StridedUnary.launch x out).grid }
+                  ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                        (VeriTile.Triton.StridedUnary.launch x out)).flattenState
+                    s)
+                  (fun k =>
+                    if k < out.numel then
+                      some
+                        ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                              (VeriTile.Triton.StridedUnary.launch x out)).flat,
+                          (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                (VeriTile.Triton.StridedUnary.launch x out)).addr
+                            out0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).outStride))
+                    else none)
+                  fun k => VeriTile.Triton.TiledActivation.relu (xs k)
+VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_flat_correctness : ∀
+  (x out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.StridedUnary.check (VeriTile.Triton.StridedUnary.launch x out) = «true» →
+    ∀ (flat in0_ptr out0_ptr : VeriTile.Triton.RegionName),
+      in0_ptr ≠ out0_ptr →
+        ∀ (s : VeriTile.Triton.BlockState),
+          (s.undef = fun x x_1 => 0) →
+            ∀ (xs : ℕ → ℝ),
+              (∀ k < out.numel,
+                  s.mem in0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) =
+                    VeriTile.Triton.MemCell.real (xs k)) →
+                (((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                            (VeriTile.Triton.StridedUnary.launch x out)).flattenKernel
+                        (VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface
+                            in0_ptr out0_ptr (VeriTile.Triton.StridedUnary.launch x out).inStride
+                            (VeriTile.Triton.StridedUnary.launch x out).outStride
+                            (VeriTile.Triton.StridedUnary.launch x out).s0
+                            (VeriTile.Triton.StridedUnary.launch x out).numTasks
+                            (VeriTile.Triton.StridedUnary.launch x out).tilesPerCta
+                            (VeriTile.Triton.StridedUnary.launch x out).tile).toAlgKernel).LaunchCorrectFramed
+                    { dims := (VeriTile.Triton.StridedUnary.launch x out).grid }
+                    ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                          (VeriTile.Triton.StridedUnary.launch x out)).flattenState
+                      s)
+                    (fun k =>
+                      if k < out.numel then
+                        some
+                          ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                (VeriTile.Triton.StridedUnary.launch x out)).flat,
+                            (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                  (VeriTile.Triton.StridedUnary.launch x out)).addr
+                              out0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).outStride))
+                      else none)
+                    fun k => VeriTile.Triton.TiledActivation.relu (xs k)) ∧
+                  (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                        (VeriTile.Triton.StridedUnary.launch x out)).Disjoint ∧
+                    (∀ k < out.numel,
+                        4 *
+                              (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                    (VeriTile.Triton.StridedUnary.launch x out)).addr
+                                in0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) =
+                            x.base + x.elemBytes * x.offsetOf [k] ∧
+                          4 *
+                              (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                    (VeriTile.Triton.StridedUnary.launch x out)).addr
+                                out0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).outStride) =
+                            out.base + out.elemBytes * out.offsetOf [k]) ∧
+                      ((VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                  (VeriTile.Triton.StridedUnary.launch x out)).extent
+                              in0_ptr ≤
+                            x.capacity ∧
+                          (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                  (VeriTile.Triton.StridedUnary.launch x out)).extent
+                              out0_ptr ≤
+                            out.capacity) ∧
+                        ∀ (k j : ℕ),
+                          k < out.numel →
+                            j < out.numel →
+                              (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                      (VeriTile.Triton.StridedUnary.launch x out)).addr
+                                  in0_ptr (k * (VeriTile.Triton.StridedUnary.launch x out).inStride) ≠
+                                (VeriTile.Triton.StridedUnary.flatAlloc flat in0_ptr out0_ptr
+                                      (VeriTile.Triton.StridedUnary.launch x out)).addr
+                                  out0_ptr (j * (VeriTile.Triton.StridedUnary.launch x out).outStride)

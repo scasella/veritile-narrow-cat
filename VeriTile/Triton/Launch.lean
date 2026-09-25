@@ -13,3 +13,4 @@ import VeriTile.Triton.Launch.Blocked1DWrapper
 import VeriTile.Triton.Launch.Blocked1DFlat
 import VeriTile.Triton.Launch.StridedUnary
 import VeriTile.Triton.Launch.Line3
+import VeriTile.Triton.Launch.StridedUnaryFlat

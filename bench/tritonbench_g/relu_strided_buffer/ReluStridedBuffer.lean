@@ -2166,4 +2166,204 @@ specification relu_wrapper_one_tile_correctness
       rw [hnw r o hnot]
       exact hframe r o fun ⟨hr, k, hk, ho⟩ => hno ⟨hr, k, hk, ho⟩
 
+/-! ## Flat-memory placement of the whole-wrapper contract (one-tile branch)
+
+The headline above works in the region model and assumes the two tensors are
+distinct regions. This section places the launch in **flat memory** from the
+tensors' own metadata (`StridedUnary.flatAlloc`: each region at its data
+pointer's element address `base / 4`, over its view's strided span) and
+reuses the upstream per-program flat theorem
+`relu_strided_buffer_one_tile_io_correctness` (`⊨`) unchanged: the checked
+conditions discharge its placement hypotheses (S7/S8/S9 → `FlatAlloc.Disjoint`;
+S6 → the span lies in the allocation), the lane windows `k * stride` stay inside
+the placed spans, and whole-grid composition is `Blocked1D.launch_of_frames_addr`
+over the flat output footprint, transferred to the `(num_ctas, 1, 1)` grid. -/
+
+/-- **A wrong output stride writes an output gap cell.** Launch the kernel
+with output stride `1` over a view whose actual stride is `2`: cell `1` of the
+output storage, a gap cell of the view that no logical element owns, is
+overwritten (here from the sentinel `7` to `relu 5 = 5`). What excludes it is
+the stride-argument correspondence (`out0.stride(0)`, checked by the adapter). -/
+theorem relu_wrong_out_stride_writes_gap_cell (in0_ptr out0_ptr : RegionName)
+    (hne : in0_ptr ≠ out0_ptr) (s : BlockState) (hpid : s.pids 0 = 0)
+    (h1 : s.readMem in0_ptr 1 = 5) (hgap : s.readMem out0_ptr 1 = 7) :
+    ∃ s1, exec ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+        1 1 2 2 1 2).toAlgKernel) s = some s1 ∧
+      s1.readMem out0_ptr 1 = 5 ∧ s1.readMem out0_ptr 1 ≠ s.readMem out0_ptr 1 := by
+  obtain ⟨s1, hexec, hvals, -⟩ := relu_one_tile_region_run in0_ptr out0_ptr 1 1 2 2 1 2
+    (by decide) s (fun i => s.readMem in0_ptr (taskIndex (s.pids 0) 2 i.1 * 1))
+    (fun _ _ => rfl)
+  have h := hvals (⟨1, by decide⟩, PUnit.unit) (by simp [taskIndex, hpid])
+  simp only [taskIndex, hpid, Nat.zero_mul, Nat.zero_add, Nat.mul_one] at h
+  refine ⟨s1, hexec, ?_, ?_⟩
+  · rw [h, h1]; norm_num [TiledActivation.relu]
+  · rw [h, h1, hgap]; norm_num [TiledActivation.relu]
+
+/-- The whole `(num_ctas, 1, 1)` launch in flat memory, for any checked
+launch and the metadata placement. -/
+theorem relu_one_tile_launch_flat
+    (x out : TensorMeta) (hc : StridedUnary.check (StridedUnary.launch x out) = Bool.true)
+    (flat in0_ptr out0_ptr : RegionName) (hne : in0_ptr ≠ out0_ptr)
+    (s : BlockState) (hu : s.undef = (fun _ _ => 0)) (xs : Nat → ℝ)
+    (hx : ∀ k, k < out.numel →
+      s.mem in0_ptr (k * (StridedUnary.launch x out).inStride) = MemCell.real (xs k)) :
+    Kernel.LaunchCorrectFramed
+      ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flattenKernel
+        ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+          (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+          (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+          (StridedUnary.launch x out).tilesPerCta (StridedUnary.launch x out).tile).toAlgKernel))
+      { dims := (StridedUnary.launch x out).grid }
+      ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flattenState s)
+      (fun k : Nat => if k < out.numel then
+        some ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flat,
+          (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr out0_ptr
+            (k * (StridedUnary.launch x out).outStride)) else none)
+      (fun k => TiledActivation.relu (xs k)) := by
+  classical
+  have hpre := StridedUnary.check_ok _ hc
+  obtain ⟨hT, -, -, hcov, hnt, -⟩ := StridedUnary.Pre.derived hpre
+  obtain ⟨hsi, hso⟩ := hpre.pos_strides
+  have hon : out.numel = (StridedUnary.launch x out).s0 := hnt
+  set c := StridedUnary.launch x out with hcdef
+  set A := StridedUnary.flatAlloc flat in0_ptr out0_ptr c with hA
+  have hd : A.Disjoint := hpre.flat_disjoint flat in0_ptr out0_ptr hne
+  obtain ⟨-, ei⟩ := StridedUnary.flatAlloc_in (flat := flat) hne c
+  obtain ⟨-, eo⟩ := StridedUnary.flatAlloc_out flat in0_ptr out0_ptr c
+  have hI := relu_strided_buffer_one_tile_io_correctness in0_ptr out0_ptr c.inStride c.outStride
+    c.s0 c.numTasks c.tilesPerCta c.tile hso
+  have hprog : ∀ idx : GridIndex (Blocked1D.line c.numCtas), ∃ s',
+      exec (A.flattenKernel ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+          c.inStride c.outStride c.s0 c.numTasks c.tilesPerCta c.tile).toAlgKernel))
+        ((A.flattenState s).withGridIndex idx) = some s' ∧
+      (∀ j, j < c.tile → Blocked1D.pidOf idx * c.tile + j < c.s0 →
+        s'.readMem A.flat (A.base out0_ptr + (Blocked1D.pidOf idx * c.tile + j) * c.outStride)
+          = TiledActivation.relu (xs (Blocked1D.pidOf idx * c.tile + j))) ∧
+      (∀ r o, ¬ Blocked1D.addrWrites A.flat (fun k => A.base out0_ptr + k * c.outStride) c.s0 c.tile
+          (Blocked1D.pidOf idx) (r, o) →
+        ((A.flattenState s).withGridIndex idx).mem r o = s'.mem r o) := by
+    intro idx
+    have hwin : ∀ (st : Nat), ∀ i : Fin c.tile, taskIndex (Blocked1D.pidOf idx) c.tile i < c.s0 →
+        taskIndex (Blocked1D.pidOf idx) c.tile i * st < (c.s0 - 1) * st + 1 := by
+      intro st i hi
+      have := Nat.mul_le_mul_right st (show taskIndex (Blocked1D.pidOf idx) c.tile i ≤ c.s0 - 1 by omega)
+      omega
+    obtain ⟨s', hex, hval, hfr⟩ := hI A hd rfl (StridedUnary.flatAlloc_closed flat in0_ptr out0_ptr c)
+      (Blocked1D.pidOf idx)
+      (fun i hi => by
+        show _ < A.extent in0_ptr
+        rw [ei]; exact hwin c.inStride i.1 hi)
+      (fun i hi => by
+        show _ < A.extent out0_ptr
+        rw [eo]; exact hwin c.outStride i.1 hi)
+      (fun i => xs (taskIndex (Blocked1D.pidOf idx) c.tile i.1))
+      (s.withGridIndex idx) (Blocked1D.withGridIndex_pid_line s idx) (by simp [hu])
+      (fun i hi => by
+        have hk : taskIndex (Blocked1D.pidOf idx) c.tile i.1 < out.numel := hon ▸ hi
+        show (s.withGridIndex idx).readMem in0_ptr
+          (taskIndex (Blocked1D.pidOf idx) c.tile i.1 * c.inStride) = _
+        simp [BlockState.readMem, hx _ hk])
+    rw [FlatAlloc.flattenState_withGridIndex]
+    refine ⟨s', hex, fun j hj hn => ?_, fun r o hno => ?_⟩
+    · have := hval (⟨j, hj⟩, PUnit.unit) hn
+      simpa [reluOneTileIO, FlatAlloc.addr, taskIndex] using this
+    · refine (hfr r o ?_).symm
+      by_cases hr : r = A.flat
+      · refine Or.inr fun i hi ho => hno ?_
+        rw [Blocked1D.addrWrites_iff hT]
+        refine ⟨hr, taskIndex (Blocked1D.pidOf idx) c.tile i.1, hi, ?_, ?_⟩
+        · simp only [taskIndex]
+          rw [Nat.add_comm, Nat.add_mul_div_right _ _ hT, Nat.div_eq_of_lt i.1.isLt, Nat.zero_add]
+        · simp only [reluOneTileIO, FlatAlloc.addr] at ho; exact ho.symm
+      · exact Or.inl hr
+  let frames : Kernel.GridFrames
+      (A.flattenKernel ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+        c.inStride c.outStride c.s0 c.numTasks c.tilesPerCta c.tile).toAlgKernel))
+      (Blocked1D.line c.numCtas) (A.flattenState s) := fun idx =>
+    { final := Classical.choose (hprog idx)
+      writes := Blocked1D.addrWrites A.flat (fun k => A.base out0_ptr + k * c.outStride) c.s0 c.tile
+        (Blocked1D.pidOf idx)
+      h_exec := (Classical.choose_spec (hprog idx)).1
+      h_writeWithin := fun r o hno => (Classical.choose_spec (hprog idx)).2.2 r o hno }
+  have hinj : ∀ a b, (fun k => A.base out0_ptr + k * c.outStride) a
+      = (fun k => A.base out0_ptr + k * c.outStride) b → a = b := fun a b h =>
+    Nat.eq_of_mul_eq_mul_right hso (by simp only at h; omega)
+  obtain ⟨L1, hL1, hout, hframe⟩ := Blocked1D.launch_of_frames_addr hT hcov
+    (fun k => A.base out0_ptr + k * c.outStride) hinj frames (fun _ => rfl)
+    (fun k => TiledActivation.relu (xs k))
+    (fun idx j hj hn => (Classical.choose_spec (hprog idx)).2.1 j hj hn)
+  have hdisj : Kernel.GridWritesDisjoint frames := hL1 ▸ L1.h_disjoint
+  rw [hon]
+  refine ⟨Kernel.mergeFrames (Blocked1D.line c.numCtas) (A.flattenState s) frames,
+    ⟨Blocked1D.liftFrames frames, Blocked1D.liftFrames_disjoint hdisj,
+      (Blocked1D.mergeFrames_liftFrames hdisj).symm⟩, ?_, ?_⟩
+  · intro k addr hw
+    by_cases hk : k < c.s0
+    · simp only [hk, if_true, Option.some.injEq] at hw
+      subst hw
+      exact hout k hk
+    · simp [hk] at hw
+  · rintro ⟨r, o⟩ hno
+    apply hframe
+    rintro ⟨hr, k, hk, ho⟩
+    simp only at hr ho
+    exact hno k (by simp [hk, FlatAlloc.addr, hr, ho])
+
+/-- **Whole-wrapper headline in flat memory (strided ReLU, one-tile branch).**
+For rank-1 tensors accepted by the checker, the flat placement built from
+their own metadata (`StridedUnary.flatAlloc`), and an input whose logical
+element `k` is the typed real cell `xs k`:
+
+1. the translated launch on the `(num_ctas, 1, 1)` grid writes `relu (xs k)` at
+   the flat cell of every logical output element `k < out.numel`, and **every
+   other flat-memory cell is unchanged** — gap cells between strided outputs,
+   the input span, and cells outside both spans;
+2. the placement satisfies the flat bridge's disjointness hypothesis;
+3. four times the flat cell address of logical element `k` is its byte
+   address `base + elemBytes * offsetOf [k]`, for both tensors;
+4. each modelled span lies inside its tensor's allocation;
+5. no input logical element shares a cell with an output logical element. -/
+specification relu_wrapper_one_tile_flat_correctness
+    (x out : TensorMeta) (hc : StridedUnary.check (StridedUnary.launch x out) = Bool.true)
+    (flat in0_ptr out0_ptr : RegionName) (hne : in0_ptr ≠ out0_ptr)
+    (s : BlockState) (hu : s.undef = (fun _ _ => 0)) (xs : Nat → ℝ)
+    (hx : ∀ k, k < out.numel →
+      s.mem in0_ptr (k * (StridedUnary.launch x out).inStride) = MemCell.real (xs k)) :
+    Kernel.LaunchCorrectFramed
+        ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flattenKernel
+          ((relu_forward_kernel_rank_1_one_tile_surface in0_ptr out0_ptr
+            (StridedUnary.launch x out).inStride (StridedUnary.launch x out).outStride
+            (StridedUnary.launch x out).s0 (StridedUnary.launch x out).numTasks
+            (StridedUnary.launch x out).tilesPerCta (StridedUnary.launch x out).tile).toAlgKernel))
+        { dims := (StridedUnary.launch x out).grid }
+        ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flattenState s)
+        (fun k : Nat => if k < out.numel then
+          some ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).flat,
+            (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr out0_ptr
+              (k * (StridedUnary.launch x out).outStride)) else none)
+        (fun k => TiledActivation.relu (xs k)) ∧
+      (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).Disjoint ∧
+      (∀ k, k < out.numel →
+        4 * (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr in0_ptr
+            (k * (StridedUnary.launch x out).inStride) = x.base + x.elemBytes * x.offsetOf [k] ∧
+        4 * (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr out0_ptr
+            (k * (StridedUnary.launch x out).outStride) = out.base + out.elemBytes * out.offsetOf [k]) ∧
+      ((StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).extent in0_ptr
+          ≤ x.capacity ∧
+        (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).extent out0_ptr
+          ≤ out.capacity) ∧
+      (∀ k j, k < out.numel → j < out.numel →
+        (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr in0_ptr
+            (k * (StridedUnary.launch x out).inStride)
+          ≠ (StridedUnary.flatAlloc flat in0_ptr out0_ptr (StridedUnary.launch x out)).addr out0_ptr
+            (j * (StridedUnary.launch x out).outStride)) := by
+  have hpre := StridedUnary.check_ok _ hc
+  obtain ⟨-, -, -, -, hnt, -⟩ := StridedUnary.Pre.derived hpre
+  have hon : out.numel = (StridedUnary.launch x out).s0 := hnt
+  refine ⟨relu_one_tile_launch_flat x out hc flat in0_ptr out0_ptr hne s hu xs hx,
+    hpre.flat_disjoint flat in0_ptr out0_ptr hne,
+    fun k _ => hpre.addr_bytes flat in0_ptr out0_ptr hne k,
+    hpre.span_in_alloc flat in0_ptr out0_ptr hne, fun k j hk hj => ?_⟩
+  exact hpre.reads_outside_writes flat in0_ptr out0_ptr hne k j (hon ▸ hk) (hon ▸ hj)
+
 end VeriTile.Bench.TritonBenchG.ReluStridedBuffer

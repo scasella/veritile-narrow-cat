@@ -232,6 +232,28 @@ theorem relu_f16_rejected :
     StridedUnary.check (StridedUnary.launch ⟨4096, 2, [16], [1], 16, .f16⟩
       ⟨65536, 2, [16], [1], 16, .f16⟩) = Bool.false := by decide
 
+/-- The `StridedBuffer` regression layout (GPU case
+`relu_stridedbuffer_offset5_stride3`): a view at element offset 5 of a
+50-element float32 storage at byte 8192, stride 3, so its data pointer is
+byte 8212 and 45 elements remain; accepted. -/
+theorem relu_offset5_stride3_accepted :
+    StridedUnary.check (StridedUnary.launch ⟨8212, 4, [10], [3], 45, .f32⟩
+      ⟨65536, 4, [10], [1], 10, .f32⟩) = Bool.true := by decide
+
+/-- ... and its metadata placement satisfies the flat bridge's disjointness
+hypothesis, so `relu_wrapper_one_tile_flat_correctness` applies to it. -/
+theorem relu_offset5_stride3_flat_placement (flat i o : RegionName) (hne : i ≠ o) :
+    (StridedUnary.flatAlloc flat i o (StridedUnary.launch ⟨8212, 4, [10], [3], 45, .f32⟩
+      ⟨65536, 4, [10], [1], 10, .f32⟩)).Disjoint :=
+  (StridedUnary.check_ok _ relu_offset5_stride3_accepted).flat_disjoint flat i o hne
+
+/-- Interleaved views of one storage (input at even cells, output at odd
+cells, both stride 2): the element sets are disjoint but the spans overlap.
+S9 is conservative and rejects it (a supported-domain limit, not a bug). -/
+theorem relu_interleaved_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [10], [2], 20, .f32⟩
+      ⟨4100, 4, [10], [2], 19, .f32⟩) = Bool.false := by decide
+
 #axiomsClean testCase1_pre
 #axiomsClean emptyCase_pre
 #axiomsClean i32_n_truncated
@@ -254,5 +276,8 @@ theorem relu_f16_rejected :
 #axiomsClean relu_stride_out_of_alloc_rejected
 #axiomsClean relu_overlap_rejected
 #axiomsClean relu_f16_rejected
+#axiomsClean relu_offset5_stride3_accepted
+#axiomsClean relu_offset5_stride3_flat_placement
+#axiomsClean relu_interleaved_rejected
 
 end VeriTile.Bench.Tests.Blocked1DLaunchWitnesses
