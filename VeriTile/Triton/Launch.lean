@@ -8,3 +8,6 @@ import VeriTile.Triton.Launch.Grid
 import VeriTile.Triton.Launch.Composition
 import VeriTile.Triton.Launch.Blocked1DConfig
 import VeriTile.Triton.Launch.Blocked1D
+import VeriTile.Triton.Launch.Serial
+import VeriTile.Triton.Launch.Blocked1DWrapper
+import VeriTile.Triton.Launch.Blocked1DFlat

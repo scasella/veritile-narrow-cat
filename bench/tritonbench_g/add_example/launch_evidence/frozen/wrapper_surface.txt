@@ -1,0 +1,285 @@
+structure VeriTile.Triton.TensorMeta : Type
+number of parameters: 0
+fields:
+  VeriTile.Triton.TensorMeta.base : ℕ
+  VeriTile.Triton.TensorMeta.elemBytes : ℕ
+  VeriTile.Triton.TensorMeta.shape : List ℕ
+  VeriTile.Triton.TensorMeta.strides : List ℕ
+  VeriTile.Triton.TensorMeta.capacity : ℕ
+  VeriTile.Triton.TensorMeta.dtype : VeriTile.Triton.ElemDType
+constructor:
+  VeriTile.Triton.TensorMeta.mk (base elemBytes : ℕ) (shape strides : List ℕ) (capacity : ℕ)
+    (dtype : VeriTile.Triton.ElemDType) : VeriTile.Triton.TensorMeta
+def VeriTile.Triton.TensorMeta.numel : VeriTile.Triton.TensorMeta → ℕ :=
+fun t => List.foldr (fun x1 x2 => x1 * x2) 1 t.shape
+def VeriTile.Triton.TensorMeta.rowMajor : List ℕ → List ℕ :=
+fun x =>
+  List.brecOn x fun x f =>
+    (match (motive := (x : List ℕ) → List.below x → List ℕ) x with
+      | [] => fun x => []
+      | head :: rest => fun x => List.foldr (fun x1 x2 => x1 * x2) 1 rest :: x.1)
+      f
+def VeriTile.Triton.TensorMeta.Contiguous : VeriTile.Triton.TensorMeta → Prop :=
+fun t =>
+  t.strides.length = t.shape.length ∧
+    ∀ i < t.shape.length,
+      1 < t.shape.getD i 0 → t.strides.getD i 0 = (VeriTile.Triton.TensorMeta.rowMajor t.shape).getD i 0
+def VeriTile.Triton.TensorMeta.offsetOf : VeriTile.Triton.TensorMeta → List ℕ → ℕ :=
+fun t idx => List.foldr (fun p acc => p.1 * p.2 + acc) 0 (idx.zip t.strides)
+def VeriTile.Triton.TensorMeta.InShape : List ℕ → List ℕ → Prop :=
+fun shape idx => idx.length = shape.length ∧ ∀ k < shape.length, idx.getD k 0 < shape.getD k 0
+def VeriTile.Triton.TensorMeta.Aligned : VeriTile.Triton.TensorMeta → Prop :=
+fun t => t.base % t.elemBytes = 0
+def VeriTile.Triton.TensorMeta.toBuf : VeriTile.Triton.TensorMeta → VeriTile.Triton.BufMeta :=
+fun t =>
+  { base := t.base, elemBytes := t.elemBytes, stride := if t.contiguousB = «true» then 1 else 0, capacity := t.capacity,
+    dtype := t.dtype }
+def VeriTile.Triton.TensorMeta.linear : List ℕ → List ℕ → ℕ :=
+fun x x_1 =>
+  List.brecOn (motive := fun x => List ℕ → ℕ) x
+    (fun x f x_2 =>
+      (match (motive := (x : List ℕ) → List ℕ → List.below (motive := fun x => List ℕ → ℕ) x → ℕ) x, x_2 with
+        | head :: rest, i :: is => fun x => i * List.foldr (fun x1 x2 => x1 * x2) 1 rest + x.1 is
+        | x, x_3 => fun x => 0)
+        f)
+    x_1
+def VeriTile.Triton.Elementwise2.launch : ℕ →
+  VeriTile.Triton.TensorMeta →
+    VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → VeriTile.Triton.Blocked1DLaunch :=
+fun B x y out =>
+  { n := x.numel, block := B, grid := [(x.numel + B - 1) / B], inputs := [x.toBuf, y.toBuf], output := out.toBuf }
+def VeriTile.Triton.Elementwise2.SameShape : VeriTile.Triton.TensorMeta →
+  VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → Prop :=
+fun x y out => y.shape = x.shape ∧ out.shape = x.shape
+def VeriTile.Triton.Elementwise2.AllContiguous : VeriTile.Triton.TensorMeta →
+  VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → Prop :=
+fun x y out => x.Contiguous ∧ y.Contiguous ∧ out.Contiguous
+def VeriTile.Triton.Elementwise2.AllAligned : VeriTile.Triton.TensorMeta →
+  VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → Prop :=
+fun x y out => x.Aligned ∧ y.Aligned ∧ out.Aligned
+def VeriTile.Triton.Elementwise2.InputsSeparate : VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → Prop :=
+fun x y => x.base = y.base ∨ VeriTile.Triton.Blocked1DLaunch.RangesDisjoint x.numel x.toBuf y.toBuf
+structure VeriTile.Triton.Elementwise2.Pre (B : ℕ) (x y out : VeriTile.Triton.TensorMeta) : Prop
+number of parameters: 4
+fields:
+  VeriTile.Triton.Elementwise2.Pre.same_shape : VeriTile.Triton.Elementwise2.SameShape x y out
+  VeriTile.Triton.Elementwise2.Pre.contiguous : VeriTile.Triton.Elementwise2.AllContiguous x y out
+  VeriTile.Triton.Elementwise2.Pre.aligned : VeriTile.Triton.Elementwise2.AllAligned x y out
+  VeriTile.Triton.Elementwise2.Pre.inputs_separate : VeriTile.Triton.Elementwise2.InputsSeparate x y
+  VeriTile.Triton.Elementwise2.Pre.launch : (VeriTile.Triton.Elementwise2.launch B x y out).Pre
+constructor:
+  VeriTile.Triton.Elementwise2.Pre.mk {B : ℕ} {x y out : VeriTile.Triton.TensorMeta}
+    (same_shape : VeriTile.Triton.Elementwise2.SameShape x y out)
+    (contiguous : VeriTile.Triton.Elementwise2.AllContiguous x y out)
+    (aligned : VeriTile.Triton.Elementwise2.AllAligned x y out)
+    (inputs_separate : VeriTile.Triton.Elementwise2.InputsSeparate x y)
+    (launch : (VeriTile.Triton.Elementwise2.launch B x y out).Pre) : VeriTile.Triton.Elementwise2.Pre B x y out
+def VeriTile.Triton.Elementwise2.OutputCovered : VeriTile.Triton.Blocked1DLaunch → VeriTile.Triton.TensorMeta → Prop :=
+fun c out => c.n = out.numel
+def VeriTile.Triton.Elementwise2.InputsCover : VeriTile.Triton.Blocked1DLaunch →
+  List VeriTile.Triton.TensorMeta → Prop :=
+fun c ins => ∀ t ∈ ins, c.n ≤ t.numel
+def VeriTile.Triton.Elementwise2.flatAlloc : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName →
+    VeriTile.Triton.RegionName →
+      VeriTile.Triton.RegionName →
+        VeriTile.Triton.TensorMeta →
+          VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → VeriTile.Triton.FlatAlloc :=
+fun flat in0 in1 outR x y out =>
+  { flat := flat, regions := [in0, in1, outR],
+    base := fun r =>
+      if r = outR then out.base / out.elemBytes
+      else if r = in0 then x.base / x.elemBytes else if r = in1 then y.base / y.elemBytes else 0,
+    extent := fun r => if r = outR ∨ r = in0 ∨ r = in1 then x.numel else 0 }
+VeriTile.Triton.Elementwise2.check_ok : ∀ (B : ℕ) (x y out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.check B x y out = «true» → VeriTile.Triton.Elementwise2.Pre B x y out
+VeriTile.Triton.Elementwise2.check_complete : ∀ (B : ℕ) (x y out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.Pre B x y out → VeriTile.Triton.Elementwise2.check B x y out = «true»
+@VeriTile.Triton.Elementwise2.Pre.output_covered : ∀ {B : ℕ} {x y out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.Elementwise2.Pre B x y out →
+    VeriTile.Triton.Elementwise2.OutputCovered (VeriTile.Triton.Elementwise2.launch B x y out) out
+@VeriTile.Triton.Elementwise2.Pre.inputs_cover : ∀ {B : ℕ} {x y out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.Elementwise2.Pre B x y out →
+    VeriTile.Triton.Elementwise2.InputsCover (VeriTile.Triton.Elementwise2.launch B x y out) [x, y]
+@VeriTile.Triton.Elementwise2.Pre.flat_disjoint : ∀ {B : ℕ} {x y out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.Elementwise2.Pre B x y out →
+    ∀ (flat in0 in1 outR : VeriTile.Triton.RegionName),
+      outR ≠ in0 →
+        outR ≠ in1 →
+          (in0 = in1 ↔ x.base = y.base) → (VeriTile.Triton.Elementwise2.flatAlloc flat in0 in1 outR x y out).Disjoint
+@VeriTile.Triton.Elementwise2.Pre.windows_in_alloc : ∀ {B : ℕ} {x y out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.Elementwise2.Pre B x y out → x.numel ≤ x.capacity ∧ x.numel ≤ y.capacity ∧ x.numel ≤ out.capacity
+VeriTile.Triton.Elementwise2.flatAlloc_closed : ∀ (flat in0 in1 outR : VeriTile.Triton.RegionName)
+  (x y out : VeriTile.Triton.TensorMeta),
+  ∀ r ∉ (VeriTile.Triton.Elementwise2.flatAlloc flat in0 in1 outR x y out).regions,
+    (VeriTile.Triton.Elementwise2.flatAlloc flat in0 in1 outR x y out).extent r = 0
+VeriTile.Triton.TensorMeta.offsetOf_eq_linear : ∀ (t : VeriTile.Triton.TensorMeta),
+  t.Contiguous →
+    ∀ (idx : List ℕ),
+      VeriTile.Triton.TensorMeta.InShape t.shape idx →
+        t.offsetOf idx = VeriTile.Triton.TensorMeta.linear t.shape idx ∧
+          VeriTile.Triton.TensorMeta.linear t.shape idx < t.numel
+def VeriTile.Triton.Kernel.runSerial : VeriTile.Triton.Kernel →
+  {g : VeriTile.Triton.Grid} →
+    VeriTile.Triton.BlockState →
+      List (VeriTile.Triton.GridIndex g) →
+        (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) →
+          Option (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) :=
+fun k {g} s x x_1 =>
+  List.brecOn (motive := fun x =>
+    (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) →
+      Option (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell))
+    x
+    (fun x f x_2 =>
+      (match (motive :=
+          (x : List (VeriTile.Triton.GridIndex g)) →
+            (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) →
+              List.below (motive := fun x =>
+                  (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) →
+                    Option (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell))
+                  x →
+                Option (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell))
+          x, x_2 with
+        | [], m => fun x => some m
+        | idx :: rest, m => fun x =>
+          match
+            VeriTile.Triton.exec k
+              ({ mem := m, regs := s.regs, pids := s.pids, undef := s.undef, numPids := s.numPids }.withGridIndex
+                idx) with
+          | none => none
+          | some f => x.1 f.mem)
+        f)
+    x_1
+def VeriTile.Triton.Kernel.memReal : (VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell) →
+  VeriTile.Triton.RegionName → ℕ → ℝ :=
+fun m r o =>
+  match (m r o).readAs VeriTile.Triton.TileDType.real with
+  | some (some value) => value
+  | x => 0
+def VeriTile.Triton.Kernel.FrameRobust : {k : VeriTile.Triton.Kernel} →
+  {g : VeriTile.Triton.Grid} → {s : VeriTile.Triton.BlockState} → k.GridFrames g s → Prop :=
+fun {k} {g} {s} frames =>
+  ∀ (idx : VeriTile.Triton.GridIndex g) (m : VeriTile.Triton.RegionName → ℕ → VeriTile.Triton.MemCell),
+    (∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+        (¬∃ idx', idx' ≠ idx ∧ (frames idx').writes (r, o)) → m r o = s.mem r o) →
+      ∃ f,
+        VeriTile.Triton.exec k
+              ({ mem := m, regs := s.regs, pids := s.pids, undef := s.undef, numPids := s.numPids }.withGridIndex idx) =
+            some f ∧
+          (∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+              (frames idx).writes (r, o) → f.readMem r o = (frames idx).final.readMem r o) ∧
+            ∀ (r : VeriTile.Triton.RegionName) (o : ℕ), ¬(frames idx).writes (r, o) → f.mem r o = m r o
+@VeriTile.Triton.Kernel.runSerial_agrees_merge : ∀ {k : VeriTile.Triton.Kernel} {g : VeriTile.Triton.Grid}
+  {s : VeriTile.Triton.BlockState} (frames : k.GridFrames g s),
+  VeriTile.Triton.Kernel.GridWritesDisjoint frames →
+    VeriTile.Triton.Kernel.FrameRobust frames →
+      ∀ (L : List (VeriTile.Triton.GridIndex g)),
+        L.Nodup →
+          (∀ (idx : VeriTile.Triton.GridIndex g), idx ∈ L) →
+            ∃ m,
+              k.runSerial s L s.mem = some m ∧
+                (∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                    VeriTile.Triton.Kernel.GridWriteFootprint frames (r, o) →
+                      VeriTile.Triton.Kernel.memReal m r o =
+                        (VeriTile.Triton.Kernel.mergeFrames g s frames).readMem r o) ∧
+                  ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                    ¬VeriTile.Triton.Kernel.GridWriteFootprint frames (r, o) →
+                      m r o = (VeriTile.Triton.Kernel.mergeFrames g s frames).mem r o
+def VeriTile.Triton.Blocked1D.addrWrites : VeriTile.Triton.RegionName →
+  (ℕ → ℕ) → ℕ → ℕ → ℕ → VeriTile.Triton.WriteFootprint :=
+fun R addr n B pid =>
+  VeriTile.Triton.WriteFootprint.activeTileImage R (fun i => addr (pid * B + ↑i.1)) fun i => pid * B + ↑i.1 < n
+@VeriTile.Triton.Blocked1D.launch_of_frames_addr : ∀ {k : VeriTile.Triton.Kernel} {g n B : ℕ},
+  0 < B →
+    n ≤ g * B →
+      ∀ {s : VeriTile.Triton.BlockState} {R : VeriTile.Triton.RegionName} (addr : ℕ → ℕ),
+        (∀ (a b : ℕ), addr a = addr b → a = b) →
+          ∀ (frames : k.GridFrames (VeriTile.Triton.Blocked1D.line g) s),
+            (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)),
+                (frames idx).writes =
+                  VeriTile.Triton.Blocked1D.addrWrites R addr n B (VeriTile.Triton.Blocked1D.pidOf idx)) →
+              ∀ (expected : ℕ → ℝ),
+                (∀ (idx : VeriTile.Triton.GridIndex (VeriTile.Triton.Blocked1D.line g)),
+                    ∀ j < B,
+                      VeriTile.Triton.Blocked1D.pidOf idx * B + j < n →
+                        (frames idx).final.readMem R (addr (VeriTile.Triton.Blocked1D.pidOf idx * B + j)) =
+                          expected (VeriTile.Triton.Blocked1D.pidOf idx * B + j)) →
+                  ∃ L,
+                    L.frames = frames ∧
+                      (∀ i < n,
+                          (VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line g) s frames).readMem R
+                              (addr i) =
+                            expected i) ∧
+                        ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                          ¬(r = R ∧ ∃ i < n, addr i = o) →
+                            (VeriTile.Triton.Kernel.mergeFrames (VeriTile.Triton.Blocked1D.line g) s frames).mem r o =
+                              s.mem r o
+VeriTile.Bench.TritonBenchG.AddExample.add_wrapper_correctness : ∀ (x y out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.check 4 x y out = «true» →
+    ∀ (in_ptr0 in_ptr1 out_ptr : VeriTile.Triton.RegionName),
+      out_ptr ≠ in_ptr0 →
+        out_ptr ≠ in_ptr1 →
+          ∀ (s : VeriTile.Triton.BlockState) (xs ys : ℕ → ℝ),
+            (∀ i < x.numel, s.mem in_ptr0 i = VeriTile.Triton.MemCell.real (xs i)) →
+              (∀ i < y.numel, s.mem in_ptr1 i = VeriTile.Triton.MemCell.real (ys i)) →
+                (VeriTile.Triton.Kernel.LaunchCorrectFramed
+                    (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel
+                    { dims := (VeriTile.Triton.Elementwise2.launch 4 x y out).grid } s
+                    (fun i => if i < out.numel then some (out_ptr, i) else none) fun i => xs i + ys i) ∧
+                  (∀ (idx : List ℕ),
+                      VeriTile.Triton.TensorMeta.InShape out.shape idx →
+                        out.offsetOf idx = x.offsetOf idx ∧
+                          y.offsetOf idx = x.offsetOf idx ∧ x.offsetOf idx < out.numel) ∧
+                    (∀ (bounds : VeriTile.Triton.RegionBounds),
+                        x.numel ≤ bounds in_ptr0 →
+                          y.numel ≤ bounds in_ptr1 →
+                            out.numel ≤ bounds out_ptr →
+                              ∀
+                                (idx :
+                                  VeriTile.Triton.GridIndex
+                                    { dims := (VeriTile.Triton.Elementwise2.launch 4 x y out).grid }),
+                                VeriTile.Triton.Kernel.TraceSafe bounds
+                                  (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr x.numel
+                                      4).toAlgKernel
+                                  (s.withGridIndex idx)) ∧
+                      (∀
+                          (L :
+                            List
+                              (VeriTile.Triton.GridIndex
+                                { dims := (VeriTile.Triton.Elementwise2.launch 4 x y out).grid })),
+                          L.Nodup →
+                            (∀
+                                (idx :
+                                  VeriTile.Triton.GridIndex
+                                    { dims := (VeriTile.Triton.Elementwise2.launch 4 x y out).grid }),
+                                idx ∈ L) →
+                              ∃ m,
+                                VeriTile.Triton.Kernel.runSerial
+                                      (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr x.numel
+                                          4).toAlgKernel
+                                      s L s.mem =
+                                    some m ∧
+                                  (∀ i < out.numel, VeriTile.Triton.Kernel.memReal m out_ptr i = xs i + ys i) ∧
+                                    ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                                      ¬(r = out_ptr ∧ o < out.numel) → m r o = s.mem r o) ∧
+                        ∀ (flat : VeriTile.Triton.RegionName),
+                          (in_ptr0 = in_ptr1 ↔ x.base = y.base) →
+                            (s.undef = fun x x_1 => 0) →
+                              (VeriTile.Triton.Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).Disjoint ∧
+                                (∀
+                                    r ∉
+                                      (VeriTile.Triton.Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y
+                                          out).regions,
+                                    (VeriTile.Triton.Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).extent
+                                        r =
+                                      0) ∧
+                                  ((VeriTile.Triton.Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y
+                                            out).flattenKernel
+                                        (VeriTile.Bench.TritonBenchG.AddExample.add_kernel in_ptr0 in_ptr1 out_ptr
+                                            x.numel 4).toAlgKernel).LaunchCorrectFramed
+                                    { dims := (VeriTile.Triton.Elementwise2.launch 4 x y out).grid }
+                                    ((VeriTile.Triton.Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y
+                                          out).flattenState
+                                      s)
+                                    (fun i => if i < out.numel then some (flat, out.base / out.elemBytes + i) else none)
+                                    fun i => xs i + ys i

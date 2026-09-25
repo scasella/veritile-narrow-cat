@@ -119,8 +119,36 @@ VAC_SURFACE_PRINTS = [
     f"#print {VAC}._add_kernel", f"#print {VAC}.addCustomIO",
     f"#check @{VAC}.add_kernel_correctness", f"#check @{VAC}.add_kernel_launch_correctness",
     f"#check @{VAC}.add_kernel_launch_applicable", f"#check @{VAC}.add_kernel_launch_traceSafe"]
+AE_NS = "VeriTile.Bench.TritonBenchG.AddExample"
+# Whole-wrapper contract (frozen from its sorry state, stage 5).
+WRAPPER_SURFACE_PRINTS = [
+    "#print VeriTile.Triton.TensorMeta", "#print VeriTile.Triton.TensorMeta.numel",
+    "#print VeriTile.Triton.TensorMeta.rowMajor", "#print VeriTile.Triton.TensorMeta.Contiguous",
+    "#print VeriTile.Triton.TensorMeta.offsetOf", "#print VeriTile.Triton.TensorMeta.InShape",
+    "#print VeriTile.Triton.TensorMeta.Aligned", "#print VeriTile.Triton.TensorMeta.toBuf",
+    "#print VeriTile.Triton.TensorMeta.linear",
+    "#print VeriTile.Triton.Elementwise2.launch", "#print VeriTile.Triton.Elementwise2.SameShape",
+    "#print VeriTile.Triton.Elementwise2.AllContiguous", "#print VeriTile.Triton.Elementwise2.AllAligned",
+    "#print VeriTile.Triton.Elementwise2.InputsSeparate", "#print VeriTile.Triton.Elementwise2.Pre",
+    "#print VeriTile.Triton.Elementwise2.OutputCovered", "#print VeriTile.Triton.Elementwise2.InputsCover",
+    "#print VeriTile.Triton.Elementwise2.flatAlloc",
+    "#check @VeriTile.Triton.Elementwise2.check_ok", "#check @VeriTile.Triton.Elementwise2.check_complete",
+    "#check @VeriTile.Triton.Elementwise2.Pre.output_covered",
+    "#check @VeriTile.Triton.Elementwise2.Pre.inputs_cover",
+    "#check @VeriTile.Triton.Elementwise2.Pre.flat_disjoint",
+    "#check @VeriTile.Triton.Elementwise2.Pre.windows_in_alloc",
+    "#check @VeriTile.Triton.Elementwise2.flatAlloc_closed",
+    "#check @VeriTile.Triton.TensorMeta.offsetOf_eq_linear",
+    "#print VeriTile.Triton.Kernel.runSerial", "#print VeriTile.Triton.Kernel.memReal",
+    "#print VeriTile.Triton.Kernel.FrameRobust",
+    "#check @VeriTile.Triton.Kernel.runSerial_agrees_merge",
+    "#print VeriTile.Triton.Blocked1D.addrWrites",
+    "#check @VeriTile.Triton.Blocked1D.launch_of_frames_addr",
+    f"#check @{AE_NS}.add_wrapper_correctness"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("launch_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean", SURFACE_PRINTS),
+            ("wrapper_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean",
+             WRAPPER_SURFACE_PRINTS),
             ("vac_surface.txt", "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
              VAC_SURFACE_PRINTS)]
 

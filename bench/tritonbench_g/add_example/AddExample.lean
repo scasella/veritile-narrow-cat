@@ -535,4 +535,77 @@ specification add_kernel_launch_correctness
       in_ptr0 in_ptr1 out_ptr bounds h1 h2 h3 s,
     fun pid j hp hj => ⟨hpre.i32_offset_toInt hp hj, hpre.i32_mask_eq hp hj⟩⟩
 
+
+/-! ## Whole-wrapper contract (`add_wrapper`)
+
+The launch headline above speaks about one launch configuration `c`. The
+caller of `add_wrapper(x, y)` receives the whole tensor `out`. This section
+states what the caller receives, from the tensors' own metadata
+(`TensorMeta`): the wrapper derives `n = x.numel()`, `BLOCK_SIZE = 4` and the
+grid (`Elementwise2.launch`), and `Elementwise2.check` decides the wrapper
+preconditions (`Elementwise2.Pre`: equal shapes, contiguity, element
+alignment, input separation, and P1–P10 of the derived launch). W1 (every
+element of `out` is written) and W2 (every input tensor holds the elements
+read) are consequences, not hypotheses. -/
+
+/-- **Whole-wrapper headline.** For tensors accepted by the wrapper checker
+and region names that follow the allocations, from any state whose input
+tensors hold typed real values:
+
+1. every element `i < out.numel` of the returned tensor is written with
+   `xs i + ys i`, and every other cell is unchanged (framed whole-grid launch);
+2. for every in-shape multi-index, the three tensors address the same
+   row-major element, below `out.numel` (the logical view);
+3. every program is trace-safe for bounds equal to the tensors' own element
+   counts — no access leaves an input's logical extent;
+4. running the programs one after another in **any** complete order gives the
+   same result (so the merge semantics does not rely on a program never
+   reading another's writes);
+5. in the flat memory placed at the tensors' element addresses
+   (`base / elemBytes`), the checked conditions discharge the bridge's
+   disjointness and closure hypotheses and the flattened launch writes
+   `xs i + ys i` at element address `out.base / out.elemBytes + i` for every
+   `i < out.numel`, leaving every other flat cell unchanged. -/
+specification add_wrapper_correctness
+    (x y out : TensorMeta) (hc : Elementwise2.check 4 x y out = Bool.true)
+    (in_ptr0 in_ptr1 out_ptr : RegionName)
+    (h0 : out_ptr ≠ in_ptr0) (h1 : out_ptr ≠ in_ptr1)
+    (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < x.numel → s.mem in_ptr0 i = MemCell.real (xs i))
+    (hy : ∀ i, i < y.numel → s.mem in_ptr1 i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+        { dims := (Elementwise2.launch 4 x y out).grid } s
+        (fun i : Nat => if i < out.numel then some (out_ptr, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ idx, TensorMeta.InShape out.shape idx →
+        out.offsetOf idx = x.offsetOf idx ∧ y.offsetOf idx = x.offsetOf idx ∧
+          x.offsetOf idx < out.numel) ∧
+      (∀ bounds : RegionBounds,
+        x.numel ≤ bounds in_ptr0 → y.numel ≤ bounds in_ptr1 → out.numel ≤ bounds out_ptr →
+        ∀ idx : GridIndex { dims := (Elementwise2.launch 4 x y out).grid },
+          Kernel.TraceSafe bounds
+            ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+            (s.withGridIndex idx)) ∧
+      (∀ L : List (GridIndex { dims := (Elementwise2.launch 4 x y out).grid }),
+        L.Nodup → (∀ idx, idx ∈ L) →
+        ∃ m, Kernel.runSerial ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel)
+              s L s.mem = some m ∧
+          (∀ i, i < out.numel → Kernel.memReal m out_ptr i = xs i + ys i) ∧
+          (∀ r o, ¬ (r = out_ptr ∧ o < out.numel) → m r o = s.mem r o)) ∧
+      (∀ flat : RegionName, (in_ptr0 = in_ptr1 ↔ x.base = y.base) →
+        s.undef = (fun _ _ => 0) →
+        (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).Disjoint ∧
+        (∀ r, r ∉ (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).regions →
+          (Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).extent r = 0) ∧
+        Kernel.LaunchCorrectFramed
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenKernel
+            ((add_kernel in_ptr0 in_ptr1 out_ptr x.numel 4).toAlgKernel))
+          { dims := (Elementwise2.launch 4 x y out).grid }
+          ((Elementwise2.flatAlloc flat in_ptr0 in_ptr1 out_ptr x y out).flattenState s)
+          (fun i : Nat => if i < out.numel then
+            some (flat, out.base / out.elemBytes + i) else none)
+          (fun i => xs i + ys i)) := by
+  sorry
+
 end VeriTile.Bench.TritonBenchG.AddExample
