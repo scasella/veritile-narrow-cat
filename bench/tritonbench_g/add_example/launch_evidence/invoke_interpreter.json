@@ -1,6 +1,7 @@
 {
  "backend": "triton-interpreter (TRITON_INTERPRET=1, CPU)",
  "triton": "3.8.0",
+ "relu_source": "DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast to the pointer element type) \u2014 the pinned text needs CUDA; StridedBuffer arguments cannot be passed to the interpreter (verdict only)",
  "torch": "2.14.0+cpu",
  "add_example_source": "DERIVED VARIANT for the interpreter (class tl.constexpr annotation; REPORT finding 4) \u2014 the pinned text runs on GPU",
  "vector_addition_custom_source": "pinned (verbatim)",
@@ -128,6 +129,115 @@
     "WR rank1"
    ],
    "as_expected": true
+  },
+  {
+   "case": "relu_contiguous_n1025",
+   "outcome": "accepted",
+   "output_equals_relu": true,
+   "gap_cells_intact": null,
+   "expected": "accepted",
+   "as_expected": true
+  },
+  {
+   "case": "relu_in_stride2",
+   "outcome": "accepted",
+   "output_equals_relu": true,
+   "gap_cells_intact": null,
+   "expected": "accepted",
+   "as_expected": true
+  },
+  {
+   "case": "relu_out_stride3_gaps",
+   "outcome": "accepted",
+   "output_equals_relu": true,
+   "gap_cells_intact": true,
+   "expected": "accepted",
+   "as_expected": true
+  },
+  {
+   "case": "relu_empty",
+   "outcome": "rejected",
+   "failed": [
+    "S3 nonempty",
+    "S6 in_bounds",
+    "S9 spans_disjoint"
+   ],
+   "expected": [
+    "S3 nonempty"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_grid_stride_branch_n_2p25_plus_1",
+   "outcome": "rejected",
+   "failed": [
+    "S4 one_tile"
+   ],
+   "expected": [
+    "S4 one_tile"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_out_overlaps_in",
+   "outcome": "rejected",
+   "failed": [
+    "S9 spans_disjoint"
+   ],
+   "expected": [
+    "S9 spans_disjoint"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_float16",
+   "outcome": "rejected",
+   "failed": [
+    "S7 dtype_ok"
+   ],
+   "expected": [
+    "S7 dtype_ok"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_stridedbuffer_offset5_stride3",
+   "outcome": "accepted (verdict only; not launched)",
+   "expected": "accepted",
+   "as_expected": true
+  },
+  {
+   "case": "relu_stridedbuffer_negative_stride",
+   "outcome": "rejected",
+   "failed": [
+    "S5 pos_strides (negative stride)"
+   ],
+   "expected": [
+    "S5 pos_strides (negative stride)"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_stridedbuffer_dtype_reinterpret",
+   "outcome": "rejected",
+   "failed": [
+    "S7 dtype_ok"
+   ],
+   "expected": [
+    "S7 dtype_ok"
+   ],
+   "as_expected": true
+  },
+  {
+   "case": "relu_source_mutant_wrong_stride_arg",
+   "outcome": "unsupported_input",
+   "reason": "kernel argument in0_stride0 bound to 'out0_strides[0]', model requires 'in0_strides[0]'",
+   "as_expected": true
+  },
+  {
+   "case": "next_pow2_mirror_vs_triton_0_to_5000",
+   "outcome": "equal",
+   "as_expected": true
   }
  ],
  "all_as_expected": true,
@@ -140,8 +250,8 @@
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
   "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
-  "bench/tests/Blocked1DLaunchWitnesses.lean": "dd004e1df23eabf7a363795c43a18dcf594333cfaa7cf458e534faf7fa417426",
-  "VeriTile/Triton/Launch.lean": "259e541dfae11772909f5cf408cc40eb464973c6eb84e0888794599e13ac66a5",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "90a9f29f4eda397ff3946d56792194d66733caca7158ca69dd6b2428d0c51120",
+  "VeriTile/Triton/Launch.lean": "c856d4ce9664baa41d2630800599375becd9b665c944e6219c8c3d24b9299bf1",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "cc53e79ea459b7ffcdb5e72b55636cebc1c676a7ce9f9289dec23d1b93945775",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
@@ -152,7 +262,7 @@
   "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "0ef851c0b509b4748c2127101a966d527d373743a04b7c5d3fcfdd72020199e3",
+  "scripts/launch_local_check.py": "8020ce4ae73d4fa335cbb596c9b0cc6648e5dc793dc25f3874d65ff5870bbaf5",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
   "scripts/test_launch_check.py": "a1e2a6aa10bb6c9fd4d41a63934ed0dbbde46a6b072a4483062da3bddfc2f1c2",

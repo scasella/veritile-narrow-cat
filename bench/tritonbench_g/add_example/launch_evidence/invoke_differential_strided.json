@@ -1,41 +1,8 @@
 {
- "host": "arm64 darwin",
- "torch": "2.10.0",
- "note": "host-side cost of the checked path only (metadata extraction, contract decision, cache lookup), CPU tensors; kernel launch not included",
- "strided_relu": {
-  "storage_meta_x2_us": 2.233604493085295,
-  "contract_decision_us": 1.4822084922343493
- },
- "rows": [
-  {
-   "shape": [
-    1024
-   ],
-   "tensor_meta_x3_us": 2.957791992230341,
-   "contract_decision_us": 6.003562506521121,
-   "cache_key_and_lookup_us": 7.810479000909254,
-   "zeros_like_alloc_us_reference": 0.4191702464595437
-  },
-  {
-   "shape": [
-    1048576
-   ],
-   "tensor_meta_x3_us": 3.0308540153782815,
-   "contract_decision_us": 5.963958479696885,
-   "cache_key_and_lookup_us": 7.788916991557927,
-   "zeros_like_alloc_us_reference": 55.65666011534631
-  },
-  {
-   "shape": [
-    256,
-    256
-   ],
-   "tensor_meta_x3_us": 3.1960830092430115,
-   "contract_decision_us": 6.9999170082155615,
-   "cache_key_and_lookup_us": 8.150749985361472,
-   "zeros_like_alloc_us_reference": 41.415829909965396
-  }
- ],
+ "cases": 2000,
+ "lean_accepted": 687,
+ "mismatches": [],
+ "compared": "verdict of StridedUnary.check and the derived s0/tile/numTiles/numCtas/tilesPerCta (Lean #eval vs Python mirror)",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -64,6 +31,5 @@
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
- },
- "fresh_output_distinct_ptrs_in_200_allocs": 2
+ }
 }

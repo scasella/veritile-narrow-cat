@@ -166,6 +166,50 @@ theorem w1_output_not_covered :
 
 theorem w1_wrapper_rejected : Elementwise2.checkRank1 16 w1A w1B w1C = Bool.false := by decide
 
+/-! ## Strided unary (ReLU one-tile) layout cases
+
+Configurations of `relu_forward_wrapper_rank_1` decided by
+`StridedUnary.check` in the kernel. Element strides and capacities are
+measured from each view's data pointer. -/
+
+/-- Contiguous `n = 1025`: tile 512, 3 programs. -/
+theorem relu_valid_contiguous :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [1025], [1], 1025, .f32⟩
+      ⟨65536, 4, [1025], [1], 1025, .f32⟩) = Bool.true := by decide
+
+/-- Input stride 2 (every other element of its storage), output stride 3 (two
+gap cells between outputs). -/
+theorem relu_valid_strided :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [10], [2], 20, .f32⟩
+      ⟨65536, 4, [10], [3], 30, .f32⟩) = Bool.true := by decide
+
+/-- Empty input: the pinned wrapper divides by zero; rejected. -/
+theorem relu_empty_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [0], [1], 0, .f32⟩
+      ⟨65536, 4, [0], [1], 0, .f32⟩) = Bool.false := by decide
+
+/-- `n = 65536 * 512 + 1` needs 65537 tiles: the wrapper takes the
+grid-stride-loop branch, which this contract does not cover; rejected. -/
+theorem relu_loop_branch_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨0, 4, [33554433], [1], 33554433, .f32⟩
+      ⟨2 ^ 40, 4, [33554433], [1], 33554433, .f32⟩) = Bool.false := by decide
+
+/-- Stride 2 over a view with capacity 18 from its data pointer: element 9
+sits at offset 18, outside the allocation; rejected. -/
+theorem relu_stride_out_of_alloc_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [10], [2], 18, .f32⟩
+      ⟨65536, 4, [10], [1], 10, .f32⟩) = Bool.false := by decide
+
+/-- Output starts inside the input's strided span; rejected. -/
+theorem relu_overlap_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 4, [10], [2], 20, .f32⟩
+      ⟨4100, 4, [10], [1], 10, .f32⟩) = Bool.false := by decide
+
+/-- float16 is outside the supported dtype domain; rejected. -/
+theorem relu_f16_rejected :
+    StridedUnary.check (StridedUnary.launch ⟨4096, 2, [16], [1], 16, .f16⟩
+      ⟨65536, 2, [16], [1], 16, .f16⟩) = Bool.false := by decide
+
 #axiomsClean testCase1_pre
 #axiomsClean emptyCase_pre
 #axiomsClean i32_n_truncated
@@ -178,5 +222,12 @@ theorem w1_wrapper_rejected : Elementwise2.checkRank1 16 w1A w1B w1C = Bool.fals
 #axiomsClean w1_launch_accepted
 #axiomsClean w1_output_not_covered
 #axiomsClean w1_wrapper_rejected
+#axiomsClean relu_valid_contiguous
+#axiomsClean relu_valid_strided
+#axiomsClean relu_empty_rejected
+#axiomsClean relu_loop_branch_rejected
+#axiomsClean relu_stride_out_of_alloc_rejected
+#axiomsClean relu_overlap_rejected
+#axiomsClean relu_f16_rejected
 
 end VeriTile.Bench.Tests.Blocked1DLaunchWitnesses

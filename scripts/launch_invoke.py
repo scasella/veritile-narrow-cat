@@ -251,6 +251,160 @@ def custom_add(variant=None) -> CheckedWrapper:
 
 
 # ---------------------------------------------------------------------------
+# Strided unary wrapper (relu_strided_buffer, one-tile branch)
+# ---------------------------------------------------------------------------
+
+I64 = 2 ** 63
+
+
+def storage_meta(t) -> TensorMeta:
+    """Metadata of a torch tensor or a `StridedBuffer` (trusted extraction):
+    capacity counts the elements from the view's data pointer to the end of
+    the underlying storage. Negative strides are reported as-is and rejected."""
+    base_t = t.unwrap() if hasattr(t, "unwrap") else t
+    st = base_t.untyped_storage()
+    es = t.element_size()
+    cap = (st.data_ptr() + st.nbytes() - int(t.data_ptr())) // es
+    dt = DTYPE_NAMES.get(str(t.dtype).replace("torch.", ""), "other")
+    if hasattr(t, "unwrap") and t.dtype != base_t.dtype:
+        dt = "other"  # dtype reinterpretation of the base storage is unsupported
+    return TensorMeta(int(t.data_ptr()), es, tuple(int(d) for d in t.shape),
+                      tuple(int(s) for s in t.stride()), max(cap, 0), dt)
+
+
+def next_pow2(n: int) -> int:
+    """Mirror of `StridedUnary.nextPow2`."""
+    if n <= 1:
+        return n
+    p = 1
+    for _ in range(64):
+        if n <= p:
+            return p
+        p *= 2
+    return p
+
+
+def strided_launch(x: TensorMeta, out: TensorMeta) -> dict:
+    """Mirror of `StridedUnary.launch`."""
+    s0 = out.shape[0] if out.shape else 0
+    tile = min(512, next_pow2(s0))
+    cd = lambda a, b: _div(max(a + b - 1, 0), b)
+    tiles = cd(s0, tile)
+    ctas = min(65536, tiles)
+    return {"s0": s0, "numTasks": numel(out), "tile": tile, "numTiles": tiles, "numCtas": ctas,
+            "tilesPerCta": cd(tiles, ctas), "grid": [ctas, 1, 1],
+            "inStride": x.strides[0] if x.strides else 0,
+            "outStride": out.strides[0] if out.strides else 0}
+
+
+def strided_obligations(x: TensorMeta, out: TensorMeta) -> list:
+    """Mirror of `StridedUnary.check (launch x out)`, obligation by obligation.
+    Negative strides (possible for `StridedBuffer`) are outside ℕ and rejected first."""
+    if any(s < 0 for s in (*x.strides, *out.strides)):
+        return [("S5 pos_strides (negative stride)", False)]
+    c = strided_launch(x, out)
+    s0, si, so = c["s0"], c["inStride"], c["outStride"]
+    span = lambda tm, s: tm.base + (max(s0 - 1, 0) * s + 1) * tm.elemBytes
+    return [("S1 rank1", len(x.shape) == 1 and len(out.shape) == 1 and len(x.strides) == 1
+             and len(out.strides) == 1),
+            ("S2 same_shape", x.shape == out.shape),
+            ("S3 nonempty", 0 < s0),
+            ("S4 one_tile", c["numTiles"] <= 65536),
+            ("S5 pos_strides", 0 < si and 0 < so),
+            ("S6 in_bounds", max(s0 - 1, 0) * si < x.capacity and max(s0 - 1, 0) * so < out.capacity),
+            ("S7 dtype_ok", x.dtype == "f32" and x.elemBytes == 4 and out.dtype == "f32"
+             and out.elemBytes == 4),
+            ("S8 aligned", x.base % 4 == 0 and out.base % 4 == 0),
+            ("S9 spans_disjoint", span(out, so) <= x.base or span(x, si) <= out.base),
+            ("S10 offsets_fit", c["numCtas"] * c["tile"] <= I32),
+            ("S11 addresses_fit", max(s0 - 1, 0) * si * 4 < I64 and max(s0 - 1, 0) * so * 4 < I64)]
+
+
+RELU_PY = REPO / "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py"
+RELU_WRAPPER_STMTS = [  # the modelled wrapper, statement by statement (normalized)
+    "assert in0.shape == out0.shape, 'operand shapes mismatch'",
+    "shape = out0.shape", "num_tasks = out0.numel()",
+    "tile_sizes = heuristics_for_tile_size(512, *shape)", "tile_size = math.prod(tile_sizes)",
+    "num_tiles = math.prod((triton.cdiv(size, tile_size) for size, tile_size in zip(shape, tile_sizes)))",
+    "num_ctas = min(65536, num_tiles)", "tiles_per_cta = triton.cdiv(num_tiles, num_ctas)",
+    "num_warps = heuristics_for_num_warps(tile_size)", "one_tile_per_cta = tiles_per_cta == 1",
+    "grid = (num_ctas, 1, 1)", "in0_strides = in0.stride()", "in0_stride_order = (0,)",
+    "out0_strides = out0.stride()", "out0_stride_order = (0,)"]
+RELU_BINDING = {  # kernel parameter -> the wrapper expression the model requires
+    "in0_ptr": "in0", "out0_ptr": "out0", "in0_stride0": "in0_strides[0]",
+    "in0_stride_order0": "in0_stride_order[0]", "out0_stride0": "out0_strides[0]",
+    "out0_stride_order0": "out0_stride_order[0]", "s0": "shape[0]", "num_tasks": "num_tasks",
+    "tiles_per_cta": "tiles_per_cta", "tile_size0": "tile_sizes[0]",
+    "one_tile_per_cta": "one_tile_per_cta"}
+HEURISTIC_TILE = ("def heuristics_for_tile_size(max_tile_size, *sizes):\n    ndim = len(sizes)\n"
+                  "    tile_sizes = [0 for _ in range(ndim)]\n    for i in range(ndim):\n"
+                  "        size = sizes[ndim - 1 - i]\n"
+                  "        tile_size = min(max_tile_size, triton.next_power_of_2(size))\n"
+                  "        tile_sizes[ndim - 1 - i] = tile_size\n"
+                  "        max_tile_size = max(1, max_tile_size // tile_size)\n"
+                  "    return tuple(tile_sizes)")
+
+
+def recognize_relu(src: str) -> dict:
+    """Bind `relu_forward_wrapper_rank_1` to `StridedUnary.launch`: every modelled
+    statement present, the tile heuristic's text as pinned, and every kernel
+    argument bound to the expression the model requires — in particular the
+    stride arguments to `in0.stride()[0]` / `out0.stride()[0]` of the same
+    tensors. Anything else raises `Unsupported`."""
+    tree = ast.parse(src)
+    heur = LC.find_function(tree, "heuristics_for_tile_size")
+    if ast.unparse(heur) != HEURISTIC_TILE:
+        raise LC.Unsupported("heuristics_for_tile_size differs from the modelled text")
+    fn = LC.find_function(tree, "relu_forward_wrapper_rank_1")
+    body = [s for s in fn.body if not (isinstance(s, ast.Expr) and isinstance(s.value, ast.Constant))]
+    stmts = [ast.unparse(s) for s in body if not isinstance(s, (ast.With, ast.Return))]
+    if stmts != RELU_WRAPPER_STMTS:
+        missing = [s for s in RELU_WRAPPER_STMTS if s not in stmts]
+        extra = [s for s in stmts if s not in RELU_WRAPPER_STMTS]
+        raise LC.Unsupported(f"wrapper statements differ: missing {missing}, extra {extra}")
+    calls = [n for n in ast.walk(fn) if isinstance(n, ast.Call) and isinstance(n.func, ast.Subscript)]
+    if len(calls) != 1 or ast.unparse(calls[0].func) != "relu_forward_kernel_rank_1[grid]":
+        raise LC.Unsupported("expected exactly one launch relu_forward_kernel_rank_1[grid](...)")
+    kfn = LC.find_function(tree, "relu_forward_kernel_rank_1")
+    params = [a.arg for a in kfn.args.args]
+    binding = dict(zip(params, (ast.unparse(a) for a in calls[0].args)))
+    for kw in calls[0].keywords:
+        if kw.arg == "num_warps":
+            continue  # compile option; no effect on the modelled semantics
+        binding[kw.arg] = ast.unparse(kw.value)
+    for p_, want in RELU_BINDING.items():
+        if binding.get(p_) != want:
+            raise LC.Unsupported(f"kernel argument {p_} bound to {binding.get(p_)!r}, model requires {want!r}")
+    return {"params": params, "binding": binding}
+
+
+class CheckedStridedRelu:
+    """`relu_forward_wrapper_rank_1` on actual tensors, checked by the strided contract."""
+
+    def __init__(self, variant: dict | None = None, src: str | None = None):
+        self.recognized = recognize_relu(src if src is not None else RELU_PY.read_text())
+        import launch_interpret as LI  # noqa: E402
+        self._kernel = LI.load_defs(RELU_PY, variant)["relu_forward_kernel_rank_1"]
+        self.stats = {"calls": 0}
+
+    def verdict(self, in0, out0) -> tuple:
+        mx, mo = storage_meta(in0), storage_meta(out0)
+        obl = strided_obligations(mx, mo)
+        return [n for n, ok in obl if not ok], strided_launch(mx, mo)
+
+    def __call__(self, in0, out0, launch: bool = True):
+        self.stats["calls"] += 1
+        failed, c = self.verdict(in0, out0)
+        if failed:
+            raise ContractViolation(failed)
+        if launch:
+            self._kernel[(c["numCtas"], 1, 1)](
+                in0, out0, c["inStride"], 0, c["outStride"], 0, c["s0"], c["numTasks"],
+                tiles_per_cta=c["tilesPerCta"], tile_size0=c["tile"], one_tile_per_cta=True)
+        return out0
+
+
+# ---------------------------------------------------------------------------
 # Differential test: Python mirror vs the Lean definitions
 # ---------------------------------------------------------------------------
 
@@ -358,6 +512,64 @@ def differential(n_cases: int) -> dict:
                          "of the derived launches (compiled Lean evaluation, not `decide`)"}
 
 
+def strided_cases(n: int, seed: int = 1) -> list:
+    rnd = random.Random(seed)
+    out = []
+    for _ in range(n):
+        s0 = rnd.choice([1, 2, 3, 7, 100, 511, 512, 513, 1025, 4096, 10000, 2 ** 25,
+                         2 ** 25 + 1, 33554432, 0])
+        si, so = rnd.choice([1, 1, 2, 3, 7]), rnd.choice([1, 1, 2, 3])
+        ci, co = (max(s0 - 1, 0) * si + 1), (max(s0 - 1, 0) * so + 1)
+        bx = 4 * rnd.randrange(1, 2 ** 20)
+        bo = bx + 4 * ci + 4 * rnd.choice([0, 0, 1, 1000])
+        x = TensorMeta(bx, 4, (s0,), (si,), ci, "f32")
+        o = TensorMeta(bo, 4, (s0,), (so,), co, "f32")
+        if rnd.random() < 0.6:
+            which = rnd.randrange(2)
+            tm = [x, o][which]
+            field = rnd.choice(["base", "shape", "strides", "capacity", "dtype", "elemBytes", "overlap"])
+            if field == "overlap":
+                o = TensorMeta(x.base + 4 * rnd.randrange(0, max(ci, 1)), 4, o.shape, o.strides,
+                               o.capacity, o.dtype)
+            else:
+                val = {"base": tm.base + rnd.choice([1, 2, 3]),
+                       "shape": rnd.choice([(s0 + 1,), (s0, 2), ()]),
+                       "strides": rnd.choice([(0,), (si + 1,), (1, 1), ()]),
+                       "capacity": max(0, tm.capacity - rnd.choice([1, 2])),
+                       "dtype": rnd.choice(["f16", "bf16", "other"]), "elemBytes": 2}[field]
+                tm = TensorMeta(**{**tm.__dict__, field: val})
+                x, o = (tm, o) if which == 0 else (x, tm)
+        out.append((x, o))
+    return out
+
+
+def differential_strided(n_cases: int) -> dict:
+    cases = strided_cases(n_cases)
+    head = "import VeriTile.Triton.Launch.StridedUnary\nopen VeriTile.Triton\n\n"
+    body = []
+    for x, o in cases:
+        L = f"(StridedUnary.launch {lean_tm(x)} {lean_tm(o)})"
+        body.append(f'#eval IO.println s!"R|{{StridedUnary.check {L}}}|{{{L}.s0}}|{{{L}.tile}}|'
+                    f'{{{L}.numTiles}}|{{{L}.numCtas}}|{{{L}.tilesPerCta}}"')
+    r = LC.run_lean(head + "\n".join(body) + "\n", timeout=1800)
+    if r.returncode != 0:
+        raise RuntimeError(r.stdout[-2000:] + r.stderr[-2000:])
+    rows = [ln.split("|")[1:] for ln in r.stdout.splitlines() if ln.startswith("R|")]
+    assert len(rows) == len(cases), (len(rows), len(cases))
+    mism, acc = [], 0
+    for (x, o), row in zip(cases, rows):
+        c = strided_launch(x, o)
+        py = [str(all(ok for _, ok in strided_obligations(x, o))).lower(), str(c["s0"]),
+              str(c["tile"]), str(c["numTiles"]), str(c["numCtas"]), str(c["tilesPerCta"])]
+        acc += row[0] == "true"
+        if py != row:
+            mism.append({"case": [astuple(x), astuple(o)], "python": py, "lean": row})
+    return {"cases": len(cases), "lean_accepted": acc, "mismatches": mism,
+            "compared": "verdict of StridedUnary.check and the derived s0/tile/numTiles/numCtas/"
+                        "tilesPerCta (Lean #eval vs Python mirror)",
+            "input_hashes": __import__("launch_local_check").input_hashes()}
+
+
 # ---------------------------------------------------------------------------
 # Host-side overhead
 # ---------------------------------------------------------------------------
@@ -390,6 +602,11 @@ def overhead(reps: int = 2000) -> dict:
                 lambda: cache.get(("numel", 4, astuple(tensor_meta(x)), astuple(tensor_meta(y)),
                                    astuple(tensor_meta(out))))),
             "zeros_like_alloc_us_reference": t_us(lambda: torch.zeros_like(x), max(50, reps // 20))})
+    xr, orr = torch.randn(40)[::2], torch.empty(20)
+    mxr, mor = storage_meta(xr), storage_meta(orr)
+    res["strided_relu"] = {
+        "storage_meta_x2_us": t_us(lambda: (storage_meta(xr), storage_meta(orr))),
+        "contract_decision_us": t_us(lambda: strided_obligations(mxr, mor))}
     res["rows"] = rows
     res["input_hashes"] = __import__("launch_local_check").input_hashes()
     # allocator address reuse decides the cache hit rate for freshly allocated outputs
@@ -441,7 +658,63 @@ def demo() -> dict:
             rows.append({"case": name, "outcome": "rejected", "failed": e.failures,
                          "expected": expect, "as_expected": expect is not None
                          and set(expect) <= set(e.failures)})
+    # strided ReLU (one-tile branch)
+    rv = {"torch.cuda._DeviceGuard(in0.device.index)": "__import__('contextlib').nullcontext()",
+          "out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"}
+    relu = CheckedStridedRelu(rv)
+    SB = __import__("launch_interpret").load_defs(RELU_PY, rv)["StridedBuffer"]
+    rb = torch.randn(64)
+
+    def relu_case(name, mk, expect, launch=True, check_gaps=None):
+        x, o = mk()
+        try:
+            relu(x, o, launch=launch)
+            if launch:
+                ok = bool(torch.equal(o, torch.relu(x)))
+                gaps = check_gaps() if check_gaps else None
+                rows.append({"case": name, "outcome": "accepted", "output_equals_relu": ok,
+                             "gap_cells_intact": gaps, "expected": "accepted",
+                             "as_expected": expect is None and ok and gaps is not False})
+            else:
+                rows.append({"case": name, "outcome": "accepted (verdict only; not launched)",
+                             "expected": "accepted", "as_expected": expect is None})
+        except ContractViolation as e:
+            rows.append({"case": name, "outcome": "rejected", "failed": e.failures, "expected": expect,
+                         "as_expected": expect is not None and set(expect) <= set(e.failures)})
+    ob = torch.full((30,), 7.5)
+    relu_case("relu_contiguous_n1025", lambda: (torch.randn(1025), torch.empty(1025)), None)
+    relu_case("relu_in_stride2", lambda: (torch.randn(40)[::2], torch.empty(20)), None)
+    relu_case("relu_out_stride3_gaps", lambda: (torch.randn(10), ob[::3]), None,
+              check_gaps=lambda: bool((ob[[i for i in range(30) if i % 3]] == 7.5).all()))
+    relu_case("relu_empty", lambda: (torch.randn(0), torch.empty(0)), ["S3 nonempty"])
+    relu_case("relu_grid_stride_branch_n_2p25_plus_1",
+              lambda: (torch.empty(2 ** 25 + 1), torch.empty(2 ** 25 + 1)), ["S4 one_tile"], launch=False)
+    relu_case("relu_out_overlaps_in", lambda: (rb[0:10], rb[5:15]), ["S9 spans_disjoint"])
+    relu_case("relu_float16", lambda: (torch.randn(16).half(), torch.empty(16).half()), ["S7 dtype_ok"])
+    relu_case("relu_stridedbuffer_offset5_stride3",
+              lambda: (SB(torch.randn(50), shape=(10,), strides=(3,), offset=5), torch.empty(10)),
+              None, launch=False)
+    relu_case("relu_stridedbuffer_negative_stride",
+              lambda: (SB(torch.randn(50), shape=(10,), strides=(-1,), offset=9), torch.empty(10)),
+              ["S5 pos_strides (negative stride)"])
+    relu_case("relu_stridedbuffer_dtype_reinterpret",
+              lambda: (SB(torch.randn(16), dtype=torch.int32), torch.empty(16)), ["S7 dtype_ok"])
+    mutant = RELU_PY.read_text().replace("in0_strides[0], # stride for in0",
+                                         "out0_strides[0], # stride for in0")
+    try:
+        CheckedStridedRelu(rv, src=mutant)
+        rows.append({"case": "relu_source_mutant_wrong_stride_arg", "outcome": "ACCEPTED",
+                     "as_expected": False})
+    except LC.Unsupported as e:
+        rows.append({"case": "relu_source_mutant_wrong_stride_arg", "outcome": "unsupported_input",
+                     "reason": str(e), "as_expected": True})
+    np2 = all(next_pow2(k) == triton.next_power_of_2(k) for k in range(0, 5001))
+    rows.append({"case": "next_pow2_mirror_vs_triton_0_to_5000", "outcome": "equal" if np2 else "DIFFER",
+                 "as_expected": np2})
     return {"backend": "triton-interpreter (TRITON_INTERPRET=1, CPU)", "triton": triton.__version__,
+            "relu_source": "DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast "
+                           "to the pointer element type) — the pinned text needs CUDA; StridedBuffer "
+                           "arguments cannot be passed to the interpreter (verdict only)",
             "torch": torch.__version__,
             "add_example_source": "DERIVED VARIANT for the interpreter (class tl.constexpr annotation; "
                                   "REPORT finding 4) — the pinned text runs on GPU",
@@ -453,15 +726,18 @@ def demo() -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--differential", action="store_true")
+    ap.add_argument("--differential-strided", action="store_true")
     ap.add_argument("--cases", type=int, default=1500)
     ap.add_argument("--overhead", action="store_true")
     ap.add_argument("--demo", action="store_true")
     ap.add_argument("--out", type=Path)
     a = ap.parse_args()
-    res = (differential(a.cases) if a.differential else overhead() if a.overhead else demo())
+    res = (differential(a.cases) if a.differential
+           else differential_strided(a.cases) if a.differential_strided
+           else overhead() if a.overhead else demo())
     text = json.dumps(res, indent=1, default=str) + "\n"
     (a.out.write_text(text) if a.out else print(text[:4000]))
-    if a.differential:
+    if a.differential or a.differential_strided:
         return 1 if res["mismatches"] else 0
     if a.demo:
         return 0 if res["all_as_expected"] else 1
