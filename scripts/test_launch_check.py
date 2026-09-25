@@ -129,6 +129,13 @@ class WrapperObligations(unittest.TestCase):
         self.assertEqual(L.lean_body_statements(ADD_LEAN, "add_kernel"), k.body_statements)
         self.assertEqual(L.parse_launch(src, "add_wrapper", k).out_alloc, ("out", "x"))
 
+    def test_block64_variant_recognized(self):
+        src = (REPO / "bench/tritonbench_g/add_example/improvement/add_example_block64.py").read_text()
+        k = L.parse_kernel(src, "add_kernel")
+        self.assertEqual(L.lean_body_statements(ADD_LEAN, "add_kernel"), k.body_statements)
+        w = L.parse_launch(src, "add_wrapper", k)
+        self.assertEqual((w.block, w.out_alloc), (64, ("out", "x")))
+
     def test_w1_detects_partial_output(self):
         src = (REPO / "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py").read_text()
         k = L.parse_kernel(src, "_add_kernel")

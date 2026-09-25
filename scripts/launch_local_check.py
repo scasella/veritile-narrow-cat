@@ -136,6 +136,8 @@ def input_hashes(root: Path = REPO) -> dict:
                         "bench/tritonbench_g/add_example/launch_manifest.json",
                         "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py",
                         "bench/tritonbench_g/add_example/improvement/launch_manifest.json",
+                        "bench/tritonbench_g/add_example/improvement/add_example_block64.py",
+                        "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json",
                         "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
                         "bench/tritonbench_g/vector_addition_custom/launch_manifest.json",
                         "scripts/launch_check.py", "scripts/launch_local_check.py",
@@ -522,7 +524,7 @@ def main(argv=None) -> int:
              "tensor metadata -> kernel-checked checker verdicts",
              "adapter recognition and torch metadata are trusted (tested, not proved)")
     results = {}
-    manifests = sorted(m for m in REPO.glob("bench/tritonbench_g/**/launch_manifest.json")
+    manifests = sorted(m for m in REPO.glob("bench/tritonbench_g/**/launch_manifest*.json")
                        if "/." not in str(m.relative_to(REPO)))
     all_ok = True
     for m in manifests:
