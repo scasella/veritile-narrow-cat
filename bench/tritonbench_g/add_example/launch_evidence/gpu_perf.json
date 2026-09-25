@@ -1,0 +1,133 @@
+{
+ "kind": "gpu_performance (HANDOFF \u00a7B, \u00a7B2)",
+ "device": "cuda",
+ "triton": "3.8.0",
+ "torch": "2.14.0+cu130",
+ "TRITON_INTERPRET": null,
+ "python": "3.12.10",
+ "gpu_name": "NVIDIA L4",
+ "compute_capability": [
+  8,
+  9
+ ],
+ "torch_cuda": "13.0",
+ "nvidia_smi": "NVIDIA L4, 580.95.05, 23034 MiB, 2040 MHz",
+ "kernel_source": "pinned (verbatim)",
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
+  "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "1a8f82f8a9e6b9a1b01b83445a336c152783e08d26c91dc113f6bc8d1af97ef8",
+  "VeriTile/Triton/Launch.lean": "7604496333658faefa002a70c6dd423a017fd7cdb28768f5be9d5863d4d1d34f",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "0fbb5505921f969c1739a49ae31539bbad084744fb3893b4523b01251dc9c6b5",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "e0bef909eebf94e9e6ad8dda568e835290511b09d772475ab39e98e76aae44ce",
+  "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
+  "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "36ea0d7f6125567d0d546e1dc90d3c2bce321096d178ee1285151c6069c1291c",
+  "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8",
+  "scripts/launch_local_check.py": "ea86c4fdc360dd4bdd8f4a8ce8694028adf8181fa170f2b67c75df8371684ebd",
+  "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
+  "scripts/launch_mutation_suite.py": "3e41e6947e3baa4986f78e55f1d83fc05658b7871dca78bd05bf6a0f25e7de6e",
+  "scripts/test_launch_check.py": "e1f4917e10d2b9459489d391820b218859a1d45618aa9e44d2419c69e37ddb07",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ },
+ "first_call_incl_compile_s": 2.976201324999999,
+ "n": 16777216,
+ "kernel_steady_state": {
+  "median_ms": 3.6075520515441895,
+  "p20_ms": 3.6065280437469482,
+  "p80_ms": 3.6085760593414307,
+  "method": "triton.testing.do_bench(25, 200)"
+ },
+ "kernel_effective_GBps": 55.806981887849254,
+ "torch_x_plus_y_reference": {
+  "median_ms": 0.8898559808731079,
+  "p20_ms": 0.8857600092887878,
+  "p80_ms": 0.894976019859314,
+  "method": "triton.testing.do_bench(25, 200)"
+ },
+ "phase5_wrapper": {
+  "wrapper_outputs_equal": {
+   "0": true,
+   "3": true,
+   "4": true,
+   "5": true,
+   "8": true,
+   "9": true,
+   "16": true,
+   "32": true,
+   "1048579": true
+  },
+  "all_equal": true,
+  "timings": [
+   {
+    "n": 1024,
+    "zeros_like_wrapper": {
+     "median_ms": 0.0071680000983178616,
+     "p20_ms": 0.0071680000983178616,
+     "p80_ms": 0.008191999979317188,
+     "method": "triton.testing.do_bench(25, 200)"
+    },
+    "empty_like_wrapper": {
+     "median_ms": 0.005119999870657921,
+     "p20_ms": 0.005119999870657921,
+     "p80_ms": 0.006144000217318535,
+     "method": "triton.testing.do_bench(25, 200)"
+    }
+   },
+   {
+    "n": 65536,
+    "zeros_like_wrapper": {
+     "median_ms": 0.026623999699950218,
+     "p20_ms": 0.025599999353289604,
+     "p80_ms": 0.02682879976928236,
+     "method": "triton.testing.do_bench(25, 200)"
+    },
+    "empty_like_wrapper": {
+     "median_ms": 0.025599999353289604,
+     "p20_ms": 0.02457600086927414,
+     "p80_ms": 0.025599999353289604,
+     "method": "triton.testing.do_bench(25, 200)"
+    }
+   },
+   {
+    "n": 1048576,
+    "zeros_like_wrapper": {
+     "median_ms": 0.25804799795150757,
+     "p20_ms": 0.25702399015426636,
+     "p80_ms": 0.2590720057487488,
+     "method": "triton.testing.do_bench(25, 200)"
+    },
+    "empty_like_wrapper": {
+     "median_ms": 0.2467840015888214,
+     "p20_ms": 0.2457599937915802,
+     "p80_ms": 0.2467840015888214,
+     "method": "triton.testing.do_bench(25, 200)"
+    }
+   },
+   {
+    "n": 16777216,
+    "zeros_like_wrapper": {
+     "median_ms": 3.916800022125244,
+     "p20_ms": 3.916800022125244,
+     "p80_ms": 3.9188480377197266,
+     "method": "triton.testing.do_bench(25, 200)"
+    },
+    "empty_like_wrapper": {
+     "median_ms": 3.685375928878784,
+     "p20_ms": 3.6823039054870605,
+     "p80_ms": 3.7044224739074707,
+     "method": "triton.testing.do_bench(25, 200)"
+    }
+   }
+  ],
+  "note": "end-to-end wrapper time (allocation + fill + launch) on this device only; no general speedup claim"
+ },
+ "exit_code": 0
+}

@@ -2,11 +2,14 @@
 
 Status: **§A was run** in a local Linux container (Docker Desktop on macOS,
 ubuntu:24.04 with systemd, Landlock ABI 8) — all selected targets accepted;
-see `launch_evidence/official_comparator.json`. **§B (GPU) is NOT RUN**: no
-NVIDIA/AMD GPU is reachable. A Triton CPU-interpreter run exists
-(`launch_evidence/interpreter.json`) and is interpreter evidence only. On the
-GPU host, also record whether the pinned `add_example.py` (string annotation
-`BLOCK_SIZE: "tl.constexpr"`) compiles: it fails in the 3.8.0 interpreter. `python3 scripts/launch_local_check.py
+see `launch_evidence/official_comparator.json`. **§B and §B2 were run** on
+Modal, NVIDIA L4 (CC 8.9, driver 580.95.05), Triton 3.8.0, torch 2.14.0+cu130, via `scripts/launch_gpu_modal.py` (driver) and `scripts/launch_gpu.py`
+(harness): every case bitwise equal with intact sentinels, both wrappers equal;
+see `launch_evidence/gpu.json`, `gpu_perf.json`; extras (not §B) in
+`gpu_extras.json`. The pinned `add_example.py` (string annotation
+`BLOCK_SIZE: "tl.constexpr"`) compiles and runs on the GPU; it fails only in the
+3.8.0 CPU interpreter (`launch_evidence/interpreter.json`, interpreter evidence only).
+Not covered: AMD/ROCm, other NVIDIA generations, other Triton versions. `python3 scripts/launch_local_check.py
 --require-official` / `--require-gpu` exit non-zero until a result file with
 matching `input_hashes` is placed in `launch_evidence/`.
 

@@ -4,7 +4,8 @@ Adds a proved launch-configuration checker and a whole-grid theorem for
 `add_example.py::add_kernel`. Contract: `CONTRACT.md`. Source link and trust
 boundary: `SOURCE_LINK.md`. External gates: `HANDOFF.md`. The official
 comparator (§A) **passed** in a local Linux container (`launch_evidence/official_comparator.json`);
-GPU (§B) is **not run**. CPU-interpreter evidence (interpreter only): `launch_evidence/interpreter.json`,
+GPU (§B/§B2) **passed** on one NVIDIA L4 via Modal
+(`launch_evidence/gpu.json`, `gpu_perf.json`, `gpu_extras.json`; `modal run scripts/launch_gpu_modal.py`). CPU-interpreter evidence (interpreter only): `launch_evidence/interpreter.json`,
 `launch_evidence/w1_probe_vector_addition_custom.json`.
 
 ## Prerequisites
