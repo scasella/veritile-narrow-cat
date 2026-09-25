@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T17:58:28Z",
- "git_head": "2c2cc14adc5c8b5acb6aeaa01d8d7ee0a9cf445b",
+ "generated": "2026-09-25T19:22:00Z",
+ "git_head": "cc31003104b1bb421930f3edfd41c665f63bcfc5",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -15,6 +15,7 @@
   "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
   "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "95d43e33ae40d3823ada1b117a32ad2edcaa0df2b2d83a2fed24dd52f3d4340f",
   "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
@@ -27,15 +28,19 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "6ad131771412cda7a5d87141044472c9d790c12e2fb0927ed8ea1ec1d77b08ef",
+  "scripts/launch_local_check.py": "bcca7aee66c4f7a27807559307a382d6abb29e9dfec8529ef051a39f42621d94",
   "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "63a244b639dce2dcb62bc6b101260a0bc902ddf97fcdefd90b9f465bf6e8aba9",
+  "scripts/test_launch_check.py": "08b659aba67cc3d29d2ee539914aa80fb6ac9bfc20bbf0a67cc3674d872670f3",
   "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
   "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
   "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
   "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
+  "bench/tritonbench_g/add_example/improvement/add_relu_fused.py": "1721d008dc13c60cf1793ee6fc5b964ec5ab3cd2fca4f89c50bed76c59558437",
+  "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
+  "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
+  "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
@@ -65,11 +70,11 @@
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen"
   },
   "official_comparator": {
-   "status": "passed",
+   "status": "failed",
    "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/official_comparator.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py', 'scripts/test_launch_check.py']; not hashed by the record ['bench/tritonbench_g/add_example/improvement/AddReluFused.lean', 'bench/tritonbench_g/add_example/improvement/add_relu_fused.py', 'scripts/launch_bench.py', 'scripts/launch_bench_modal.py', 'scripts/launch_fused.py']",
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
@@ -96,15 +101,15 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 0.6
+   "elapsed_s": 3.0
   },
   "build": {
    "status": "passed",
    "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-jsq61njh",
-   "elapsed_s": 495.8
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-vvz41_cv",
+   "elapsed_s": 471.1
   },
   "placeholder_scan": {
    "status": "passed",
@@ -120,8 +125,8 @@
    "assumptions": "",
    "evidence": "git diff vs pin",
    "reason": "no undeclared or non-additive changes",
-   "elapsed_s": 0.3,
-   "worktree_clean": false
+   "elapsed_s": 0.2,
+   "worktree_clean": true
   },
   "upstream_static_gates": {
    "status": "passed",
@@ -129,15 +134,15 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
    "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0",
-   "elapsed_s": 4.8
+   "elapsed_s": 4.6
   },
   "kernel_file_axioms": {
    "status": "passed",
    "scope": "AddExample.lean, VectorAdditionCustom.lean, Blocked1DLaunchWitnesses.lean elaborate; listed theorems' axioms ⊆ {propext, Classical.choice, Quot.sound}; headline inventory",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
-   "reason": "4 files, axiom-clean 90 theorems",
-   "elapsed_s": 41.0,
+   "reason": "5 files, axiom-clean 95 theorems",
+   "elapsed_s": 46.7,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -183,6 +188,18 @@
       "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_wrapper_one_tile_flat_correctness": "VeriTile.Bench.TritonBenchG.ReluStridedBuffer.relu_forward_kernel_rank_1_one_tile_surface, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.undef, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.FlatAlloc.Disjoint, VeriTile.Triton.FlatAlloc.addr, VeriTile.Triton.FlatAlloc.extent, VeriTile.Triton.FlatAlloc.flat, VeriTile.Triton.FlatAlloc.flattenKernel, VeriTile.Triton.FlatAlloc.flattenState, VeriTile.Triton.Grid.mk, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionName, VeriTile.Triton.StridedUnary.Launch.grid, VeriTile.Triton.StridedUnary.Launch.inStride, VeriTile.Triton.StridedUnary.Launch.numTasks, VeriTile.Triton.StridedUnary.Launch.outStride, VeriTile.Triton.StridedUnary.Launch.s0, VeriTile.Triton.StridedUnary.Launch.tile, VeriTile.Triton.StridedUnary.Launch.tilesPerCta, VeriTile.Triton.StridedUnary.check, VeriTile.Triton.StridedUnary.flatAlloc, VeriTile.Triton.StridedUnary.launch, VeriTile.Triton.TensorMeta, VeriTile.Triton.TensorMeta.base, VeriTile.Triton.TensorMeta.capacity, VeriTile.Triton.TensorMeta.elemBytes, VeriTile.Triton.TensorMeta.numel, VeriTile.Triton.TensorMeta.offsetOf, VeriTile.Triton.TiledActivation.relu"
      }
     },
+    "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": {
+     "rc": 0,
+     "missing": [],
+     "inventory": "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_correct,\n VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_correctness,\n VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness",
+     "ok": true,
+     "statement_surfaces": {
+      "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_correctness": "VeriTile.Bench.TritonBenchG.AddReluFused.addReluIO, VeriTile.Triton.MaskedKernelIO₂.B, VeriTile.Triton.MaskedKernelIO₂.Implements, VeriTile.Triton.RegionName, VeriTile.Triton.TiledActivation.relu",
+      "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_wrapper_correctness": "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.undef, VeriTile.Triton.BlockState.withGridIndex, VeriTile.Triton.Blocked1DLaunch.grid, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Elementwise2.check, VeriTile.Triton.Elementwise2.flatAlloc, VeriTile.Triton.Elementwise2.launch, VeriTile.Triton.FlatAlloc.Disjoint, VeriTile.Triton.FlatAlloc.extent, VeriTile.Triton.FlatAlloc.flattenKernel, VeriTile.Triton.FlatAlloc.flattenState, VeriTile.Triton.FlatAlloc.regions, VeriTile.Triton.Grid.mk, VeriTile.Triton.GridIndex, VeriTile.Triton.Kernel.LaunchCorrectFramed, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.Kernel.memReal, VeriTile.Triton.Kernel.runSerial, VeriTile.Triton.MemCell, VeriTile.Triton.MemCell.real, VeriTile.Triton.MemCellAddr, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName, VeriTile.Triton.TensorMeta, VeriTile.Triton.TensorMeta.InShape, VeriTile.Triton.TensorMeta.base, VeriTile.Triton.TensorMeta.elemBytes, VeriTile.Triton.TensorMeta.numel, VeriTile.Triton.TensorMeta.offsetOf, VeriTile.Triton.TensorMeta.shape, VeriTile.Triton.TiledActivation.relu",
+      "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_region_run": "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.mem, VeriTile.Triton.BlockState.pid, VeriTile.Triton.BlockState.readMem, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.MemCell, VeriTile.Triton.RegionName, VeriTile.Triton.TiledActivation.relu, VeriTile.Triton.exec",
+      "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel_traceSafe": "VeriTile.Bench.TritonBenchG.AddReluFused.add_relu_kernel, VeriTile.Triton.BlockState, VeriTile.Triton.BlockState.pid, VeriTile.Triton.ComputeKernel.toAlgKernel, VeriTile.Triton.Kernel.TraceSafe, VeriTile.Triton.RegionBounds, VeriTile.Triton.RegionName"
+     }
+    },
     "bench/tests/Blocked1DLaunchWitnesses.lean": {
      "rc": 0,
      "missing": [],
@@ -224,7 +241,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 15.8
+   "elapsed_s": 18.5
   },
   "source_link_adapter": {
    "status": "passed",
@@ -232,7 +249,7 @@
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "4 manifests, 47 cases, 37 accepted, all verdicts kernel-checked",
-   "elapsed_s": 7.5
+   "elapsed_s": 7.0
   },
   "adapter_tests": {
    "status": "passed",
@@ -240,7 +257,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 2.1
+   "elapsed_s": 2.0
   },
   "invocation_mirror": {
    "status": "passed",
@@ -248,14 +265,14 @@
    "assumptions": "the runtime path uses the mirror; trusted by this differential test, not proved",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/invoke_differential.json",
    "reason": "elementwise rc=0, strided rc=0 (0 = no mismatch)",
-   "elapsed_s": 23.5
+   "elapsed_s": 22.4
   },
   "official_comparator": {
-   "status": "passed",
+   "status": "failed",
    "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/official_comparator.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py', 'scripts/test_launch_check.py']; not hashed by the record ['bench/tritonbench_g/add_example/improvement/AddReluFused.lean', 'bench/tritonbench_g/add_example/improvement/add_relu_fused.py', 'scripts/launch_bench.py', 'scripts/launch_bench_modal.py', 'scripts/launch_fused.py']",
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
