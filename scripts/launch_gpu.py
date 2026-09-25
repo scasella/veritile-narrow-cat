@@ -327,3 +327,15 @@ def block_sweep(repo: Path, device: str = "cuda", quick: bool = False) -> dict:
     res["selected_block"] = min(b for b, v in t.items() if v <= best * 1.02)
     res["exit_code"] = 0 if all(r["correct"] for r in res["blocks"].values()) else 1
     return res
+
+
+def wrapper_evidence(repo: Path) -> dict:
+    """Checked invocations on CUDA tensors (whole-wrapper milestone; not HANDOFF §B)."""
+    import launch_invoke as I
+    assert os.environ.get("TRITON_INTERPRET") in (None, "", "0")
+    assert torch.cuda.get_device_capability() >= (8, 0)
+    res = I.demo("cuda")
+    res["kind"] = "gpu_wrapper (checked invocations on CUDA tensors; NOT HANDOFF §B)"
+    res["exit_code"] = 0 if res["all_as_expected"] else 1
+    res.update(env_info("cuda"))
+    return res

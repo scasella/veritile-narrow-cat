@@ -184,6 +184,17 @@ class StridedReluRecognition(unittest.TestCase):
         with self.assertRaises(L.Unsupported):
             self.I.recognize_relu(src)
 
+    def test_kernel_body_change_rejected(self):
+        src = self.src.replace("return tl.where(x > 0, x, 0)", "return tl.where(x >= 0, x, 0)")
+        with self.assertRaises(L.Unsupported):
+            self.I.recognize_relu(src)
+
+    def test_add_kernel_body_change_rejected_at_binding(self):
+        src = (REPO / "bench/tritonbench_g/add_example/add_example.py").read_text().replace(
+            "output = x + y", "output = x - y")
+        with self.assertRaises(L.Unsupported):
+            self.I.add_example(src=src)
+
     def test_mirror_nonempty_and_negative_stride(self):
         T = self.I.TensorMeta
         x = T(4096, 4, (0,), (1,), 0, "f32")

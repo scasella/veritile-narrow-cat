@@ -136,6 +136,9 @@ own metadata (`VeriTile/Triton/Launch/Blocked1DWrapper.lean`):
   `check_complete`): WA equal shapes (the supported API), WC all tensors
   contiguous, P12 element-aligned data pointers, P11 inputs identical or
   byte-disjoint, and P1–P10 of the derived launch.
+- WA, WC, P11 and P12 are **caller obligations**: the pinned `add_wrapper`
+  does not check them (it accepts, e.g., a shorter `y`); only the checked
+  invocation path (`scripts/launch_invoke.py`) enforces them before launching.
 - **W1 and W2 are theorems**, not adapter checks: `Pre.output_covered`
   (`n = out.numel`) and `Pre.inputs_cover` (`n ≤ t.numel` for both inputs).
 - Headline `add_wrapper_correctness` (`AddExample.lean`): (1) every element

@@ -53,9 +53,25 @@ def sweep() -> dict:
     return {"block_sweep": launch_gpu.block_sweep(Path(REMOTE), "cuda")}
 
 
+@app.function(gpu=GPU, timeout=900)
+def wrapper() -> dict:
+    sys.path.insert(0, f"{REMOTE}/scripts")
+    import launch_gpu
+    return {"gpu_wrapper": launch_gpu.wrapper_evidence(Path(REMOTE))}
+
+
+@app.function(gpu=GPU, timeout=900)
+def all_modes() -> dict:
+    sys.path.insert(0, f"{REMOTE}/scripts")
+    import launch_gpu
+    return {**launch_gpu.run_all(Path(REMOTE), "cuda"),
+            "block_sweep": launch_gpu.block_sweep(Path(REMOTE), "cuda"),
+            "gpu_wrapper": launch_gpu.wrapper_evidence(Path(REMOTE))}
+
+
 @app.local_entrypoint()
 def main(out_dir: str = "", mode: str = "handoff") -> None:
-    res = {"handoff": run, "sweep": sweep}[mode].remote()
+    res = {"handoff": run, "sweep": sweep, "wrapper": wrapper, "all": all_modes}[mode].remote()
     evid = LC.EVID if not out_dir else Path(out_dir)
     raw = Path(out_dir or "/Users/scasella/Downloads/kernel-claude/work/logs") / f"gpu_raw_{mode}.json"
     raw.write_text(json.dumps(res, indent=1, default=str) + "\n")

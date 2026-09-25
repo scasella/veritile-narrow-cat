@@ -187,9 +187,13 @@ class CheckedWrapper:
     """A wrapper bound to its pinned source and checked on every call."""
 
     def __init__(self, pyfile: Path, wrapper: str, kernel: str, contract: str,
-                 variant: dict | None = None):
-        src = pyfile.read_text()
+                 variant: dict | None = None, lean: Path | None = None, src: str | None = None):
+        src = src if src is not None else pyfile.read_text()
         self.kernel_summary = LC.parse_kernel(src, kernel)
+        # The kernel body must be the one the Lean theorem is about.
+        lean_stmts = LC.lean_body_statements(lean.read_text(), kernel)
+        if lean_stmts != self.kernel_summary.body_statements:
+            raise LC.Unsupported("kernel body differs from its Lean transcription")
         self.launch = LC.parse_launch(src, wrapper, self.kernel_summary)
         L = self.launch
         x_var, y_var = L.wrapper_params[:2]
@@ -240,14 +244,16 @@ class CheckedWrapper:
         return out
 
 
-def add_example(variant=None) -> CheckedWrapper:
+def add_example(variant=None, src=None) -> CheckedWrapper:
     return CheckedWrapper(REPO / "bench/tritonbench_g/add_example/add_example.py",
-                          "add_wrapper", "add_kernel", "numel", variant)
+                          "add_wrapper", "add_kernel", "numel", variant,
+                          REPO / "bench/tritonbench_g/add_example/AddExample.lean", src)
 
 
-def custom_add(variant=None) -> CheckedWrapper:
+def custom_add(variant=None, src=None) -> CheckedWrapper:
     return CheckedWrapper(REPO / "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
-                          "custom_add", "_add_kernel", "dim0_rank1", variant)
+                          "custom_add", "_add_kernel", "dim0_rank1", variant,
+                          REPO / "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean", src)
 
 
 # ---------------------------------------------------------------------------
@@ -348,6 +354,12 @@ HEURISTIC_TILE = ("def heuristics_for_tile_size(max_tile_size, *sizes):\n    ndi
                   "    return tuple(tile_sizes)")
 
 
+# sha256 of `ast.unparse` of the pinned kernel and its helper: the text that
+# `ReluStridedBuffer.lean` transcribes (upstream's py↔lean scans pair the two files).
+RELU_KERNEL_SHA = "f7121e891947227e797a7bebad3b9c7b2102a6377bba52c1671e47ae51aa6053"
+RELU_HELPER_SHA = "0a778b9a08fad1a458baa7637279df676431f93bccafea4e97879e835eb06d52"
+
+
 def recognize_relu(src: str) -> dict:
     """Bind `relu_forward_wrapper_rank_1` to `StridedUnary.launch`: every modelled
     statement present, the tile heuristic's text as pinned, and every kernel
@@ -369,6 +381,11 @@ def recognize_relu(src: str) -> dict:
     if len(calls) != 1 or ast.unparse(calls[0].func) != "relu_forward_kernel_rank_1[grid]":
         raise LC.Unsupported("expected exactly one launch relu_forward_kernel_rank_1[grid](...)")
     kfn = LC.find_function(tree, "relu_forward_kernel_rank_1")
+    import hashlib
+    if hashlib.sha256(ast.unparse(kfn).encode()).hexdigest() != RELU_KERNEL_SHA or \
+            hashlib.sha256(ast.unparse(LC.find_function(tree, "relu_forward")).encode()).hexdigest() \
+            != RELU_HELPER_SHA:
+        raise LC.Unsupported("kernel text differs from the pinned text ReluStridedBuffer.lean transcribes")
     params = [a.arg for a in kfn.args.args]
     binding = dict(zip(params, (ast.unparse(a) for a in calls[0].args)))
     for kw in calls[0].keywords:
@@ -627,88 +644,107 @@ def overhead(reps: int = 2000) -> dict:
 # Interpreter demo: valid and invalid invocations on actual tensors
 # ---------------------------------------------------------------------------
 
-def demo() -> dict:
+def demo(device: str = "cpu") -> dict:
+    """Valid and invalid invocations on actual tensors. `device="cpu"` runs the
+    Triton CPU interpreter (derived texts where the pinned text cannot run there);
+    `device="cuda"` runs the pinned texts, also launches `StridedBuffer` inputs,
+    and compares the pinned ReLU wrapper's own output with the checked path."""
     import torch
-    assert os.environ.get("TRITON_INTERPRET") == "1"
     import triton
+    interp = device == "cpu"
+    if interp:
+        assert os.environ.get("TRITON_INTERPRET") == "1"
     torch.manual_seed(0)
-    variant = {'BLOCK_SIZE: "tl.constexpr"': "BLOCK_SIZE: tl.constexpr"}  # interpreter only
-    ae, vac = add_example(variant), custom_add()
-    base = torch.randn(64)
-    x16 = torch.randn(16)
-    cases = [
-        ("ae_1d_n16", ae, lambda: (torch.randn(16), torch.randn(16)), None),
-        ("ae_1d_n5_tail", ae, lambda: (torch.randn(5), torch.randn(5)), None),
-        ("ae_empty", ae, lambda: (torch.randn(0), torch.randn(0)), None),
-        ("ae_2d_contiguous", ae, lambda: (torch.randn(4, 8), torch.randn(4, 8)), None),
-        ("ae_3d_contiguous", ae, lambda: (torch.randn(2, 3, 5), torch.randn(2, 3, 5)), None),
-        ("ae_x_y_same_tensor", ae, lambda: (x16, x16), None),
-        ("ae_transposed_input", ae, lambda: (torch.randn(8, 4).t(), torch.randn(4, 8)), ["WC contiguous"]),
-        ("ae_shape_mismatch", ae, lambda: (torch.randn(16), torch.randn(12)), ["WA same_shape"]),
-        ("ae_y_short_view_of_big_storage", ae, lambda: (torch.randn(16), torch.randn(16)[:12]),
-         ["WA same_shape"]),
-        ("ae_inputs_partially_overlap", ae, lambda: (base[0:16], base[8:24]), ["P11 inputs_separate"]),
-        ("ae_float16", ae, lambda: (torch.randn(16).half(), torch.randn(16).half()), ["P9 dtype_ok"]),
-        ("vac_1d_n37", vac, lambda: (torch.randn(37), torch.randn(37)), None),
-        ("vac_2d_rejected", vac, lambda: (torch.randn(4, 8), torch.randn(4, 8)), ["WR rank1"]),
-    ]
+    R = lambda *s: torch.randn(*s, device=device)
+    E = lambda *s: torch.empty(*s, device=device)
+    ae = add_example({'BLOCK_SIZE: "tl.constexpr"': "BLOCK_SIZE: tl.constexpr"} if interp else None)
+    vac = custom_add()
+    base, x16 = R(64), R(16)
     rows = []
-    for name, w, mk, expect in cases:
+
+    def ew_case(name, w, mk, expect):
         x, y = mk()
         try:
             out = w(x, y)
             ok = bool(torch.equal(out, x + y))
             rows.append({"case": name, "outcome": "accepted", "output_equals_x_plus_y": ok,
-                         "output_shape_matches": list(out.shape) == list(x.shape),
                          "expected": "accepted", "as_expected": expect is None and ok})
         except ContractViolation as e:
-            rows.append({"case": name, "outcome": "rejected", "failed": e.failures,
-                         "expected": expect, "as_expected": expect is not None
-                         and set(expect) <= set(e.failures)})
+            rows.append({"case": name, "outcome": "rejected", "failed": e.failures, "expected": expect,
+                         "as_expected": expect is not None and set(expect) <= set(e.failures)})
+    ew_case("ae_1d_n16", ae, lambda: (R(16), R(16)), None)
+    ew_case("ae_1d_n5_tail", ae, lambda: (R(5), R(5)), None)
+    ew_case("ae_empty", ae, lambda: (R(0), R(0)), None)
+    ew_case("ae_2d_contiguous", ae, lambda: (R(4, 8), R(4, 8)), None)
+    ew_case("ae_3d_contiguous", ae, lambda: (R(2, 3, 5), R(2, 3, 5)), None)
+    ew_case("ae_x_y_same_tensor", ae, lambda: (x16, x16), None)
+    ew_case("ae_transposed_input", ae, lambda: (R(8, 4).t(), R(4, 8)), ["WC contiguous"])
+    ew_case("ae_shape_mismatch", ae, lambda: (R(16), R(12)), ["WA same_shape"])
+    ew_case("ae_y_short_view_of_big_storage", ae, lambda: (R(16), R(16)[:12]), ["WA same_shape"])
+    ew_case("ae_inputs_partially_overlap", ae, lambda: (base[0:16], base[8:24]), ["P11 inputs_separate"])
+    ew_case("ae_float16", ae, lambda: (R(16).half(), R(16).half()), ["P9 dtype_ok"])
+    ew_case("vac_1d_n37", vac, lambda: (R(37), R(37)), None)
+    ew_case("vac_2d_rejected", vac, lambda: (R(4, 8), R(4, 8)), ["WR rank1"])
+
     # strided ReLU (one-tile branch)
-    rv = {"torch.cuda._DeviceGuard(in0.device.index)": "__import__('contextlib').nullcontext()",
-          "out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"}
+    rv = ({"torch.cuda._DeviceGuard(in0.device.index)": "__import__('contextlib').nullcontext()",
+           "out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"} if interp else None)
     relu = CheckedStridedRelu(rv)
-    SB = __import__("launch_interpret").load_defs(RELU_PY, rv)["StridedBuffer"]
-    rb = torch.randn(64)
+    ns = __import__("launch_interpret").load_defs(RELU_PY, rv)
+    SB, pinned_wrapper = ns["StridedBuffer"], ns["relu_forward_wrapper_rank_1"]
+    rb = R(64)
+
+    def dense(t):  # logical values of a tensor or StridedBuffer view
+        if hasattr(t, "unwrap"):
+            b = t.unwrap()
+            off = (t.data_ptr() - b.data_ptr()) // t.element_size()
+            return torch.as_strided(b, t.shape, t.stride(), off)
+        return t
 
     def relu_case(name, mk, expect, launch=True, check_gaps=None):
         x, o = mk()
+        launch = launch and not (interp and hasattr(x, "unwrap"))
         try:
             relu(x, o, launch=launch)
             if launch:
-                ok = bool(torch.equal(o, torch.relu(x)))
+                ok = bool(torch.equal(dense(o), torch.relu(dense(x))))
                 gaps = check_gaps() if check_gaps else None
-                rows.append({"case": name, "outcome": "accepted", "output_equals_relu": ok,
-                             "gap_cells_intact": gaps, "expected": "accepted",
-                             "as_expected": expect is None and ok and gaps is not False})
+                row = {"case": name, "outcome": "accepted", "output_equals_relu": ok,
+                       "gap_cells_intact": gaps, "expected": "accepted",
+                       "as_expected": expect is None and ok and gaps is not False}
+                if not interp:  # the pinned wrapper itself, on a fresh output of the same layout
+                    o2 = torch.empty_like(dense(o)) if not hasattr(o, "unwrap") else None
+                    if o2 is not None and o2.stride() == dense(o).stride():
+                        pinned_wrapper(x, out0=o2)
+                        row["pinned_wrapper_equal"] = bool(torch.equal(o2, dense(o)))
+                        row["as_expected"] = row["as_expected"] and row["pinned_wrapper_equal"]
+                rows.append(row)
             else:
                 rows.append({"case": name, "outcome": "accepted (verdict only; not launched)",
                              "expected": "accepted", "as_expected": expect is None})
         except ContractViolation as e:
             rows.append({"case": name, "outcome": "rejected", "failed": e.failures, "expected": expect,
                          "as_expected": expect is not None and set(expect) <= set(e.failures)})
-    ob = torch.full((30,), 7.5)
-    relu_case("relu_contiguous_n1025", lambda: (torch.randn(1025), torch.empty(1025)), None)
-    relu_case("relu_in_stride2", lambda: (torch.randn(40)[::2], torch.empty(20)), None)
-    relu_case("relu_out_stride3_gaps", lambda: (torch.randn(10), ob[::3]), None,
+    ob = torch.full((30,), 7.5, device=device)
+    relu_case("relu_contiguous_n1025", lambda: (R(1025), E(1025)), None)
+    relu_case("relu_in_stride2", lambda: (R(40)[::2], E(20)), None)
+    relu_case("relu_out_stride3_gaps", lambda: (R(10), ob[::3]), None,
               check_gaps=lambda: bool((ob[[i for i in range(30) if i % 3]] == 7.5).all()))
-    relu_case("relu_empty", lambda: (torch.randn(0), torch.empty(0)), ["S3 nonempty"])
+    relu_case("relu_empty", lambda: (R(0), E(0)), ["S3 nonempty"])
     relu_case("relu_grid_stride_branch_n_2p25_plus_1",
-              lambda: (torch.empty(2 ** 25 + 1), torch.empty(2 ** 25 + 1)), ["S4 one_tile"], launch=False)
+              lambda: (E(2 ** 25 + 1), E(2 ** 25 + 1)), ["S4 one_tile"], launch=False)
     relu_case("relu_out_overlaps_in", lambda: (rb[0:10], rb[5:15]), ["S9 spans_disjoint"])
-    relu_case("relu_float16", lambda: (torch.randn(16).half(), torch.empty(16).half()), ["S7 dtype_ok"])
+    relu_case("relu_float16", lambda: (R(16).half(), E(16).half()), ["S7 dtype_ok"])
     relu_case("relu_stridedbuffer_offset5_stride3",
-              lambda: (SB(torch.randn(50), shape=(10,), strides=(3,), offset=5), torch.empty(10)),
-              None, launch=False)
+              lambda: (SB(R(50), shape=(10,), strides=(3,), offset=5), E(10)), None)
     relu_case("relu_stridedbuffer_negative_stride",
-              lambda: (SB(torch.randn(50), shape=(10,), strides=(-1,), offset=9), torch.empty(10)),
+              lambda: (SB(R(50), shape=(10,), strides=(-1,), offset=9), E(10)),
               ["S5 pos_strides (negative stride)"])
     relu_case("relu_stridedbuffer_negative_offset_before_storage",
-              lambda: (SB(torch.randn(50), shape=(10,), strides=(1,), offset=-5), torch.empty(10)),
-              ["S6 in_bounds"], launch=False)
+              lambda: (SB(R(50), shape=(10,), strides=(1,), offset=-5), E(10)), ["S6 in_bounds"],
+              launch=False)
     relu_case("relu_stridedbuffer_dtype_reinterpret",
-              lambda: (SB(torch.randn(16), dtype=torch.int32), torch.empty(16)), ["S7 dtype_ok"])
+              lambda: (SB(R(16), dtype=torch.int32), E(16)), ["S7 dtype_ok"])
     mutant = RELU_PY.read_text().replace("in0_strides[0], # stride for in0",
                                          "out0_strides[0], # stride for in0")
     try:
@@ -721,16 +757,20 @@ def demo() -> dict:
     np2 = all(next_pow2(k) == triton.next_power_of_2(k) for k in range(0, 5001))
     rows.append({"case": "next_pow2_mirror_vs_triton_0_to_5000", "outcome": "equal" if np2 else "DIFFER",
                  "as_expected": np2})
-    return {"backend": "triton-interpreter (TRITON_INTERPRET=1, CPU)", "triton": triton.__version__,
-            "relu_source": "DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast "
-                           "to the pointer element type) — the pinned text needs CUDA; StridedBuffer "
-                           "arguments cannot be passed to the interpreter (verdict only)",
-            "torch": torch.__version__,
-            "add_example_source": "DERIVED VARIANT for the interpreter (class tl.constexpr annotation; "
-                                  "REPORT finding 4) — the pinned text runs on GPU",
-            "vector_addition_custom_source": "pinned (verbatim)",
-            "cases": rows, "all_as_expected": all(r["as_expected"] for r in rows),
-            "input_hashes": __import__("launch_local_check").input_hashes()}
+    res = {"backend": ("triton-interpreter (TRITON_INTERPRET=1, CPU)" if interp else "cuda"),
+           "triton": triton.__version__, "torch": torch.__version__, "device": device,
+           "add_example_source": ("DERIVED VARIANT for the interpreter (class tl.constexpr annotation)"
+                                  if interp else "pinned (verbatim)"),
+           "relu_source": ("DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast "
+                           "to the pointer element type); StridedBuffer arguments verdict only"
+                           if interp else "pinned (verbatim); pinned wrapper output compared"),
+           "vector_addition_custom_source": "pinned (verbatim)",
+           "cases": rows, "all_as_expected": all(r["as_expected"] for r in rows),
+           "input_hashes": __import__("launch_local_check").input_hashes()}
+    if not interp:
+        res["gpu_name"] = torch.cuda.get_device_name()
+        res["compute_capability"] = list(torch.cuda.get_device_capability())
+    return res
 
 
 def main() -> int:

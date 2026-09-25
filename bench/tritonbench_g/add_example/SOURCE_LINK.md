@@ -87,9 +87,11 @@ manifest-built ones:
 
 1. `CheckedWrapper` binds to the pinned wrapper through `parse_launch`
    (block constant, `n` rule, `cdiv` grid over `*_like(x)`, kernel argument
-   binding) and refuses sources that do not map to the Lean contract;
-   `recognize_relu` does the same for `relu_forward_wrapper_rank_1`, including
-   the stride-argument correspondence.
+   binding) and compares the kernel body with its Lean transcription; it
+   refuses sources that do not map to the Lean contract. `recognize_relu` does
+   the same for `relu_forward_wrapper_rank_1`: modelled wrapper statements,
+   the pinned tile heuristic, the pinned kernel and helper text (the text
+   `ReluStridedBuffer.lean` transcribes), and the stride-argument correspondence.
 2. `tensor_meta` / `storage_meta` read `TensorMeta` from the live tensors
    (`data_ptr`, shape, strides, capacity to the end of the storage, dtype;
    `StridedBuffer` supported). **Trusted**, not verified.
