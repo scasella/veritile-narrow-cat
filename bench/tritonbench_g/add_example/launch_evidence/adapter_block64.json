@@ -39,7 +39,8 @@
       "metadata": "supplied-metadata (trusted as supplied)",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V1_test_case_1_n16": {
@@ -51,14 +52,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 16,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 16,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -67,7 +68,7 @@
         ],
         "n": 16,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 16,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -81,7 +82,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V2_test_case_2_n8": {
@@ -93,14 +95,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 8,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 8,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -109,7 +111,7 @@
         ],
         "n": 8,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 8,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -123,7 +125,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V3_test_case_3_n32": {
@@ -135,14 +138,14 @@
         ],
         "inputs": [
           {
-            "base": 501984957696,
+            "base": 521984749440,
             "capacity": 32,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501984957824,
+            "base": 521984749568,
             "capacity": 32,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -151,7 +154,7 @@
         ],
         "n": 32,
         "output": {
-          "base": 501984957952,
+          "base": 521984749696,
           "capacity": 32,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -165,7 +168,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V4_test_case_4_empty": {
@@ -207,7 +211,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V5_n3_below_block": {
@@ -219,14 +224,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 3,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 3,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -235,7 +240,7 @@
         ],
         "n": 3,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 3,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -249,7 +254,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V6_n4_eq_block": {
@@ -261,14 +267,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 4,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 4,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -277,7 +283,7 @@
         ],
         "n": 4,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 4,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -291,7 +297,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V7_n5_tail": {
@@ -303,14 +310,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 5,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 5,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -319,7 +326,7 @@
         ],
         "n": 5,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 5,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -333,7 +340,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V8_n5_overprovisioned_grid3": {
@@ -345,14 +353,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964992,
+            "base": 522077867840,
             "capacity": 5,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 5,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -361,7 +369,7 @@
         ],
         "n": 5,
         "output": {
-          "base": 501913965056,
+          "base": 522077867904,
           "capacity": 5,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -375,7 +383,8 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     },
     "V9_x_y_alias_readonly": {
@@ -387,14 +396,14 @@
         ],
         "inputs": [
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 9,
             "dtype": ".f32",
             "elemBytes": 4,
             "stride": 1
           },
           {
-            "base": 501913964864,
+            "base": 522077867776,
             "capacity": 9,
             "dtype": ".f32",
             "elemBytes": 4,
@@ -403,7 +412,7 @@
         ],
         "n": 9,
         "output": {
-          "base": 501913964992,
+          "base": 522077867840,
           "capacity": 9,
           "dtype": ".f32",
           "elemBytes": 4,
@@ -417,16 +426,17 @@
       "metadata": "torch-cpu-tensors",
       "wrapper_failures": [],
       "wrapper_obligations": {
-        "W1 output_fully_written": true
+        "W1 output_fully_written": true,
+        "W2 inputs_cover_n": true
       }
     }
   },
   "hashes": {
     "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
-    "bench/tritonbench_g/add_example/AddExample.lean": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
+    "bench/tritonbench_g/add_example/AddExample.lean": "2fb9978d20e2c97b7279a395dcfa3c5f68ccadc50dcf9ffaaa54d26ca0d6d16f",
     "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
     "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
-    "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8"
+    "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1"
   },
   "kernel": {
     "block_param": "BLOCK_SIZE",

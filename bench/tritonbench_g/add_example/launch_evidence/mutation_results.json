@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T12:02:00Z",
- "elapsed_s": 40.8,
+ "generated": "2026-09-25T12:34:41Z",
+ "elapsed_s": 41.9,
  "counts": {
   "accepted": 13,
   "violated_obligation": 12,
@@ -14,12 +14,12 @@
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
   "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
-  "bench/tritonbench_g/add_example/AddExample.lean": "5445f9734d4a34edd30c2d9c7134e86860e2fed4c369fee53287583eaa7e818f",
+  "bench/tritonbench_g/add_example/AddExample.lean": "2fb9978d20e2c97b7279a395dcfa3c5f68ccadc50dcf9ffaaa54d26ca0d6d16f",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "39cade8a7ca6bfa1c8cc78d873475a65a8428da8d36faa7c00563bc633555e2f",
   "bench/tests/Blocked1DLaunchWitnesses.lean": "1a8f82f8a9e6b9a1b01b83445a336c152783e08d26c91dc113f6bc8d1af97ef8",
   "VeriTile/Triton/Launch.lean": "7604496333658faefa002a70c6dd423a017fd7cdb28768f5be9d5863d4d1d34f",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
-  "bench/tritonbench_g/add_example/CONTRACT.md": "0fbb5505921f969c1739a49ae31539bbad084744fb3893b4523b01251dc9c6b5",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "cc53e79ea459b7ffcdb5e72b55636cebc1c676a7ce9f9289dec23d1b93945775",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
   "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
   "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
