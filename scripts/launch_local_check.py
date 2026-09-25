@@ -253,7 +253,79 @@ def input_files() -> list:
                         "scripts/launch_invoke.py",
                         "scripts/launch_emulate.py", "scripts/launch_mutation_suite.py",
                         "scripts/test_launch_check.py",
+                        # execution harnesses (hashed so their evidence records them)
+                        "scripts/launch_interpret.py", "scripts/launch_gpu.py",
+                        "scripts/launch_gpu_modal.py", "bench/audit_source.py",
                         "lean-toolchain", "lake-manifest.json", "lakefile.toml"]
+
+
+# ---------------------------------------------------------------------------
+# Per-evidence dependency subsets. A check is current when every file it
+# depends on has the hash its record states; files outside its subset cannot
+# make it stale. A dependency the record never hashed counts as NOT covered
+# (stale), never as current. The official comparator, the local ledger and the
+# mutation suite depend on the whole input set (never narrowed).
+# ---------------------------------------------------------------------------
+TOOLCHAIN = ["lean-toolchain", "lake-manifest.json", "lakefile.toml"]
+PY_CORE = ["scripts/launch_check.py", "scripts/launch_local_check.py", "bench/audit_source.py"]
+INVOKE = PY_CORE + ["scripts/launch_invoke.py", "scripts/launch_interpret.py",
+                    "bench/tritonbench_g/add_example/add_example.py",
+                    "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
+                    "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py",
+                    # the add/vac kernel-body binding reads the Lean transcriptions
+                    "bench/tritonbench_g/add_example/AddExample.lean",
+                    "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean"]
+HANDOFF = PY_CORE + ["scripts/launch_interpret.py", "scripts/launch_gpu.py", "scripts/launch_gpu_modal.py",
+                     "bench/tritonbench_g/add_example/add_example.py",
+                     "bench/tritonbench_g/add_example/CONTRACT.md",
+                     "bench/tritonbench_g/add_example/launch_manifest.json",
+                     "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py",
+                     "bench/tritonbench_g/add_example/improvement/launch_manifest.json",
+                     "bench/tritonbench_g/add_example/improvement/add_example_block64.py",
+                     "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json",
+                     "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
+                     "bench/tritonbench_g/vector_addition_custom/launch_manifest.json"]
+
+
+def lean_closure(roots: list, root: Path = REPO) -> list:
+    """Repo Lean files transitively imported by `roots` (roots included)."""
+    seen, todo = [], list(roots)
+    while todo:
+        f = todo.pop()
+        if f in seen or not (root / f).exists():
+            continue
+        seen.append(f)
+        for m in re.finditer(r"^import\s+(\S+)", (root / f).read_text(), re.M):
+            todo.append(m.group(1).replace(".", "/") + ".lean")
+    return sorted(seen)
+
+
+def evidence_deps(name: str, root: Path = REPO):
+    """The files evidence `name` depends on, or None for the whole input set."""
+    hashed = set(input_files())
+    lean = lambda *r: [f for f in lean_closure(list(r), root) if f in hashed] + TOOLCHAIN
+    deps = {
+        "invoke_interpreter.json": INVOKE,
+        "gpu_wrapper.json": INVOKE + ["scripts/launch_gpu.py", "scripts/launch_gpu_modal.py"],
+        "invoke_overhead.json": INVOKE,
+        "invoke_differential.json": ["scripts/launch_invoke.py"] + PY_CORE
+        + lean("VeriTile/Triton/Launch/Blocked1DWrapper.lean"),
+        "invoke_differential_strided.json": ["scripts/launch_invoke.py"] + PY_CORE
+        + lean("VeriTile/Triton/Launch/StridedUnary.lean"),
+        "gpu.json": HANDOFF, "gpu_perf.json": HANDOFF, "gpu_extras.json": HANDOFF,
+        "block_sweep.json": HANDOFF, "interpreter.json": HANDOFF,
+    }.get(name)
+    return None if deps is None else sorted(set(deps))
+
+
+def evidence_freshness(name: str, ev: dict, hashes: dict) -> tuple:
+    """(current?, stale files, unhashed dependencies) for evidence `name`."""
+    rec = ev.get("input_hashes") or {}
+    deps = evidence_deps(name)
+    scope = sorted(set(rec) | set(hashes)) if deps is None else deps
+    stale = sorted(f for f in scope if f in rec and hashes.get(f) != rec[f])
+    unhashed = sorted(f for f in scope if f not in rec)
+    return (bool(rec) and not stale and not unhashed), stale, unhashed
 
 
 class Step:
@@ -424,9 +496,10 @@ def external_steps(hashes: dict) -> dict:
             return st.done("not_run", "", f"no {fname}: requires a compatible external environment "
                            f"(see bench/tritonbench_g/add_example/HANDOFF.md)")
         ev = json.loads(f.read_text())
-        stale = {k: v for k, v in ev.get("input_hashes", {}).items() if hashes.get(k) != v}
-        if stale or not ev.get("input_hashes"):
-            return st.done("failed", str(f), f"STALE evidence: {sorted(stale) or 'no hashes'}")
+        current, stale, unhashed = evidence_freshness(fname, ev, hashes)
+        if not current:
+            return st.done("failed", str(f), f"STALE evidence: changed {stale or '-'}; "
+                           f"not hashed by the record {unhashed or '-'}")
         return st.done("passed" if ev.get("exit_code") == 0 else "failed", str(f),
                        f"exit_code={ev.get('exit_code')}")
     return {
@@ -437,6 +510,8 @@ def external_steps(hashes: dict) -> dict:
                                     "real Triton launch on a supported NVIDIA/AMD GPU"),
         "gpu_performance": external("gpu_performance", "gpu_perf.json",
                                     "steady-state timing on a supported GPU"),
+        "gpu_wrapper": external("gpu_wrapper", "gpu_wrapper.json",
+                                "checked wrapper invocations on CUDA tensors"),
     }
 
 
@@ -473,7 +548,7 @@ def external_only(a) -> int:
         print(f"OFFICIAL_AUDIT_REQUIRED_BUT_{steps['official_comparator'].status.upper()}")
         rc = 2
     if a.require_gpu and not all(steps[k].status == "passed"
-                                 for k in ("gpu_correctness", "gpu_performance")):
+                                 for k in ("gpu_correctness", "gpu_performance", "gpu_wrapper")):
         print("GPU_EVIDENCE_REQUIRED_BUT_MISSING_OR_FAILED")
         rc = rc or 3
     return rc
@@ -736,7 +811,7 @@ def main(argv=None) -> int:
         print(f"OFFICIAL_AUDIT_REQUIRED_BUT_{steps['official_comparator'].status.upper()}")
         rc = rc or 2
     if a.require_gpu and not all(steps[k].status == "passed"
-                                 for k in ("gpu_correctness", "gpu_performance")):
+                                 for k in ("gpu_correctness", "gpu_performance", "gpu_wrapper")):
         print("GPU_EVIDENCE_REQUIRED_BUT_MISSING_OR_FAILED")
         rc = rc or 3
     return rc
