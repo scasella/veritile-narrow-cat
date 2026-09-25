@@ -9,8 +9,8 @@ and the unfused pipeline it replaces: `add_kernel` (text identical to
 `AddExample.lean`, i.e. `add_example.py` / `add_example_block64.py`) writing a
 private temporary `T`, followed by the masked-pointer `relu_kernel`
 (`relu_masked.py`, the ReLU spelled as `relu_strided_buffer`'s
-`relu_forward`) reading `T` and writing the output `O`. Bench files do not
-import each other, so the kernels are restated here; unit tests
+`relu_forward`) reading `T` and writing the output `O`. Bench files never
+import one another, so the kernels are restated here; unit tests
 (`scripts/test_launch_check.py`) require the three transcriptions to equal
 their sources statement for statement.
 
