@@ -690,6 +690,15 @@ def demo(device: str = "cpu") -> dict:
     rv = ({"torch.cuda._DeviceGuard(in0.device.index)": "__import__('contextlib').nullcontext()",
            "out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"} if interp else None)
     relu = CheckedStridedRelu(rv)
+    relu_pinned_result = None
+    if not interp:  # does the pinned kernel text compile and run on this Triton?
+        try:
+            relu(R(8), E(8))
+            relu_pinned_result = "pinned text compiled and ran"
+        except Exception as e:  # noqa: BLE001
+            relu_pinned_result = "pinned text failed: " + repr(e)[-300:]
+            rv = {"out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"}
+            relu = CheckedStridedRelu(rv)
     ns = __import__("launch_interpret").load_defs(RELU_PY, rv)
     SB, pinned_wrapper = ns["StridedBuffer"], ns["relu_forward_wrapper_rank_1"]
     rb = R(64)
@@ -763,7 +772,10 @@ def demo(device: str = "cpu") -> dict:
                                   if interp else "pinned (verbatim)"),
            "relu_source": ("DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast "
                            "to the pointer element type); StridedBuffer arguments verdict only"
-                           if interp else "pinned (verbatim); pinned wrapper output compared"),
+                           if interp else ("pinned (verbatim); pinned wrapper output compared" if rv is None
+                                           else "DERIVED VARIANT (store cast to the pointer element type "
+                                                "only; device guard kept); pinned wrapper = same variant")),
+           "relu_pinned_on_device": relu_pinned_result,
            "vector_addition_custom_source": "pinned (verbatim)",
            "cases": rows, "all_as_expected": all(r["as_expected"] for r in rows),
            "input_hashes": __import__("launch_local_check").input_hashes()}

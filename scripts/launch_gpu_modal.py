@@ -64,9 +64,16 @@ def wrapper() -> dict:
 def all_modes() -> dict:
     sys.path.insert(0, f"{REMOTE}/scripts")
     import launch_gpu
-    return {**launch_gpu.run_all(Path(REMOTE), "cuda"),
-            "block_sweep": launch_gpu.block_sweep(Path(REMOTE), "cuda"),
-            "gpu_wrapper": launch_gpu.wrapper_evidence(Path(REMOTE))}
+    import traceback
+    out = {}
+    for name, fn in (("handoff", lambda: launch_gpu.run_all(Path(REMOTE), "cuda")),
+                     ("block_sweep", lambda: {"block_sweep": launch_gpu.block_sweep(Path(REMOTE), "cuda")}),
+                     ("gpu_wrapper", lambda: {"gpu_wrapper": launch_gpu.wrapper_evidence(Path(REMOTE))})):
+        try:
+            out.update(fn())
+        except Exception:  # noqa: BLE001  (one part failing must not lose the others)
+            out[f"error_{name}"] = {"traceback": traceback.format_exc()[-3000:]}
+    return out
 
 
 @app.local_entrypoint()
@@ -75,6 +82,10 @@ def main(out_dir: str = "", mode: str = "handoff") -> None:
     evid = LC.EVID if not out_dir else Path(out_dir)
     raw = Path(out_dir or "/Users/scasella/Downloads/kernel-claude/work/logs") / f"gpu_raw_{mode}.json"
     raw.write_text(json.dumps(res, indent=1, default=str) + "\n")
+    errors = {k: v for k, v in res.items() if k.startswith("error_")}
+    res = {k: v for k, v in res.items() if not k.startswith("error_")}
+    if errors:
+        print(json.dumps(errors, indent=1)[:4000])
     for key, rec in res.items():
         assert rec.get("input_hashes") == LOCAL_HASHES, f"{key}: remote hashes differ from local"
         assert rec.get("device") == "cuda" and not rec.get("TRITON_INTERPRET"), key
