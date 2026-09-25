@@ -1,0 +1,57 @@
+{
+ "backend": "triton-interpreter (TRITON_INTERPRET=1, CPU)",
+ "triton": "3.8.0",
+ "torch": "2.14.0+cpu",
+ "source": "pinned (verbatim); torch.empty_like patched to sentinel-fill so unwritten cells are observable",
+ "cases": [
+  {
+   "shape": [
+    37
+   ],
+   "numel": 37,
+   "launched_size": 37,
+   "correct_elements": 37,
+   "unwritten_elements": 0,
+   "output_equals_x_plus_y": true,
+   "w1_holds": true
+  },
+  {
+   "shape": [
+    4,
+    8
+   ],
+   "numel": 32,
+   "launched_size": 4,
+   "correct_elements": 4,
+   "unwritten_elements": 28,
+   "output_equals_x_plus_y": false,
+   "w1_holds": false
+  },
+  {
+   "shape": [
+    3,
+    5,
+    7
+   ],
+   "numel": 105,
+   "launched_size": 3,
+   "correct_elements": 3,
+   "unwritten_elements": 102,
+   "output_equals_x_plus_y": false,
+   "w1_holds": false
+  },
+  {
+   "shape": [
+    1,
+    40
+   ],
+   "numel": 40,
+   "launched_size": 1,
+   "correct_elements": 1,
+   "unwritten_elements": 39,
+   "output_equals_x_plus_y": false,
+   "w1_holds": false
+  }
+ ],
+ "w1_finding_confirmed": true
+}

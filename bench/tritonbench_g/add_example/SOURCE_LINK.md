@@ -90,7 +90,9 @@ for `add_wrapper` (`n = x.numel()`, `out = zeros_like(x)`), and it fails for
 `vector_addition_custom.custom_add` on 2-D inputs: `size = c.size(0)`, so a
 `(4, 8)` input computes 4 of 32 outputs and returns 28 uninitialized
 `empty_like` entries (manifest case `F1_2d_input_partial_output`; emulator
-witness in REPORT). The kernel checker correctly *accepts* that launch — it is
+witness in REPORT; reproduced on the pinned file under the Triton CPU
+interpreter by `scripts/launch_w1_probe.py` →
+`launch_evidence/w1_probe_vector_addition_custom.json`, interpreter evidence only). The kernel checker correctly *accepts* that launch — it is
 memory-safe and correct on `out[0, n)` — which is exactly why W1 is recorded
 separately.
 

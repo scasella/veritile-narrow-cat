@@ -2,8 +2,10 @@
 
 Adds a proved launch-configuration checker and a whole-grid theorem for
 `add_example.py::add_kernel`. Contract: `CONTRACT.md`. Source link and trust
-boundary: `SOURCE_LINK.md`. External (Linux comparator, GPU) gates:
-`HANDOFF.md` — both **not run**.
+boundary: `SOURCE_LINK.md`. External gates: `HANDOFF.md`. The official
+comparator (§A) **passed** in a local Linux container (`launch_evidence/official_comparator.json`);
+GPU (§B) is **not run**. CPU-interpreter evidence (interpreter only): `launch_evidence/interpreter.json`,
+`launch_evidence/w1_probe_vector_addition_custom.json`.
 
 ## Prerequisites
 - elan; the repo's `lean-toolchain` (`leanprover/lean4:v4.29.0`) is fetched automatically.
@@ -20,6 +22,9 @@ python3 scripts/launch_local_check.py            # all local gates; prints LOCAL
 python3 scripts/launch_local_check.py --fresh    # same, project modules rebuilt from source in a temp workspace
 python3 scripts/launch_mutation_suite.py         # adversarial suite -> launch_evidence/mutation_results.json
 python3 scripts/launch_check.py bench/tritonbench_g/add_example/launch_manifest.json   # adapter only
+# Linux with triton+torch (e.g. a container); interpreter evidence only:
+TRITON_INTERPRET=1 python3 scripts/launch_interpret.py --out interpreter.json
+TRITON_INTERPRET=1 python3 scripts/launch_w1_probe.py --out w1_probe.json
 ```
 
 `--require-official` / `--require-gpu` additionally demand fresh external
