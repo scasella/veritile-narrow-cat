@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T00:11:53Z",
- "git_head": "e795353c71cc01f2e4f1c04a8889bbd3878964ea",
+ "generated": "2026-09-25T00:28:47Z",
+ "git_head": "205a333a9b119782e7d0803c770d5c738d6a98f4",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -17,9 +17,9 @@
   "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "36ea0d7f6125567d0d546e1dc90d3c2bce321096d178ee1285151c6069c1291c",
   "scripts/launch_check.py": "4ac5d672652eb5c988465c15c4365fed1db30559d8c1b6a0d7d597449fd4aed8",
-  "scripts/launch_local_check.py": "7ed1faafc2d71ddaaa52c0fa39bbb119c8ec41ac8a9516214f5791c2a17b7030",
+  "scripts/launch_local_check.py": "ea86c4fdc360dd4bdd8f4a8ce8694028adf8181fa170f2b67c75df8371684ebd",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
-  "scripts/launch_mutation_suite.py": "6d38d85f0c6a486ffa371fcf991a95598265821f7fdc97ff916a25fb0c0ebb59",
+  "scripts/launch_mutation_suite.py": "3e41e6947e3baa4986f78e55f1d83fc05658b7871dca78bd05bf6a0f25e7de6e",
   "scripts/test_launch_check.py": "e1f4917e10d2b9459489d391820b218859a1d45618aa9e44d2419c69e37ddb07",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
@@ -88,8 +88,8 @@
    "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-masp6720",
-   "elapsed_s": 604.1
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-8gxip901",
+   "elapsed_s": 527.6
   },
   "placeholder_scan": {
    "status": "passed",
@@ -114,7 +114,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
    "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0",
-   "elapsed_s": 5.2
+   "elapsed_s": 5.1
   },
   "kernel_file_axioms": {
    "status": "passed",
@@ -122,7 +122,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
    "reason": "3 files, axiom-clean 23 theorems",
-   "elapsed_s": 23.3,
+   "elapsed_s": 22.9,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -170,7 +170,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 8.7
+   "elapsed_s": 8.9
   },
   "source_link_adapter": {
    "status": "passed",
@@ -178,7 +178,7 @@
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "3 manifests, 36 cases, 26 accepted, all verdicts kernel-checked",
-   "elapsed_s": 6.3
+   "elapsed_s": 6.6
   },
   "adapter_tests": {
    "status": "passed",
@@ -186,7 +186,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/adapter_tests.log",
    "reason": "OK",
-   "elapsed_s": 2.2
+   "elapsed_s": 2.4
   },
   "official_comparator": {
    "status": "not_run",
