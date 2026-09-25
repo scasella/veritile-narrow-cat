@@ -27,7 +27,6 @@ import os
 import sys
 from pathlib import Path
 
-assert os.environ.get("TRITON_INTERPRET") == "1", "set TRITON_INTERPRET=1"
 import torch  # noqa: E402
 import triton  # noqa: E402
 
@@ -65,6 +64,7 @@ def run_case(wrapper, n: int, sentinel_pad: int = 8) -> dict:
 
 
 def main() -> int:
+    assert os.environ.get("TRITON_INTERPRET") == "1", "set TRITON_INTERPRET=1"
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
