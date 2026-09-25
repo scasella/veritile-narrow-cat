@@ -189,6 +189,41 @@ class StridedReluRecognition(unittest.TestCase):
         with self.assertRaises(L.Unsupported):
             self.I.recognize_relu(src)
 
+    def test_store_cast_fix_recognized_only_under_its_own_label(self):
+        fixed, rep = self.I.relu_source("store_cast_fix")
+        self.assertEqual(rep, {self.I.RELU_STORE_CAST_FIX[0]: self.I.RELU_STORE_CAST_FIX[1]})
+        self.assertEqual(self.I.recognize_relu(fixed, "store_cast_fix")["kernel_text"], "store_cast_fix")
+        with self.assertRaises(L.Unsupported):  # the fixed text is not the pinned text
+            self.I.recognize_relu(fixed)
+        with self.assertRaises(L.Unsupported):  # the pinned text is not the fixed text
+            self.I.recognize_relu(self.src, "store_cast_fix")
+
+    def test_other_casts_not_normalized(self):
+        for old, new in [(self.I.RELU_STORE_CAST_FIX[0], "out0.to(tl.float16)"),
+                         (self.I.RELU_STORE_CAST_FIX[0], "out0"),
+                         (".to(in0_ptr.type.element_ty)", ".to(tl.float16)")]:
+            src = self.src.replace(old, new)
+            for label in ("pinned", "store_cast_fix"):
+                with self.assertRaises(L.Unsupported):
+                    self.I.recognize_relu(src, label)
+
+    def test_unknown_kernel_text_label_rejected(self):
+        with self.assertRaises(L.Unsupported):
+            self.I.relu_source("anything_else")
+
+    def test_demo_summary_fails_on_missing_extra_or_duplicate_case(self):
+        ok = [{"case": c, "as_expected": True} for c in self.I.DEMO_CASES]
+        self.assertTrue(self.I.summarize(ok)["all_as_expected"])
+        self.assertFalse(self.I.summarize(ok[1:])["all_as_expected"])
+        self.assertEqual(self.I.summarize(ok[1:])["missing_cases"], [self.I.DEMO_CASES[0]])
+        self.assertFalse(self.I.summarize(ok + [{"case": "new", "as_expected": True}])["all_as_expected"])
+        self.assertFalse(self.I.summarize(ok + ok[:1])["all_as_expected"])
+
+    def test_demo_summary_requires_the_pinned_failure_row(self):
+        ok = [{"case": c, "as_expected": True} for c in self.I.DEMO_CASES
+              if c != "relu_pinned_text_known_failure"]
+        self.assertFalse(self.I.summarize(ok)["all_as_expected"])
+
     def test_add_kernel_body_change_rejected_at_binding(self):
         src = (REPO / "bench/tritonbench_g/add_example/add_example.py").read_text().replace(
             "output = x + y", "output = x - y")

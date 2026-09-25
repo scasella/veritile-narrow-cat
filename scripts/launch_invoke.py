@@ -358,9 +358,38 @@ HEURISTIC_TILE = ("def heuristics_for_tile_size(max_tile_size, *sizes):\n    ndi
 # `ReluStridedBuffer.lean` transcribes (upstream's py↔lean scans pair the two files).
 RELU_KERNEL_SHA = "f7121e891947227e797a7bebad3b9c7b2102a6377bba52c1671e47ae51aa6053"
 RELU_HELPER_SHA = "0a778b9a08fad1a458baa7637279df676431f93bccafea4e97879e835eb06d52"
+# The pinned kernel text does not compile with Triton 3.8.0: `out0_bptr` is a
+# block pointer, whose type is an aggregate type without `element_ty`. The one
+# accepted derived kernel text replaces the store cast's destination by the
+# output *pointer's* element type (the pinned source applies the same fix to
+# its load, with a comment). Within the checked domain (S7: both tensors f32)
+# that destination is fp32 and the stored value is already fp32, so the cast
+# is the identity; the frontend emits no conversion on the store path
+# (work/submissions/relu_compat). No other kernel text is accepted.
+RELU_STORE_CAST_FIX = ("out0.to(out0_bptr.type.element_ty)", "out0.to(out0_ptr.type.element_ty)")
+RELU_KERNEL_TEXTS = {"pinned": RELU_KERNEL_SHA,
+                     "store_cast_fix": "45bc72d457f9f9101c67760790395d91b57f7ee3fe6af5aa2a5b80c62ce5e834"}
+# Host-side only, CPU interpreter only: CPU tensors have no CUDA device index.
+RELU_INTERP_HOST = ("torch.cuda._DeviceGuard(in0.device.index)", "__import__('contextlib').nullcontext()")
+KNOWN_PINNED_FAILURE = "'_aggregate_type' object has no attribute 'element_ty'"
 
 
-def recognize_relu(src: str) -> dict:
+def relu_source(kernel_text: str = "pinned", interpreter: bool = False) -> tuple:
+    """(text, replacements) of the relu file with exactly the recorded changes."""
+    if kernel_text not in RELU_KERNEL_TEXTS:
+        raise LC.Unsupported(f"unknown relu kernel text {kernel_text!r}")
+    rep = {}
+    if kernel_text == "store_cast_fix":
+        rep[RELU_STORE_CAST_FIX[0]] = RELU_STORE_CAST_FIX[1]
+    if interpreter:
+        rep[RELU_INTERP_HOST[0]] = RELU_INTERP_HOST[1]
+    text = RELU_PY.read_text()
+    for old, new in rep.items():
+        text = text.replace(old, new)
+    return text, (rep or None)
+
+
+def recognize_relu(src: str, kernel_text: str = "pinned") -> dict:
     """Bind `relu_forward_wrapper_rank_1` to `StridedUnary.launch`: every modelled
     statement present, the tile heuristic's text as pinned, and every kernel
     argument bound to the expression the model requires — in particular the
@@ -382,10 +411,12 @@ def recognize_relu(src: str) -> dict:
         raise LC.Unsupported("expected exactly one launch relu_forward_kernel_rank_1[grid](...)")
     kfn = LC.find_function(tree, "relu_forward_kernel_rank_1")
     import hashlib
-    if hashlib.sha256(ast.unparse(kfn).encode()).hexdigest() != RELU_KERNEL_SHA or \
+    want = RELU_KERNEL_TEXTS.get(kernel_text)
+    if hashlib.sha256(ast.unparse(kfn).encode()).hexdigest() != want or \
             hashlib.sha256(ast.unparse(LC.find_function(tree, "relu_forward")).encode()).hexdigest() \
             != RELU_HELPER_SHA:
-        raise LC.Unsupported("kernel text differs from the pinned text ReluStridedBuffer.lean transcribes")
+        raise LC.Unsupported(f"kernel text is not the accepted {kernel_text!r} text "
+                             "(ReluStridedBuffer.lean transcribes the pinned text; see RELU_KERNEL_TEXTS)")
     params = [a.arg for a in kfn.args.args]
     binding = dict(zip(params, (ast.unparse(a) for a in calls[0].args)))
     for kw in calls[0].keywords:
@@ -395,16 +426,20 @@ def recognize_relu(src: str) -> dict:
     for p_, want in RELU_BINDING.items():
         if binding.get(p_) != want:
             raise LC.Unsupported(f"kernel argument {p_} bound to {binding.get(p_)!r}, model requires {want!r}")
-    return {"params": params, "binding": binding}
+    return {"params": params, "binding": binding, "kernel_text": kernel_text}
 
 
 class CheckedStridedRelu:
     """`relu_forward_wrapper_rank_1` on actual tensors, checked by the strided contract."""
 
-    def __init__(self, variant: dict | None = None, src: str | None = None):
-        self.recognized = recognize_relu(src if src is not None else RELU_PY.read_text())
+    def __init__(self, kernel_text: str = "pinned", interpreter: bool = False, src: str | None = None):
+        """Recognize the text that will run (the pinned file plus exactly the
+        recorded replacements for `kernel_text`), then load that same text."""
+        text, self.replacements = relu_source(kernel_text, interpreter)
+        self.recognized = recognize_relu(src if src is not None else text, kernel_text)
         import launch_interpret as LI  # noqa: E402
-        self._kernel = LI.load_defs(RELU_PY, variant)["relu_forward_kernel_rank_1"]
+        self.namespace = LI.load_defs(RELU_PY, self.replacements)
+        self._kernel = self.namespace["relu_forward_kernel_rank_1"]
         self.stats = {"calls": 0}
 
     def verdict(self, in0, out0) -> tuple:
@@ -644,6 +679,41 @@ def overhead(reps: int = 2000) -> dict:
 # Interpreter demo: valid and invalid invocations on actual tensors
 # ---------------------------------------------------------------------------
 
+# Every demo run must produce exactly these cases; a missing or extra case
+# fails the run rather than disappearing from the aggregate.
+DEMO_CASES = (
+    "ae_1d_n16", "ae_1d_n5_tail", "ae_empty", "ae_2d_contiguous", "ae_3d_contiguous",
+    "ae_x_y_same_tensor", "ae_transposed_input", "ae_shape_mismatch", "ae_y_short_view_of_big_storage",
+    "ae_inputs_partially_overlap", "ae_float16", "vac_1d_n37", "vac_2d_rejected",
+    "relu_pinned_text_known_failure",
+    "relu_contiguous_n1025", "relu_in_stride2", "relu_out_stride3_gaps", "relu_empty",
+    "relu_grid_stride_branch_n_2p25_plus_1", "relu_out_overlaps_in", "relu_float16",
+    "relu_stridedbuffer_offset5_stride3", "relu_stridedbuffer_negative_stride",
+    "relu_stridedbuffer_negative_offset_before_storage", "relu_stridedbuffer_dtype_reinterpret",
+    "relu_source_mutant_wrong_stride_arg", "next_pow2_mirror_vs_triton_0_to_5000")
+
+
+def summarize(rows: list) -> dict:
+    names = [r["case"] for r in rows]
+    missing = [c for c in DEMO_CASES if c not in names]
+    extra = [c for c in names if c not in DEMO_CASES]
+    dup = sorted({c for c in names if names.count(c) > 1})
+    return {"cases": rows, "missing_cases": missing, "unexpected_cases": extra, "duplicate_cases": dup,
+            "all_as_expected": not (missing or extra or dup) and all(r["as_expected"] for r in rows)}
+
+
+def relu_pinned_probe(interp: bool, R, E) -> dict:
+    """Run the pinned relu kernel text once (the interpreter needs only the host
+    device-guard change) and record the outcome with its full traceback."""
+    import traceback
+    try:
+        CheckedStridedRelu("pinned", interpreter=interp)(R(8), E(8))
+        return {"status": "compiled and ran", "kernel_text": "pinned"}
+    except Exception as e:  # noqa: BLE001
+        return {"status": "failed", "kernel_text": "pinned", "error_type": type(e).__name__,
+                "error": str(e), "error_repr": repr(e), "traceback": traceback.format_exc()}
+
+
 def demo(device: str = "cpu") -> dict:
     """Valid and invalid invocations on actual tensors. `device="cpu"` runs the
     Triton CPU interpreter (derived texts where the pinned text cannot run there);
@@ -687,20 +757,16 @@ def demo(device: str = "cpu") -> dict:
     ew_case("vac_2d_rejected", vac, lambda: (R(4, 8), R(4, 8)), ["WR rank1"])
 
     # strided ReLU (one-tile branch)
-    rv = ({"torch.cuda._DeviceGuard(in0.device.index)": "__import__('contextlib').nullcontext()",
-           "out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"} if interp else None)
-    relu = CheckedStridedRelu(rv)
-    relu_pinned_result = None
-    if not interp:  # does the pinned kernel text compile and run on this Triton?
-        try:
-            relu(R(8), E(8))
-            relu_pinned_result = "pinned text compiled and ran"
-        except Exception as e:  # noqa: BLE001
-            relu_pinned_result = "pinned text failed: " + repr(e)[-300:]
-            rv = {"out0.to(out0_bptr.type.element_ty)": "out0.to(out0_ptr.type.element_ty)"}
-            relu = CheckedStridedRelu(rv)
-    ns = __import__("launch_interpret").load_defs(RELU_PY, rv)
-    SB, pinned_wrapper = ns["StridedBuffer"], ns["relu_forward_wrapper_rank_1"]
+    # Regression case, kept separate from every result below: the pinned kernel
+    # text on this backend. Expected: the known Triton 3.8.0 failure. Its record
+    # is written once, here, and nothing later can replace it.
+    pinned_record = relu_pinned_probe(interp, R, E)
+    rows.append({"case": "relu_pinned_text_known_failure", "outcome": pinned_record["status"],
+                 "error": pinned_record.get("error"), "expected": "fails: " + KNOWN_PINNED_FAILURE,
+                 "as_expected": pinned_record["status"] == "failed"
+                 and KNOWN_PINNED_FAILURE in (pinned_record.get("error") or "")})
+    relu = CheckedStridedRelu("store_cast_fix", interpreter=interp)
+    SB, pinned_wrapper = relu.namespace["StridedBuffer"], relu.namespace["relu_forward_wrapper_rank_1"]
     rb = R(64)
 
     def dense(t):  # logical values of a tensor or StridedBuffer view
@@ -721,12 +787,12 @@ def demo(device: str = "cpu") -> dict:
                 row = {"case": name, "outcome": "accepted", "output_equals_relu": ok,
                        "gap_cells_intact": gaps, "expected": "accepted",
                        "as_expected": expect is None and ok and gaps is not False}
-                if not interp:  # the pinned wrapper itself, on a fresh output of the same layout
+                if not interp:  # the file's own wrapper function (same loaded text), on a fresh output of the same layout
                     o2 = torch.empty_like(dense(o)) if not hasattr(o, "unwrap") else None
                     if o2 is not None and o2.stride() == dense(o).stride():
                         pinned_wrapper(x, out0=o2)
-                        row["pinned_wrapper_equal"] = bool(torch.equal(o2, dense(o)))
-                        row["as_expected"] = row["as_expected"] and row["pinned_wrapper_equal"]
+                        row["file_wrapper_equal"] = bool(torch.equal(o2, dense(o)))
+                        row["as_expected"] = row["as_expected"] and row["file_wrapper_equal"]
                 rows.append(row)
             else:
                 rows.append({"case": name, "outcome": "accepted (verdict only; not launched)",
@@ -757,7 +823,8 @@ def demo(device: str = "cpu") -> dict:
     mutant = RELU_PY.read_text().replace("in0_strides[0], # stride for in0",
                                          "out0_strides[0], # stride for in0")
     try:
-        CheckedStridedRelu(rv, src=mutant)
+        CheckedStridedRelu("store_cast_fix", interpreter=interp,
+                           src=mutant.replace(*RELU_STORE_CAST_FIX))
         rows.append({"case": "relu_source_mutant_wrong_stride_arg", "outcome": "ACCEPTED",
                      "as_expected": False})
     except LC.Unsupported as e:
@@ -770,14 +837,14 @@ def demo(device: str = "cpu") -> dict:
            "triton": triton.__version__, "torch": torch.__version__, "device": device,
            "add_example_source": ("DERIVED VARIANT for the interpreter (class tl.constexpr annotation)"
                                   if interp else "pinned (verbatim)"),
-           "relu_source": ("DERIVED VARIANT for the interpreter (device guard -> nullcontext; store cast "
-                           "to the pointer element type); StridedBuffer arguments verdict only"
-                           if interp else ("pinned (verbatim); pinned wrapper output compared" if rv is None
-                                           else "DERIVED VARIANT (store cast to the pointer element type "
-                                                "only; device guard kept); pinned wrapper = same variant")),
-           "relu_pinned_on_device": relu_pinned_result,
+           "relu_source": ("DERIVED kernel text 'store_cast_fix' (store cast destination = output "
+                           "pointer element type; recognized by its own hash)"
+                           + ("; interpreter host change: device guard -> nullcontext; StridedBuffer "
+                              "arguments verdict only" if interp else "; wrapper as pinned")),
+           "relu_replacements": relu.replacements,
+           "relu_pinned_text": pinned_record,
            "vector_addition_custom_source": "pinned (verbatim)",
-           "cases": rows, "all_as_expected": all(r["as_expected"] for r in rows),
+           **summarize(rows),
            "input_hashes": __import__("launch_local_check").input_hashes()}
     if not interp:
         res["gpu_name"] = torch.cuda.get_device_name()
