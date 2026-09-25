@@ -446,4 +446,38 @@ specification add_kernel_launch_correctness
       A B C bounds h1 h2 h3 s,
     fun pid j hp hj => ⟨hpre.i32_offset_toInt hp hj, hpre.i32_mask_eq hp hj⟩⟩
 
+
+/-! ## Whole-wrapper contract (`custom_add`, rank 1)
+
+`custom_add(a, b)` allocates `c = torch.empty_like(a)` and launches over
+`size = c.size(0)`. Its supported API is one-dimensional tensors
+(`Elementwise2.checkRank1`): there `size(0) = numel` and every element of the
+returned tensor is written. On higher-rank inputs the launch covers only the
+first `size(0)` elements (`Elementwise2.launchDim0_not_covered`), so such
+inputs are rejected by the wrapper contract rather than accepted with a
+partially uninitialized result. -/
+
+/-- **Whole-wrapper headline (`custom_add`).** For rank-1 tensors accepted by
+the wrapper checker and input cells holding typed real values, every element
+`i < c.numel` of the returned tensor is written with `xs i + ys i`, every
+other cell is unchanged, and every program is trace-safe for bounds equal to
+the tensors' own element counts. -/
+specification custom_add_correctness
+    (a b c : TensorMeta) (hc : Elementwise2.checkRank1 16 a b c = Bool.true)
+    (A B C : RegionName) (s : BlockState) (xs ys : Nat → ℝ)
+    (hx : ∀ i, i < a.numel → s.mem A i = MemCell.real (xs i))
+    (hy : ∀ i, i < b.numel → s.mem B i = MemCell.real (ys i)) :
+    Kernel.LaunchCorrectFramed
+        ((_add_kernel A B C (c.shape.headD 0) 16).toAlgKernel)
+        { dims := (Elementwise2.launchDim0 16 a b c).grid } s
+        (fun i : Nat => if i < c.numel then some (C, i) else none)
+        (fun i => xs i + ys i) ∧
+      (∀ bounds : RegionBounds,
+        a.numel ≤ bounds A → b.numel ≤ bounds B → c.numel ≤ bounds C →
+        ∀ idx : GridIndex { dims := (Elementwise2.launchDim0 16 a b c).grid },
+          Kernel.TraceSafe bounds
+            ((_add_kernel A B C (c.shape.headD 0) 16).toAlgKernel)
+            (s.withGridIndex idx)) := by
+  sorry
+
 end VeriTile.Bench.TritonBenchG.VectorAdditionCustom

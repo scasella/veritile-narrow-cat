@@ -41,6 +41,9 @@ EVID = KDIR / "launch_evidence"
 FROZEN = EVID / "frozen"
 NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Blocked1D.lean",
+            "VeriTile/Triton/Launch/Serial.lean",
+            "VeriTile/Triton/Launch/Blocked1DWrapper.lean",
+            "VeriTile/Triton/Launch/Blocked1DFlat.lean",
             "VeriTile/Triton/Launch/Composition.lean",
             "bench/tritonbench_g/add_example/AddExample.lean",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
@@ -53,7 +56,7 @@ PINNED_TOOLCHAIN = "leanprover/lean4:v4.29.0"
 UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 # Paths this project adds (anything else changed vs the pin fails the gate).
 _AE = "bench/tritonbench_g/add_example/"
-ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D",
+ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
                                       "launch_manifest.json", "launch_evidence/", "improvement/",
                                       ".gitignore")),
@@ -87,10 +90,20 @@ HEADLINES = ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctne
              "VeriTile.Triton.Blocked1DLaunch.Pre.i32_mask_eq",
              "VeriTile.Triton.Blocked1DLaunch.Pre.offset_injective"]
 
+WRAPPER_THEOREMS = [f"VeriTile.Bench.TritonBenchG.AddExample.{t}" for t in (
+    "add_wrapper_correctness", "add_kernel_launch_serial", "add_kernel_launch_flat",
+    "add_kernel_program_run")] + [f"VeriTile.Triton.{t}" for t in (
+    "Kernel.runSerial_agrees_merge", "Blocked1D.launch_of_frames_addr",
+    "Elementwise2.check_ok", "Elementwise2.check_complete", "Elementwise2.Pre.output_covered",
+    "Elementwise2.Pre.inputs_cover", "Elementwise2.Pre.flat_disjoint",
+    "Elementwise2.Pre.windows_in_alloc", "Elementwise2.flatAlloc_closed",
+    "TensorMeta.offsetOf_eq_linear", "FlatAlloc.flattenState_withGridIndex")]
+
 AUDIT_TARGETS = [
     ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
-     HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"],
-     ["add_kernel_correctness", "add_kernel_launch_correctness"]),
+     HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
+     + WRAPPER_THEOREMS,
+     ["add_kernel_correctness", "add_kernel_launch_correctness", "add_wrapper_correctness"]),
     ("bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean", VAC,
      [f"{VAC}.add_kernel_correctness", f"{VAC}.add_kernel_launch_correctness",
       f"{VAC}.add_kernel_launch_applicable"],
@@ -118,7 +131,8 @@ SURFACE_PRINTS = [
 VAC_SURFACE_PRINTS = [
     f"#print {VAC}._add_kernel", f"#print {VAC}.addCustomIO",
     f"#check @{VAC}.add_kernel_correctness", f"#check @{VAC}.add_kernel_launch_correctness",
-    f"#check @{VAC}.add_kernel_launch_applicable", f"#check @{VAC}.add_kernel_launch_traceSafe"]
+    f"#check @{VAC}.add_kernel_launch_applicable", f"#check @{VAC}.add_kernel_launch_traceSafe",
+    f"#check @{VAC}.custom_add_correctness"]
 AE_NS = "VeriTile.Bench.TritonBenchG.AddExample"
 # Whole-wrapper contract (frozen from its sorry state, stage 5).
 WRAPPER_SURFACE_PRINTS = [
@@ -144,7 +158,13 @@ WRAPPER_SURFACE_PRINTS = [
     "#check @VeriTile.Triton.Kernel.runSerial_agrees_merge",
     "#print VeriTile.Triton.Blocked1D.addrWrites",
     "#check @VeriTile.Triton.Blocked1D.launch_of_frames_addr",
-    f"#check @{AE_NS}.add_wrapper_correctness"]
+    f"#check @{AE_NS}.add_wrapper_correctness",
+    # stage 5b: dim-0 (rank-1) wrappers
+    "#print VeriTile.Triton.Elementwise2.launchDim0", "#print VeriTile.Triton.Elementwise2.Rank1",
+    "#check @VeriTile.Triton.Elementwise2.checkRank1_ok",
+    "#check @VeriTile.Triton.Elementwise2.checkRank1_complete",
+    "#check @VeriTile.Triton.Elementwise2.launchDim0_eq",
+    "#check @VeriTile.Triton.Elementwise2.launchDim0_not_covered"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("launch_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean", SURFACE_PRINTS),
             ("wrapper_surface.txt", "bench/tritonbench_g/add_example/AddExample.lean",

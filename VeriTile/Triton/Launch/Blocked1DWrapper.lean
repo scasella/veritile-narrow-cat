@@ -183,6 +183,45 @@ theorem Pre.inputs_cover {B : Nat} {x y out : TensorMeta} (h : Pre B x y out) :
   · exact Nat.le_refl _
   · simp [Elementwise2.launch, TensorMeta.numel, h.same_shape.1]
 
+/-! ### Dim-0 wrappers (`size = out.size(0)`)
+
+`vector_addition_custom.custom_add` launches over `c.size(0)` instead of
+`c.numel()`. Its supported API is therefore rank 1; on higher-rank tensors the
+launch covers only the first `size(0)` elements of the returned tensor. -/
+
+/-- The launch a dim-0 wrapper derives: `n = out.shape[0]`. -/
+def launchDim0 (B : Nat) (x y out : TensorMeta) : Blocked1DLaunch :=
+  { n := out.shape.headD 0, block := B, grid := [(out.shape.headD 0 + B - 1) / B],
+    inputs := [x.toBuf, y.toBuf], output := out.toBuf }
+
+/-- Rank-1 API: every tensor is one-dimensional. -/
+def Rank1 (x y out : TensorMeta) : Prop :=
+  x.shape.length = 1 ∧ y.shape.length = 1 ∧ out.shape.length = 1
+
+def checkRank1 (B : Nat) (x y out : TensorMeta) : Bool :=
+  x.shape.length == 1 && y.shape.length == 1 && out.shape.length == 1 && check B x y out
+
+theorem checkRank1_ok (B : Nat) (x y out : TensorMeta) (h : checkRank1 B x y out = true) :
+    Rank1 x y out ∧ Pre B x y out := by
+  sorry
+
+theorem checkRank1_complete (B : Nat) (x y out : TensorMeta) (hr : Rank1 x y out)
+    (h : Pre B x y out) : checkRank1 B x y out = true := by
+  sorry
+
+/-- On rank-1 tensors of equal shape the dim-0 launch is the `numel` launch. -/
+theorem launchDim0_eq {B : Nat} {x y out : TensorMeta} (hr : Rank1 x y out)
+    (h : Pre B x y out) : launchDim0 B x y out = Elementwise2.launch B x y out := by
+  sorry
+
+/-- **W1 fails beyond rank 1.** If the returned tensor has a leading dimension
+`d0 > 0` followed by dimensions of product greater than one, the dim-0 launch
+does not cover it: `n = d0 < numel`. -/
+theorem launchDim0_not_covered (B : Nat) (x y out : TensorMeta) (d0 : Nat) (rest : List Nat)
+    (hs : out.shape = d0 :: rest) (hd0 : 0 < d0) (hrest : 1 < rest.foldr (· * ·) 1) :
+    ¬ OutputCovered (launchDim0 B x y out) out := by
+  sorry
+
 end Elementwise2
 
 end VeriTile.Triton

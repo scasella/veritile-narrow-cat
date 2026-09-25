@@ -283,3 +283,28 @@ VeriTile.Bench.TritonBenchG.AddExample.add_wrapper_correctness : ∀ (x y out : 
                                       s)
                                     (fun i => if i < out.numel then some (flat, out.base / out.elemBytes + i) else none)
                                     fun i => xs i + ys i
+def VeriTile.Triton.Elementwise2.launchDim0 : ℕ →
+  VeriTile.Triton.TensorMeta →
+    VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → VeriTile.Triton.Blocked1DLaunch :=
+fun B x y out =>
+  { n := out.shape.headD 0, block := B, grid := [(out.shape.headD 0 + B - 1) / B], inputs := [x.toBuf, y.toBuf],
+    output := out.toBuf }
+def VeriTile.Triton.Elementwise2.Rank1 : VeriTile.Triton.TensorMeta →
+  VeriTile.Triton.TensorMeta → VeriTile.Triton.TensorMeta → Prop :=
+fun x y out => x.shape.length = 1 ∧ y.shape.length = 1 ∧ out.shape.length = 1
+VeriTile.Triton.Elementwise2.checkRank1_ok : ∀ (B : ℕ) (x y out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.checkRank1 B x y out = «true» →
+    VeriTile.Triton.Elementwise2.Rank1 x y out ∧ VeriTile.Triton.Elementwise2.Pre B x y out
+VeriTile.Triton.Elementwise2.checkRank1_complete : ∀ (B : ℕ) (x y out : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.Rank1 x y out →
+    VeriTile.Triton.Elementwise2.Pre B x y out → VeriTile.Triton.Elementwise2.checkRank1 B x y out = «true»
+@VeriTile.Triton.Elementwise2.launchDim0_eq : ∀ {B : ℕ} {x y out : VeriTile.Triton.TensorMeta},
+  VeriTile.Triton.Elementwise2.Rank1 x y out →
+    VeriTile.Triton.Elementwise2.Pre B x y out →
+      VeriTile.Triton.Elementwise2.launchDim0 B x y out = VeriTile.Triton.Elementwise2.launch B x y out
+VeriTile.Triton.Elementwise2.launchDim0_not_covered : ∀ (B : ℕ) (x y out : VeriTile.Triton.TensorMeta) (d0 : ℕ)
+  (rest : List ℕ),
+  out.shape = d0 :: rest →
+    0 < d0 →
+      1 < List.foldr (fun x1 x2 => x1 * x2) 1 rest →
+        ¬VeriTile.Triton.Elementwise2.OutputCovered (VeriTile.Triton.Elementwise2.launchDim0 B x y out) out

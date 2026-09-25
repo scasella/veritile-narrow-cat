@@ -97,3 +97,23 @@ VeriTile.Bench.TritonBenchG.VectorAdditionCustom.add_kernel_launch_traceSafe : �
                   VeriTile.Triton.Kernel.TraceSafe bounds
                     (VeriTile.Bench.TritonBenchG.VectorAdditionCustom._add_kernel A B C c.n c.block).toAlgKernel
                     (s.withGridIndex idx)
+VeriTile.Bench.TritonBenchG.VectorAdditionCustom.custom_add_correctness : ∀ (a b c : VeriTile.Triton.TensorMeta),
+  VeriTile.Triton.Elementwise2.checkRank1 16 a b c = «true» →
+    ∀ (A B C : VeriTile.Triton.RegionName) (s : VeriTile.Triton.BlockState) (xs ys : ℕ → ℝ),
+      (∀ i < a.numel, s.mem A i = VeriTile.Triton.MemCell.real (xs i)) →
+        (∀ i < b.numel, s.mem B i = VeriTile.Triton.MemCell.real (ys i)) →
+          (VeriTile.Triton.Kernel.LaunchCorrectFramed
+              (VeriTile.Bench.TritonBenchG.VectorAdditionCustom._add_kernel A B C (c.shape.headD 0) 16).toAlgKernel
+              { dims := (VeriTile.Triton.Elementwise2.launchDim0 16 a b c).grid } s
+              (fun i => if i < c.numel then some (C, i) else none) fun i => xs i + ys i) ∧
+            ∀ (bounds : VeriTile.Triton.RegionBounds),
+              a.numel ≤ bounds A →
+                b.numel ≤ bounds B →
+                  c.numel ≤ bounds C →
+                    ∀
+                      (idx :
+                        VeriTile.Triton.GridIndex { dims := (VeriTile.Triton.Elementwise2.launchDim0 16 a b c).grid }),
+                      VeriTile.Triton.Kernel.TraceSafe bounds
+                        (VeriTile.Bench.TritonBenchG.VectorAdditionCustom._add_kernel A B C (c.shape.headD 0)
+                            16).toAlgKernel
+                        (s.withGridIndex idx)
