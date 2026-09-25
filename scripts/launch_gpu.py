@@ -257,3 +257,73 @@ if __name__ == "__main__":  # dry run: TRITON_INTERPRET=1 python3 scripts/launch
     print(json.dumps({k: {kk: v.get(kk) for kk in ("exit_code", "kernel_source", "pinned_source_error")}
                       for k, v in r.items()}, indent=1, default=str))
     print(json.dumps(r, indent=1, default=str)[:6000])
+
+
+# ---------------------------------------------------------------------------
+# BLOCK_SIZE sweep (improvement candidate; NOT HANDOFF §B)
+#
+# Only the wrapper constant `BLOCK_SIZE = 4` changes; the kernel text and the
+# default compiler options (no num_warps override) are untouched. Selection rule,
+# fixed before any measurement: choose the BLOCK minimizing the median
+# end-to-end `empty_like` wrapper time at n = 2^24; any BLOCK within 2 % of that
+# minimum counts as tied and the smallest tied BLOCK is chosen. A BLOCK is
+# eligible only if every correctness case is bitwise equal with intact sentinels.
+SWEEP_BLOCKS = [4, 16, 64, 128, 256, 512, 1024, 2048, 4096]
+
+
+def block_sweep(repo: Path, device: str = "cuda", quick: bool = False) -> dict:
+    if device == "cuda":
+        assert os.environ.get("TRITON_INTERPRET") in (None, "", "0")
+        assert torch.cuda.get_device_capability() >= (8, 0)
+    torch.manual_seed(0)
+    blocks = [4, 16, 64] if quick else SWEEP_BLOCKS
+    sizes = [1 << 8, 1 << 10] if quick else [1 << 16, 1 << 20, 1 << 24]
+    sel_n = sizes[-1]
+    res = {"kind": "block_sweep (improvement candidate; NOT HANDOFF §B)", **env_info(device),
+           "input_hashes": LC.input_hashes(repo),
+           "text_changes": "wrapper constant `BLOCK_SIZE = 4` only" + (
+               "; plus tl.constexpr class annotation (CPU dry run)" if device == "cpu" else ""),
+           "selection_rule": (
+               f"min median empty_like-wrapper time at n={sel_n}; within 2% = tie -> smallest BLOCK; "
+               "eligible only if all correctness cases pass"), "blocks": {}}
+    for blk in blocks:
+        # CPU dry runs only: the interpreter rejects the pinned string annotation (REPORT finding 5).
+        sub = {**(VARIANT if device == "cpu" else {}), "    BLOCK_SIZE = 4\n": f"    BLOCK_SIZE = {blk}\n"}
+        z = LI.load_defs(repo / AE, sub)
+        e = LI.load_defs(repo / AE_IMPROVED, sub)
+        corr = {}
+        for n in [0, 1, 3, blk - 1, blk, blk + 1, 3 * blk + 5, (1 << 20) + 3]:
+            if n < 0:
+                continue
+            x, y = torch.randn(n, device=device), torch.randn(n, device=device)
+            buf = torch.full((n + 8,), SENTINEL, device=device)
+            e["add_kernel"][((n + blk - 1) // blk,)](x, y, buf[:n], n, blk)
+            sync(device)
+            wz, we = z["add_wrapper"](x, y), e["add_wrapper"](x, y)
+            corr[n] = {**compare(buf[:n], x + y), "sentinels_intact": bool((buf[n:] == SENTINEL).all()),
+                       "zeros_like_wrapper_equal": bool(torch.equal(wz, x + y)),
+                       "empty_like_wrapper_equal": bool(torch.equal(we, x + y))}
+        ok = all(c["bitwise_equal"] and c["sentinels_intact"] and c["zeros_like_wrapper_equal"]
+                 and c["empty_like_wrapper_equal"] for c in corr.values())
+        timings = []
+        for n in sizes:
+            x, y = torch.randn(n, device=device), torch.randn(n, device=device)
+            out = torch.empty_like(x)
+            g = ((n + blk - 1) // blk,)
+            kt = bench(lambda: e["add_kernel"][g](x, y, out, n, blk), device, quick)
+            timings.append({"n": n, "kernel": kt, "kernel_GBps": 12 * n / (kt["median_ms"] * 1e6),
+                            "zeros_like_wrapper": bench(lambda: z["add_wrapper"](x, y), device, quick),
+                            "empty_like_wrapper": bench(lambda: e["add_wrapper"](x, y), device, quick)})
+        res["blocks"][blk] = {"correct": ok, "correctness": corr, "timings": timings}
+    ref = []
+    for n in sizes:
+        x, y = torch.randn(n, device=device), torch.randn(n, device=device)
+        out = torch.empty_like(x)
+        ref.append({"n": n, "torch_add_out": bench(lambda: torch.add(x, y, out=out), device, quick),
+                    "torch_x_plus_y_alloc": bench(lambda: x + y, device, quick)})
+    res["torch_reference"] = ref
+    t = {b: r["timings"][-1]["empty_like_wrapper"]["median_ms"] for b, r in res["blocks"].items() if r["correct"]}
+    best = min(t.values())
+    res["selected_block"] = min(b for b, v in t.items() if v <= best * 1.02)
+    res["exit_code"] = 0 if all(r["correct"] for r in res["blocks"].values()) else 1
+    return res

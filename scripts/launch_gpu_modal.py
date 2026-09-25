@@ -3,7 +3,8 @@
 evidence files. Uploads only UPLOAD (the files `launch_local_check.input_hashes`
 names plus the harness and its imports) — no `.git`, `.lake`, or other files.
 
-    modal run scripts/launch_gpu_modal.py            # L4 (CC 8.9); timeout 900 s
+    modal run scripts/launch_gpu_modal.py            # §B/§B2 on L4 (CC 8.9); timeout 900 s
+    modal run scripts/launch_gpu_modal.py --mode sweep   # BLOCK_SIZE sweep -> block_sweep.json
     python3 scripts/launch_gpu_modal.py --list       # print the upload set, no Modal call
 
 Evidence (`launch_evidence/gpu.json`, `gpu_perf.json`, `gpu_extras.json`) is
@@ -45,11 +46,18 @@ def run() -> dict:
     return launch_gpu.run_all(Path(REMOTE), "cuda")
 
 
+@app.function(gpu=GPU, timeout=900)
+def sweep() -> dict:
+    sys.path.insert(0, f"{REMOTE}/scripts")
+    import launch_gpu
+    return {"block_sweep": launch_gpu.block_sweep(Path(REMOTE), "cuda")}
+
+
 @app.local_entrypoint()
-def main(out_dir: str = "") -> None:
-    res = run.remote()
+def main(out_dir: str = "", mode: str = "handoff") -> None:
+    res = {"handoff": run, "sweep": sweep}[mode].remote()
     evid = LC.EVID if not out_dir else Path(out_dir)
-    raw = Path(out_dir or "/Users/scasella/Downloads/kernel-claude/work/logs") / "28_gpu_raw.json"
+    raw = Path(out_dir or "/Users/scasella/Downloads/kernel-claude/work/logs") / f"gpu_raw_{mode}.json"
     raw.write_text(json.dumps(res, indent=1, default=str) + "\n")
     for key, rec in res.items():
         assert rec.get("input_hashes") == LOCAL_HASHES, f"{key}: remote hashes differ from local"

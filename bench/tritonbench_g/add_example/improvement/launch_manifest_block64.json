@@ -1,0 +1,192 @@
+{
+ "kernel": "add_kernel",
+ "wrapper": "add_wrapper",
+ "source": "add_example_block64.py",
+ "lean": "../AddExample.lean",
+ "lean_kernel": "add_kernel",
+ "lean_theorems": [
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable",
+  "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_correctness",
+  "VeriTile.Triton.Blocked1DLaunch.check_ok",
+  "VeriTile.Triton.Blocked1DLaunch.check_complete",
+  "VeriTile.Triton.Blocked1D.launch_of_frames"
+ ],
+ "cases": [
+  {
+   "name": "V1_test_case_1_n16",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 16,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 16,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V2_test_case_2_n8",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 8,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 8,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V3_test_case_3_n32",
+   "kind": "valid",
+   "tensors": {
+    "x": {
+     "numel": 32,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 32,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V4_test_case_4_empty",
+   "kind": "valid-empty",
+   "tensors": {
+    "x": {
+     "numel": 0,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 0,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V5_n3_below_block",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 3,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 3,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V6_n4_eq_block",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 4,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 4,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V7_n5_tail",
+   "kind": "valid-boundary",
+   "tensors": {
+    "x": {
+     "numel": 5,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 5,
+     "dtype": "float32"
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V8_n5_overprovisioned_grid3",
+   "kind": "valid-config-variant",
+   "tensors": {
+    "x": {
+     "numel": 5,
+     "dtype": "float32"
+    },
+    "y": {
+     "numel": 5,
+     "dtype": "float32"
+    }
+   },
+   "grid": [
+    3
+   ],
+   "expect": "accept"
+  },
+  {
+   "name": "V9_x_y_alias_readonly",
+   "kind": "valid-aliasing",
+   "tensors": {
+    "x": {
+     "numel": 9,
+     "dtype": "float32"
+    },
+    "y": {
+     "alias_of": "x",
+     "numel": 9
+    }
+   },
+   "expect": "accept"
+  },
+  {
+   "name": "V10_n_max_i32",
+   "kind": "valid-boundary",
+   "meta": {
+    "x": {
+     "base": 0,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    },
+    "y": {
+     "base": 1099511627776,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    },
+    "out": {
+     "base": 2199023255552,
+     "elemBytes": 4,
+     "stride": 1,
+     "capacity": 2147483647,
+     "dtype": "float32",
+     "numel": 2147483647,
+     "dim0": 2147483647,
+     "source": "supplied"
+    }
+   },
+   "expect": "accept"
+  }
+ ]
+}
