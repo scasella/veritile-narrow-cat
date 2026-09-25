@@ -357,3 +357,19 @@ VeriTile.Triton.Blocked1DLaunch.check_complete: axiom footprint ⊆ standard bas
  Quot.sound,
  Classical.choice])
 VeriTile.Triton.Blocked1DLaunch.check_ok: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound, Classical.choice])
+VeriTile.Triton.Blocked1D.launch_of_frames_addr: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Elementwise2.check_complete: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Elementwise2.check_ok: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound, Classical.choice])
+VeriTile.Triton.Elementwise2.launchDim0_not_covered: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
+VeriTile.Triton.Blocked1D.mergeFrames_liftFrames: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Kernel.runSerial_agrees_merge: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.StridedUnary.check_complete: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
+VeriTile.Triton.StridedUnary.check_ok: axiom footprint ⊆ standard base ✓  ([propext, Quot.sound])
