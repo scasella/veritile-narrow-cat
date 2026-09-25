@@ -26,7 +26,7 @@ Machine-readable counterpart: `launch_manifest.json` (cases) and
    upstream helper `bench/audit_source.lean_first_triton_body`, unwraps `$(x)`
    antiquotations, and the normalized statement lists must be identical.
    Trust: the recognizer, the normalizer, and the upstream `triton { }` macro
-   (DSL → AST) are trusted. Evidence: 22 unit tests incl. drift and rejection
+   (DSL → AST) are trusted. Evidence: 23 unit tests incl. drift and rejection
    cases; statement match recorded per run.
 2. **Wrapper ↔ `Blocked1DLaunch`** — `parse_launch` binds kernel parameters to
    wrapper expressions: `BLOCK_SIZE` must be an integer literal, `n_elements`

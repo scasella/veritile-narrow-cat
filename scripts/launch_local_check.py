@@ -52,7 +52,11 @@ AUDIT_TARGETS = None  # filled after HEADLINES
 PINNED_TOOLCHAIN = "leanprover/lean4:v4.29.0"
 UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 # Paths this project adds (anything else changed vs the pin fails the gate).
-ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "bench/tritonbench_g/add_example/",
+_AE = "bench/tritonbench_g/add_example/"
+ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D",
+                  *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
+                                      "launch_manifest.json", "launch_evidence/", "improvement/",
+                                      ".gitignore")),
                   "bench/tests/Blocked1DLaunchWitnesses.lean",
                   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json",
                   "scripts/launch_", "scripts/test_launch_check.py")
@@ -65,6 +69,11 @@ ADDITIVE = {"VeriTile/Triton/Launch.lean": "prefix",
             "VeriTile/Triton/Launch/Composition.lean": "before-final-end",
             "bench/tritonbench_g/add_example/AddExample.lean": "namespace-body",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "namespace-body"}
+# Pinned sources that must be byte-identical to the upstream pin.
+PINNED_EXACT = ("bench/tritonbench_g/add_example/add_example.py",
+                "bench/tritonbench_g/add_example/README.md",
+                "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py",
+                "bench/tritonbench_g/vector_addition_custom/README.md")
 PINNED_MATHLIB = "8a178386ffc0f5fef0b77738bb5449d50efeea95"
 HEADLINES = ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_correctness",
              "VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_applicable",
@@ -235,6 +244,10 @@ def pin_integrity(root: Path) -> list[str]:
         if f.startswith(ADDED_PREFIXES) or f.startswith(REGISTRIES) or f in ADDITIVE:
             continue
         problems.append(f"undeclared change: {f}")
+    for f in PINNED_EXACT:
+        if (root / f).read_bytes() != subprocess.run(["git", "show", f"{UPSTREAM_PIN}:{f}"], cwd=REPO,
+                                                     capture_output=True).stdout:
+            problems.append(f"pinned source differs from upstream: {f}")
     for f, mode in ADDITIVE.items():
         orig = git("show", f"{UPSTREAM_PIN}:{f}")
         cur = (root / f).read_text()
@@ -438,9 +451,14 @@ def main(argv=None) -> int:
                    "KERNEL_MANIFEST=scripts/kernel-manifest.tsv; check_kernel_manifest; "
                    "exit $failures"], root, 600, logs / "kernel_manifest.log")
     rc3, o3 = run([sys.executable, "scripts/spec_sheet.py"], root, 600, logs / "spec_sheet.log")
-    sheets = subprocess.run(["git", "status", "--porcelain", "bench/tritonbench_g/_spec-sheets"],
-                            cwd=root if (root / ".git").exists() else REPO,
-                            capture_output=True, text=True).stdout.strip() if root == REPO else ""
+    if root == REPO:
+        sheets = subprocess.run(["git", "status", "--porcelain", "bench/tritonbench_g/_spec-sheets"],
+                                cwd=REPO, capture_output=True, text=True).stdout.strip()
+    else:  # fresh copy: regenerated sheets must equal the committed ones in the repo
+        sd = "bench/tritonbench_g/_spec-sheets"
+        sheets = " ".join(sorted(p.name for p in (root / sd).iterdir()
+                                 if not (REPO / sd / p.name).exists()
+                                 or (REPO / sd / p.name).read_bytes() != p.read_bytes()))
     ok = rc1 == 0 and rc2 == 0 and rc3 == 0 and "self-ref-flagged: 0 | no-summary: 0" in o3 and not sheets
     steps[s.key] = s.done("passed" if ok else "failed", str((logs / "proof_gap_manifest.log").relative_to(REPO)),
                           f"proof-gap rc={rc1}, kernel-manifest rc={rc2}, spec-sheet rc={rc3}"

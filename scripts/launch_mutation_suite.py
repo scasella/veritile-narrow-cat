@@ -201,6 +201,12 @@ def source_mutants():
     record("B1_comment_only_edit", "benign", "comment edit in wrapper",
            "accepted" if acc else "infrastructure_failure",
            f"verdicts unchanged; add_example.py hash changes → ledger/external evidence STALE")
+    imp = L.analyze(KDIR / "improvement/launch_manifest.json")
+    acc = all(c["accepted"] and not c["wrapper_failures"] for c in imp["cases"].values())
+    record("B3_empty_like_code_change", "benign", "out = torch.empty_like(x) (Phase-5 candidate)",
+           "accepted" if acc else "infrastructure_failure",
+           f"{len(imp['cases'])} configurations accepted, W1 holds; justified by "
+           "add_kernel_launch_initial_output_irrelevant")
     try:
         with_manifest(src.replace("output = x + y", "result = x + y").replace(
             "tl.store(out_ptr + offsets, output, mask=mask)",
@@ -315,6 +321,16 @@ def pipeline_mutants(scratch: Path):
     record("E9_upstream_pin_edit", "pipeline", "weaken GridLaunchedOrdinary.h_disjoint in pinned code",
            "evidence_rejection" if probs else "accepted",
            "; ".join(probs) if probs else "UNDETECTED")
+    # E10 edit to the pinned Python source (scratch copy): pin gate rejects
+    for f in LC.PINNED_EXACT:
+        (pin_root / f).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / f, pin_root / f)
+    shutil.copy2(REPO / "VeriTile/Triton/Launch/Composition.lean", comp)  # undo E9 edit
+    py = pin_root / "bench/tritonbench_g/add_example/add_example.py"
+    py.write_text(py.read_text().replace("BLOCK_SIZE = 4", "BLOCK_SIZE = 8", 1))
+    probs = LC.pin_integrity(pin_root)
+    record("E10_pinned_source_edit", "pipeline", "BLOCK_SIZE = 8 in add_example.py (scratch copy)",
+           "evidence_rejection" if probs else "accepted", "; ".join(probs) if probs else "UNDETECTED")
     # E8 unavailable required tool: adapter without lake on PATH
     env = {k: v for k, v in os.environ.items()}
     env["PATH"] = "/usr/bin:/bin"
