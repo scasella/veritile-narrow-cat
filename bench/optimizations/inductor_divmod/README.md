@@ -45,9 +45,15 @@ Every configuration was valid in both rounds:
 - the rewrite fired on the one divmod kernel;
 - one Dynamo graph and one kernel, the same as B0.
 
-**Against cached static compilation,** which is valid only when the set of shapes is known in advance, static is
-still faster at sustained load: 1.29× / 1.37× over N. Its cold sequence costs 25.2 s against about 9–10 s for N
-(14 compiles against 1). The extra 15–16 s pays back after roughly 33,000–44,000 calls on this sequence.
+**Against cached static compilation,** static is still faster at sustained load: 1.29× / 1.37× over N. Static
+compilation is a different cost profile, not a mode limited to a known shape set: it specializes and caches a
+new kernel as each new shape arrives. On this 14-shape sequence its cold pass costs 25.2 s against about 9–10 s
+for N (14 compiles against 1). The extra 15–16 s pays back after roughly 33,000–44,000 calls. That break-even
+is specific to this workload: a small, repeated shape set favours static, and a stream that keeps presenting
+new shapes favours the reusable dynamic kernel.
+
+*Correction (stage 13):* an earlier version of this paragraph called static compilation "valid only when the
+set of shapes is known in advance". That was wrong.
 
 ## Why the proved fast division did not transfer, and what did
 
