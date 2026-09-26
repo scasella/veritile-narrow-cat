@@ -325,6 +325,7 @@ def input_files() -> list:
                         # checked-execution latency (stage 9)
                         "scripts/launch_fast.py", "scripts/launch_latency.py", "scripts/launch_latency_modal.py",
                         "scripts/launch_probe.py", "scripts/launch_select.py",
+                        "scripts/launch_rotary.py", "scripts/launch_rotary_modal.py",
                         "bench/tritonbench_g/add_example/improvement/relu_masked.py",
                         "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                         "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py",
@@ -409,6 +410,9 @@ def evidence_deps(name: str, root: Path = REPO):
         "workload_probe.json": LATENCY + ["scripts/launch_probe.py",
                                           "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                                           "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py"],
+        "rotary_bench.json": ["scripts/launch_rotary.py", "scripts/launch_rotary_modal.py",
+                              "scripts/launch_interpret.py",
+                              "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py"],
         "fast_check_differential.json": ["scripts/launch_fast.py", "scripts/launch_invoke.py", "scripts/launch_fused.py"]
         + PY_CORE + lean("VeriTile/Triton/Launch/Blocked1DWrapper.lean"),
     }.get(name)
