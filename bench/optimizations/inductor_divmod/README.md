@@ -101,6 +101,26 @@ ran on the L4: both branches, since the `else` keeps the original body.
    compiler (N) or too costly to compute in the kernel (F). Passing host-computed constants would change
    Inductor's launch signature and wrapper, which this stage deliberately did not do.
 
+**Correction (stage 13): the SASS table above is at an assumed config, not the timed one.**
+- **What stage 12 assumed.** All the counts above are at XBLOCK=1024 with 4 warps; stage 12 did not record the
+  autotuned configs.
+- **What stage 13 recorded.** On the same L4 stack, B0 and guarded N autotuned to **XBLOCK=512 with 8 warps**.
+  At that config, recompiled locally (`inductor_narrow/local_checks.json`):
+
+  | | instructions per thread | registers | 64-bit division slow-path calls |
+  |---|---|---|---|
+  | B0 | 520 | 40 | 2 |
+  | guarded N (full kernel) | 848 | 40 | 2 |
+  | F (full kernel) | 1056 | 40 | 3 |
+  | NF (full kernel) | 968 | 40 | 3 |
+
+- **F/NF's timed configs are unknown.** They were never recorded. The F/NF rows above assume they autotuned as
+  B0 did.
+- **The 128-register confound is config-dependent.** It exists at 1024/4 only. If F and NF ran at 512/8, it did
+  not apply to the timed runs, and their loss would come from instruction count rather than occupancy.
+- **The branch-to-branch conclusion stands,** because it does not depend on the config: NF's fast branch does
+  more work than N's.
+
 ## Proof conditions of the selected version (N), and what is proved
 
 **N is not the Lean-proved transformation.** Its correctness rests on the following argument, and on tests.

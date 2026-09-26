@@ -56,7 +56,10 @@ def stats(src, tag, xblock, warps):
 
 if __name__ == "__main__":
     n1_src, n1_rec = NR.rewrite_n1(SRC, {"eligible": True, "checks": {"H1": True, "H2": True, "H3": True, "H4": True}})
-    variants = {"B0": SRC, "N_guarded": R.rewrite(SRC, "N")[0], "N1": n1_src}
+    variants = {"B0": SRC, "N_guarded": R.rewrite(SRC, "N")[0], "N1": n1_src,
+                # stage-12 F/NF full kernels, for the register confound at B0's timed config (their own autotuned
+                # configs were not recorded; 512/8 is an assumption that they autotuned as B0 did)
+                "F_guarded": R.rewrite(SRC, "F")[0], "NF_guarded": R.rewrite(SRC, "NF")[0]}
     out = {"n1_rewrite": {k: v for k, v in n1_rec.items() if k != "eligibility"}, "sm_89": {}}
     for name, src in variants.items():
         out["sm_89"][name] = {f"XBLOCK={xb},warps={w}": stats(src, name, xb, w) for xb, w in ((1024, 4), (512, 4), (256, 4), (512, 8))}

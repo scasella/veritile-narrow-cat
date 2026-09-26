@@ -86,15 +86,21 @@ counts):
 | | autotuned config | registers | SASS per thread | elements per thread | SASS per element | 64-bit division slow-path calls |
 |---|---|---|---|---|---|---|
 | B0 | XBLOCK 512, 8 warps | 40 | 520 | 2 | 260 | 2 |
-| guarded N | XBLOCK 512, 8 warps | 40 | 848 (incl. the dead fallback) | 2 | 424 | 2 (in the fallback) |
+| guarded N | XBLOCK 512, 8 warps | 40 | 848, of which about 520 is the fallback body (proved never to run) | 2 | about 164 executed (estimate: (848 − 520) / 2) | 2 (in the fallback) |
 | N1 | XBLOCK 1024, 4 warps | 48 | 1080 | 8 | 135 | 0 |
 
 - **Correction to stage 12.** Stage 12's SASS table assumed 1024/4. Autotuning actually chose 512/8 for B0 and N.
-- **Not captured.** The L4 cubins were not captured (empty compile results in the parent process). The Triton
-  cache hashes were recorded.
+  The stage-12 README now carries a correction block.
+- **Recompilation is not guaranteed byte-identical.** The three autotuned kernels' register counts match the L4
+  record exactly. Fixed-mode guarded N recorded 92 registers on the L4 against 90 locally.
+- **Not captured: cubins.** The L4 cubins were not captured, because compile results are empty in the parent
+  process after asynchronous compilation. The Triton cache hashes were recorded. A future run should read
+  `$TRITON_CACHE_DIR/<launcher.cache_hash>/*.cubin` before its temporary cache directory is removed.
 
 **Beyond the guard** (numel = 2^31, about 17 GB peak). In B0, N and N1 alike:
-- Dynamo recompiled, and Inductor emitted an `xnumel: i64` kernel.
+- Dynamo recompiled, and Inductor emitted an `xnumel: i64` kernel. The evidence is that new kernel definition: the
+  guard-failure (recompile-reason) text was **not captured**, because the log handler recorded no recompile
+  message.
 - No rewrite fired. N1 declined at the structural check, because the int64 kernel's prologue differs.
 - The output was bitwise equal to eager.
 

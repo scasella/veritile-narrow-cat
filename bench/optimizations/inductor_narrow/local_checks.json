@@ -204,6 +204,138 @@
      "u32"
     ]
    }
+  },
+  "F_guarded": {
+   "XBLOCK=1024,warps=4": {
+    "instructions": 3448,
+    "IMAD": 1081,
+    "I2F_F2I_MUFU": 30,
+    "CALL": 17,
+    "regs": 128,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=4": {
+    "instructions": 1880,
+    "IMAD": 565,
+    "I2F_F2I_MUFU": 18,
+    "CALL": 9,
+    "regs": 56,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=256,warps=4": {
+    "instructions": 1056,
+    "IMAD": 317,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 3,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=8": {
+    "instructions": 1056,
+    "IMAD": 317,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 3,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   }
+  },
+  "NF_guarded": {
+   "XBLOCK=1024,warps=4": {
+    "instructions": 3088,
+    "IMAD": 958,
+    "I2F_F2I_MUFU": 30,
+    "CALL": 17,
+    "regs": 128,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=4": {
+    "instructions": 1720,
+    "IMAD": 497,
+    "I2F_F2I_MUFU": 18,
+    "CALL": 9,
+    "regs": 56,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=256,warps=4": {
+    "instructions": 968,
+    "IMAD": 295,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 3,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=8": {
+    "instructions": 968,
+    "IMAD": 295,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 3,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   }
   }
  }
 }
