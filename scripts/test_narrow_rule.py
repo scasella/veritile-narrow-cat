@@ -140,5 +140,39 @@ class C2(unittest.TestCase):
         self.assertFalse(recs[0]["eligible"])
 
 
+def _upstream_module():
+    """The module exactly as the upstream patch adds it (parsed out of the .patch file)."""
+    import types
+    patch = (REPO / "bench/optimizations/inductor_narrow/upstream/selective_ks_narrowing.patch").read_text()
+    sec = patch.split("+++ b/torch/_inductor/codegen/triton_size_arg_narrowing.py", 1)[1]
+    sec = sec.split("\ndiff ", 1)[0]
+    src = "\n".join(ln[1:] for ln in sec.splitlines()[2:] if ln.startswith("+"))
+    mod = types.ModuleType("triton_size_arg_narrowing")
+    exec(compile(src, "triton_size_arg_narrowing.py", "exec"), mod.__dict__)
+    return mod
+
+
+class UpstreamBinding(unittest.TestCase):
+    """The upstream recognizer pins exactly the IR the Lean theorem is about."""
+
+    def test_same_ir_as_lean_extractor(self):
+        import re as _re
+        import textwrap
+        up = _upstream_module()
+        d = SRC[SRC.index("\ndef "):].split("\n", 2)
+        args = [a.split(":")[0].strip() for a in _re.search(r"\((.*)\):", d[1]).group(1).split(",")]
+        body = textwrap.dedent(d[2])
+        u_args, u_store, u_dead = up._canonical(args, body)
+        self.assertEqual(up.canonical_sha256(args, body), up._PROVED_CAT6_SHA256)
+
+        def norm(n):  # upstream spells dtypes "tl.int32"/"tl.int64"; the Lean extractor spells "i32"/"i64"
+            if isinstance(n, tuple):
+                return tuple(norm(x) for x in n)
+            return {"tl.int32": "i32", "tl.int64": "i64"}.get(n, n)
+        self.assertEqual(norm(u_store), R.PROVED["store"])
+        self.assertEqual(dict(norm(u_dead)), R.PROVED["dead_ir"])
+        self.assertEqual(list(u_args), R.PROVED["kernel_args"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
