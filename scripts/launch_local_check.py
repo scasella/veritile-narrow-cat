@@ -54,7 +54,9 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "bench/tests/Blocked1DLaunchWitnesses.lean",
             "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
             "VeriTile/Triton/Launch/Relational.lean",
-            "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean"]
+            "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
+            "VeriTile/Triton/Launch/FastDiv.lean",
+            "bench/optimizations/cat_repack/CatRepack.lean"]
 VAC = "VeriTile.Bench.TritonBenchG.VectorAdditionCustom"
 WIT = "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses"
 # (file, namespace for the inventory, theorems that must be axiom-clean, required inventory)
@@ -65,7 +67,8 @@ UPSTREAM_PIN = "95a01f598e2cd1cac4052e5e5ff9145c658e18db"
 _AE = "bench/tritonbench_g/add_example/"
 ADDED_PREFIXES = ("VeriTile/Triton/Launch/Blocked1D", "VeriTile/Triton/Launch/Serial.lean",
                   "VeriTile/Triton/Launch/StridedUnary.lean", "VeriTile/Triton/Launch/StridedUnaryFlat.lean",
-                  "VeriTile/Triton/Launch/Relational.lean",
+                  "VeriTile/Triton/Launch/Relational.lean", "VeriTile/Triton/Launch/FastDiv.lean",
+                  "bench/optimizations/",
                   "VeriTile/Triton/Launch/Line3.lean",
                   "bench/tritonbench_g/relu_strided_buffer/WRAPPER_CONTRACT.md",
                   *(_AE + f for f in ("CONTRACT.md", "SOURCE_LINK.md", "HANDOFF.md", "LAUNCH_README.md",
@@ -115,6 +118,7 @@ WRAPPER_THEOREMS = [f"VeriTile.Bench.TritonBenchG.AddExample.{t}" for t in (
 
 FUSED = "VeriTile.Bench.TritonBenchG.AddReluFused"
 REL = "VeriTile.Bench.TritonBenchG.AddReluRelational"
+CAT = "VeriTile.Bench.Optimizations.CatRepack"
 AUDIT_TARGETS = [
     ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
      HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
@@ -153,6 +157,11 @@ AUDIT_TARGETS = [
                             "relu_kernel_programRuns", "add_relu_kernel_programRuns")]
      + [f"VeriTile.Triton.Blocked1D.{t}" for t in ("launch_of_programRuns", "fused_agrees_two_launch")],
      ["add_relu_fusion_relational"]),
+    ("bench/optimizations/cat_repack/CatRepack.lean", CAT,
+     [f"{CAT}.{t}" for t in ("cat_repack_launch_correctness", "repack_lane_correct", "nestedCat_eq_flat")]
+     + [f"VeriTile.Triton.FastDiv.{t}" for t in ("magic_quotient", "magic_lt", "sum_lt", "bitvec_quotient",
+                                                "shiftFor_spec")],
+     ["cat_repack_launch_correctness"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
@@ -278,6 +287,20 @@ REL_SURFACE_PRINTS = [
     "#print VeriTile.Bench.TritonBenchG.AddReluRelational.add_kernel",
     "#print VeriTile.Bench.TritonBenchG.AddReluRelational.relu_kernel",
     "#check @VeriTile.Bench.TritonBenchG.AddReluRelational.add_relu_fusion_relational"]
+# Dynamic-width concatenation, fast division (frozen from its sorry state, stage 11).
+CAT_SURFACE_PRINTS = [
+    "#print VeriTile.Triton.FastDiv.shiftFor", "#print VeriTile.Triton.FastDiv.magic",
+    "#print VeriTile.Triton.FastDiv.quot", "#print VeriTile.Triton.FastDiv.umulhi32",
+    "#check @VeriTile.Triton.FastDiv.shiftFor_spec", "#check @VeriTile.Triton.FastDiv.magic_quotient",
+    "#check @VeriTile.Triton.FastDiv.magic_lt", "#check @VeriTile.Triton.FastDiv.sum_lt",
+    "#check @VeriTile.Triton.FastDiv.bitvec_quotient",
+    "#print VeriTile.Bench.Optimizations.CatRepack.segCat", "#print VeriTile.Bench.Optimizations.CatRepack.flat",
+    "#print VeriTile.Bench.Optimizations.CatRepack.catSpec",
+    "#print VeriTile.Bench.Optimizations.CatRepack.nestedCat",
+    "#print VeriTile.Bench.Optimizations.CatRepack.repack_fastdiv",
+    "#check @VeriTile.Bench.Optimizations.CatRepack.nestedCat_eq_flat",
+    "#check @VeriTile.Bench.Optimizations.CatRepack.repack_lane_correct",
+    "#check @VeriTile.Bench.Optimizations.CatRepack.cat_repack_launch_correctness"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),
@@ -289,7 +312,8 @@ SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluSt
             ("fused_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
              FUSED_SURFACE_PRINTS),
             ("relational_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
-             REL_SURFACE_PRINTS)]
+             REL_SURFACE_PRINTS),
+            ("cat_surface.txt", "bench/optimizations/cat_repack/CatRepack.lean", CAT_SURFACE_PRINTS)]
 
 
 def sha(p: Path) -> str:
@@ -327,6 +351,7 @@ def input_files() -> list:
                         "scripts/launch_probe.py", "scripts/launch_select.py",
                         "scripts/launch_rotary.py", "scripts/launch_rotary_modal.py",
                         "scripts/launch_cat.py", "scripts/launch_cat_modal.py", "scripts/launch_addrelu_followup.py",
+                        "bench/optimizations/cat_repack/cat_repack.py",
                         "bench/tritonbench_g/add_example/improvement/relu_masked.py",
                         "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                         "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py",

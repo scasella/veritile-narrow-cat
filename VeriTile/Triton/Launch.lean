@@ -15,3 +15,4 @@ import VeriTile.Triton.Launch.StridedUnary
 import VeriTile.Triton.Launch.Line3
 import VeriTile.Triton.Launch.StridedUnaryFlat
 import VeriTile.Triton.Launch.Relational
+import VeriTile.Triton.Launch.FastDiv

@@ -1,0 +1,285 @@
+def VeriTile.Triton.FastDiv.shiftFor : ℕ → ℕ :=
+fun d => VeriTile.Triton.FastDiv.shiftFor.go d 0 33
+def VeriTile.Triton.FastDiv.magic : ℕ → ℕ :=
+fun d => 2 ^ 32 * (2 ^ VeriTile.Triton.FastDiv.shiftFor d - d) / d + 1
+def VeriTile.Triton.FastDiv.quot : ℕ → ℕ → ℕ :=
+fun d x => (x * VeriTile.Triton.FastDiv.magic d / 2 ^ 32 + x) / 2 ^ VeriTile.Triton.FastDiv.shiftFor d
+def VeriTile.Triton.FastDiv.umulhi32 : BitVec 32 → BitVec 32 → BitVec 32 :=
+fun a b => BitVec.ofNat 32 (a.toNat * b.toNat / 2 ^ 32)
+@VeriTile.Triton.FastDiv.shiftFor_spec : ∀ {d : ℕ},
+  0 < d →
+    d ≤ 2 ^ 32 →
+      d ≤ 2 ^ VeriTile.Triton.FastDiv.shiftFor d ∧
+        (VeriTile.Triton.FastDiv.shiftFor d = 0 ∨ 2 ^ (VeriTile.Triton.FastDiv.shiftFor d - 1) < d)
+@VeriTile.Triton.FastDiv.magic_quotient : ∀ {d x : ℕ},
+  0 < d → d < 2 ^ 31 → x < 2 ^ 31 → VeriTile.Triton.FastDiv.quot d x = x / d
+@VeriTile.Triton.FastDiv.magic_lt : ∀ {d : ℕ}, 0 < d → d < 2 ^ 31 → VeriTile.Triton.FastDiv.magic d < 2 ^ 32
+@VeriTile.Triton.FastDiv.sum_lt : ∀ {d x : ℕ},
+  0 < d → d < 2 ^ 31 → x < 2 ^ 31 → x * VeriTile.Triton.FastDiv.magic d / 2 ^ 32 + x < 2 ^ 32
+@VeriTile.Triton.FastDiv.bitvec_quotient : ∀ {d x : ℕ},
+  0 < d →
+    d < 2 ^ 31 →
+      x < 2 ^ 31 →
+        ((VeriTile.Triton.FastDiv.umulhi32 (BitVec.ofNat 32 x) (BitVec.ofNat 32 (VeriTile.Triton.FastDiv.magic d)) +
+                BitVec.ofNat 32 x) >>>
+              VeriTile.Triton.FastDiv.shiftFor d).toNat =
+          x / d
+def VeriTile.Bench.Optimizations.CatRepack.segCat : List (ℕ × (ℕ → ℝ)) → ℕ → ℕ → ℝ :=
+fun x x_1 x_2 =>
+  List.brecOn (motive := fun x => ℕ → ℕ → ℝ) x
+    (fun x f x_3 x_4 =>
+      (match (motive := (x : List (ℕ × (ℕ → ℝ))) → ℕ → ℕ → List.below (motive := fun x => ℕ → ℕ → ℝ) x → ℝ) x, x_3,
+          x_4 with
+        | [], x, x_5 => fun x => 0
+        | (w, f) :: rest, r, c => fun x => if c < w then f (r * w + c) else x.1 r (c - w))
+        f)
+    x_1 x_2
+def VeriTile.Bench.Optimizations.CatRepack.flat : ℕ → (ℕ → ℕ → ℝ) → ℕ → ℝ :=
+fun w g i => g (i / w) (i % w)
+def VeriTile.Bench.Optimizations.CatRepack.catSpec : ℕ →
+  ℕ → ℕ → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → ℕ → ℕ → ℝ :=
+fun wq wk wv Q1 K1 VA1 VB1 Q2 K2 VA2 VB2 =>
+  VeriTile.Bench.Optimizations.CatRepack.segCat
+    [(wq, Q1), (wk, K1), (wv, fun i => VA1 i + VB1 i), (wq, Q2), (wk, K2), (wv, fun i => VA2 i + VB2 i)]
+def VeriTile.Bench.Optimizations.CatRepack.nestedCat : ℕ →
+  ℕ → ℕ → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → (ℕ → ℝ) → ℕ → ℕ → ℝ :=
+fun wq wk wv Q1 K1 VA1 VB1 Q2 K2 VA2 VB2 =>
+  have G := wq + wk + wv;
+  VeriTile.Bench.Optimizations.CatRepack.segCat
+    [(G,
+        VeriTile.Bench.Optimizations.CatRepack.flat G
+          (VeriTile.Bench.Optimizations.CatRepack.segCat [(wq, Q1), (wk, K1), (wv, fun i => VA1 i + VB1 i)])),
+      (G,
+        VeriTile.Bench.Optimizations.CatRepack.flat G
+          (VeriTile.Bench.Optimizations.CatRepack.segCat [(wq, Q2), (wk, K2), (wv, fun i => VA2 i + VB2 i)]))]
+def VeriTile.Bench.Optimizations.CatRepack.repack_fastdiv : VeriTile.Triton.RegionName →
+  VeriTile.Triton.RegionName →
+    VeriTile.Triton.RegionName →
+      VeriTile.Triton.RegionName →
+        VeriTile.Triton.RegionName →
+          VeriTile.Triton.RegionName →
+            VeriTile.Triton.RegionName →
+              VeriTile.Triton.RegionName →
+                VeriTile.Triton.RegionName → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → ℕ → VeriTile.Triton.ComputeKernel :=
+fun q1 k1 va1 vb1 q2 k2 va2 vb2 out wq wk wv total magic shift BLOCK =>
+  VeriTile.Triton.ComputeKernel.mk [q1, q2, k1, k2, va1, vb1, va2, vb2] [out]
+    [VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "x"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarL
+            (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil
+              (VeriTile.Triton.Op.programId 0) (VeriTile.Triton.Op.constNat BLOCK))
+            (VeriTile.Triton.Op.arange BLOCK))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK] "xm"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "x") (VeriTile.Triton.Op.constNat total))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "W"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.constNat (2 * (wq + wk + wv)))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "row"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.shiftRight VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil.consSame
+              (VeriTile.Triton.Op.shiftRight VeriTile.Triton.Broadcast.scalarR
+                (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "x")
+                  (VeriTile.Triton.Op.constNat magic))
+                (VeriTile.Triton.Op.constNat 32))
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "x"))
+            (VeriTile.Triton.Op.constNat shift))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "c"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.sub VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "x")
+            (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "row")
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "W")))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [] "G"
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.constNat (wq + wk + wv))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK] "g2"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.ge VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "c")
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "G"))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "cc"
+        (VeriTile.Triton.ComputeExpr.alg
+          ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").where
+            (VeriTile.Triton.Op.sub VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "c")
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [] "G"))
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "c"))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK] "mq"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "xm")
+            (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc") (VeriTile.Triton.Op.constNat wq)))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK] "mk"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "xm")
+              (VeriTile.Triton.Op.ge VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc") (VeriTile.Triton.Op.constNat wq)))
+            (VeriTile.Triton.Op.lt VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc")
+              (VeriTile.Triton.Op.constNat (wq + wk))))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.bool [BLOCK] "mv"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "xm")
+            (VeriTile.Triton.Op.ge VeriTile.Triton.ComparableDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc")
+              (VeriTile.Triton.Op.constNat (wq + wk))))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "oq"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "row") (VeriTile.Triton.Op.constNat wq))
+            (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc"))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "ok"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "row") (VeriTile.Triton.Op.constNat wk))
+            (VeriTile.Triton.Op.sub VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc") (VeriTile.Triton.Op.constNat wq)))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.nat [BLOCK] "ov"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.mul VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "row") (VeriTile.Triton.Op.constNat wv))
+            (VeriTile.Triton.Op.sub VeriTile.Triton.NumericDType.nat VeriTile.Triton.Broadcast.scalarR
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "cc")
+              (VeriTile.Triton.Op.constNat (wq + wk))))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "q_a"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region q1 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "oq"))
+            (VeriTile.Triton.MaskOpt.maskOther
+              (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mq")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").boolNot)
+              ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "q_b"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region q2 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "oq"))
+            (VeriTile.Triton.MaskOpt.maskOther
+              (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mq")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2"))
+              ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "k_a"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region k1 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ok"))
+            (VeriTile.Triton.MaskOpt.maskOther
+              (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mk")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").boolNot)
+              ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "k_b"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+            (VeriTile.Triton.MemAccess.region k2 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ok"))
+            (VeriTile.Triton.MaskOpt.maskOther
+              (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mk")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2"))
+              ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "v_a"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.real VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+              (VeriTile.Triton.MemAccess.region va1 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ov"))
+              (VeriTile.Triton.MaskOpt.maskOther
+                (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mv")
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").boolNot)
+                ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))
+            (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+              (VeriTile.Triton.MemAccess.region vb1 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ov"))
+              (VeriTile.Triton.MaskOpt.maskOther
+                (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mv")
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").boolNot)
+                ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK]))))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "v_b"
+        (VeriTile.Triton.ComputeExpr.alg
+          (VeriTile.Triton.Op.add VeriTile.Triton.NumericDType.real VeriTile.Triton.Broadcast.nil.consSame
+            (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+              (VeriTile.Triton.MemAccess.region va2 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ov"))
+              (VeriTile.Triton.MaskOpt.maskOther
+                (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mv")
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2"))
+                ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK])))
+            (VeriTile.Triton.Op.load VeriTile.Triton.TileDType.real
+              (VeriTile.Triton.MemAccess.region vb2 (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "ov"))
+              (VeriTile.Triton.MaskOpt.maskOther
+                (VeriTile.Triton.Op.boolAnd VeriTile.Triton.Broadcast.nil.consSame
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mv")
+                  (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2"))
+                ((VeriTile.Triton.Op.const 0.0).broadcast [BLOCK]))))),
+      VeriTile.Triton.ComputeStmt.assign VeriTile.Triton.TileDType.real [BLOCK] "val"
+        (VeriTile.Triton.ComputeExpr.alg
+          ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mq").where
+            ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").where
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "q_b")
+              (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "q_a"))
+            ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "mk").where
+              ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").where
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "k_b")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "k_a"))
+              ((VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "g2").where
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "v_b")
+                (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "v_a"))))),
+      VeriTile.Triton.ComputeStmt.store VeriTile.Triton.TileDType.real [BLOCK]
+        (VeriTile.Triton.MemAccess.region out (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.nat [BLOCK] "x"))
+        (VeriTile.Triton.ComputeExpr.alg (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.real [BLOCK] "val"))
+        (VeriTile.Triton.MaskOpt.mask (VeriTile.Triton.Op.ref VeriTile.Triton.TileDType.bool [BLOCK] "xm"))]
+VeriTile.Bench.Optimizations.CatRepack.nestedCat_eq_flat : ∀ (wq wk wv : ℕ) (Q1 K1 VA1 VB1 Q2 K2 VA2 VB2 : ℕ → ℝ)
+  (r c : ℕ),
+  c < 2 * (wq + wk + wv) →
+    VeriTile.Bench.Optimizations.CatRepack.nestedCat wq wk wv Q1 K1 VA1 VB1 Q2 K2 VA2 VB2 r c =
+      VeriTile.Bench.Optimizations.CatRepack.catSpec wq wk wv Q1 K1 VA1 VB1 Q2 K2 VA2 VB2 r c
+VeriTile.Bench.Optimizations.CatRepack.repack_lane_correct : ∀
+  (q1 k1 va1 vb1 q2 k2 va2 vb2 out : VeriTile.Triton.RegionName) (n wq wk wv BLOCK : ℕ),
+  0 < wq + wk + wv →
+    n * (2 * (wq + wk + wv)) < 2 ^ 31 →
+      ∀ (s : VeriTile.Triton.BlockState) (i : Fin BLOCK),
+        have W := 2 * (wq + wk + wv);
+        have x := s.pid * BLOCK + ↑i;
+        VeriTile.Examples.observeAt
+            (VeriTile.Triton.exec
+              (VeriTile.Bench.Optimizations.CatRepack.repack_fastdiv q1 k1 va1 vb1 q2 k2 va2 vb2 out wq wk wv (n * W)
+                  (VeriTile.Triton.FastDiv.magic W) (VeriTile.Triton.FastDiv.shiftFor W) BLOCK).toAlgKernel
+              s)
+            out BLOCK s.pid i =
+          some
+            (if x < n * W then
+              VeriTile.Bench.Optimizations.CatRepack.catSpec wq wk wv (s.readMem q1) (s.readMem k1) (s.readMem va1)
+                (s.readMem vb1) (s.readMem q2) (s.readMem k2) (s.readMem va2) (s.readMem vb2) (x / W) (x % W)
+            else s.readMem out x)
+VeriTile.Bench.Optimizations.CatRepack.cat_repack_launch_correctness : ∀
+  (q1 k1 va1 vb1 q2 k2 va2 vb2 out : VeriTile.Triton.RegionName) (n wq wk wv BLOCK g : ℕ),
+  0 < wq + wk + wv →
+    n * (2 * (wq + wk + wv)) < 2 ^ 31 →
+      0 < BLOCK →
+        n * (2 * (wq + wk + wv)) ≤ g * BLOCK →
+          out ∉ [q1, k1, va1, vb1, q2, k2, va2, vb2] →
+            ∀ (s : VeriTile.Triton.BlockState),
+              ∃ sF,
+                Nonempty
+                    (VeriTile.Triton.Kernel.GridLaunchedOrdinary
+                      (VeriTile.Bench.Optimizations.CatRepack.repack_fastdiv q1 k1 va1 vb1 q2 k2 va2 vb2 out wq wk wv
+                          (n * (2 * (wq + wk + wv))) (VeriTile.Triton.FastDiv.magic (2 * (wq + wk + wv)))
+                          (VeriTile.Triton.FastDiv.shiftFor (2 * (wq + wk + wv))) BLOCK).toAlgKernel
+                      (VeriTile.Triton.Blocked1D.line g) s sF) ∧
+                  (∀ x < n * (2 * (wq + wk + wv)),
+                      sF.readMem out x =
+                        VeriTile.Bench.Optimizations.CatRepack.nestedCat wq wk wv (s.readMem q1) (s.readMem k1)
+                          (s.readMem va1) (s.readMem vb1) (s.readMem q2) (s.readMem k2) (s.readMem va2) (s.readMem vb2)
+                          (x / (2 * (wq + wk + wv))) (x % (2 * (wq + wk + wv)))) ∧
+                    ∀ (r : VeriTile.Triton.RegionName) (o : ℕ),
+                      ¬(r = out ∧ o < n * (2 * (wq + wk + wv))) → sF.mem r o = s.mem r o

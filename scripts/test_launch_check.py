@@ -423,5 +423,68 @@ class RelationalTranscriptions(unittest.TestCase):
         self.assertEqual(body(rel, "relu_kernel"),
                          F.kernel_statements((imp / "relu_masked.py").read_text(), "relu_kernel"))
 
+
+class CatRepackBinding(unittest.TestCase):
+    """CatRepack.lean's `repack_fastdiv` is the pinned Python kernel under exactly
+    the declared transcription table, compared as Python syntax trees."""
+
+    TABLE = [  # (python statement -> lean statement), applied before comparison
+        ("xu = x.to(tl.uint32)", None),
+        ("row = ((tl.umulhi(xu, magic.to(tl.uint32)) + xu) >> shift.to(tl.uint32)).to(tl.int32)",
+         "row = (((x * magic) >> 32) + x) >> shift"),
+    ]
+    ERASE = (".to(tl.float32)", ".to(out.dtype.element_ty)")
+
+    @staticmethod
+    def _unanti(line):
+        out, i = "", 0
+        while i < len(line):
+            if line.startswith("$(", i):
+                d, j = 0, i + 1
+                while True:
+                    d += {"(": 1, ")": -1}.get(line[j], 0)
+                    if d == 0:
+                        break
+                    j += 1
+                out += "(" + line[i + 2:j] + ")"
+                i = j + 1
+            else:
+                out += line[i]
+                i += 1
+        return out
+
+    def test_transcription_equals_source_under_table(self):
+        import ast
+        import re
+        import audit_source
+        root = REPO / "bench/optimizations/cat_repack"
+        src = (root / "cat_repack.py").read_text()
+        fn = L.find_function(ast.parse(src), "repack_fastdiv")
+        py = [ast.unparse(st) for st in fn.body]
+        table = {ast.unparse(ast.parse(a)): b for a, b in self.TABLE}
+        mapped = []
+        for st in py:
+            if st in table:
+                if table[st] is not None:
+                    mapped.append(table[st])
+                continue
+            for e in self.ERASE:
+                st = st.replace(e, "")
+            mapped.append(st.replace("cc - wq - wk", "cc - (wq + wk)"))
+        code = audit_source.strip_lean_comments((root / "CatRepack.lean").read_text())
+        m = re.search(r"\bdef\s+repack_fastdiv\b", code)
+        body = audit_source.lean_first_triton_body(code[m.start():])
+        lean = [self._unanti(ln.strip()) for ln in body.splitlines() if ln.strip()]
+        dump = lambda s: ast.dump(ast.parse(s))  # noqa: E731
+        self.assertEqual([dump(s) for s in mapped], [dump(s) for s in lean])
+
+    def test_pinned_kernel_equals_validated_harness(self):
+        import ast
+        g = lambda t, n: [ast.unparse(x) for x in ast.walk(t) if isinstance(x, ast.FunctionDef) and x.name == n]  # noqa: E731
+        a = ast.parse((REPO / "scripts/launch_cat.py").read_text())
+        b = ast.parse((REPO / "bench/optimizations/cat_repack/cat_repack.py").read_text())
+        for n in ("repack_fastdiv", "magic_for"):
+            self.assertEqual(g(a, n), g(b, n), n)
+
 if __name__ == "__main__":
     unittest.main()
