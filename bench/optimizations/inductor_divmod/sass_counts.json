@@ -21,6 +21,17 @@
    "LDG": 32,
    "STG": 4,
    "resource_usage": "REG:48 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "full_kernel_XBLOCK=1024": {
+   "instructions": 1864,
+   "IMAD": 614,
+   "IMAD.HI/WIDE": 94,
+   "I2F/F2I/MUFU (division sequences)": 30,
+   "CALL": 16,
+   "BRA": 17,
+   "LDG": 64,
+   "STG": 8,
+   "resource_usage": "REG:90 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
   }
  },
  "N": {
@@ -45,6 +56,17 @@
    "LDG": 32,
    "STG": 4,
    "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "full_kernel_XBLOCK=1024": {
+   "instructions": 2992,
+   "IMAD": 975,
+   "IMAD.HI/WIDE": 135,
+   "I2F/F2I/MUFU (division sequences)": 33,
+   "CALL": 16,
+   "BRA": 18,
+   "LDG": 128,
+   "STG": 16,
+   "resource_usage": "REG:90 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
   }
  },
  "F": {
@@ -69,6 +91,17 @@
    "LDG": 32,
    "STG": 4,
    "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "full_kernel_XBLOCK=1024": {
+   "instructions": 3448,
+   "IMAD": 1081,
+   "IMAD.HI/WIDE": 150,
+   "I2F/F2I/MUFU (division sequences)": 30,
+   "CALL": 17,
+   "BRA": 20,
+   "LDG": 128,
+   "STG": 16,
+   "resource_usage": "REG:128 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
   }
  },
  "NF": {
@@ -93,6 +126,17 @@
    "LDG": 32,
    "STG": 4,
    "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "full_kernel_XBLOCK=1024": {
+   "instructions": 3088,
+   "IMAD": 958,
+   "IMAD.HI/WIDE": 134,
+   "I2F/F2I/MUFU (division sequences)": 30,
+   "CALL": 17,
+   "BRA": 20,
+   "LDG": 128,
+   "STG": 16,
+   "resource_usage": "REG:128 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
   }
  }
 }

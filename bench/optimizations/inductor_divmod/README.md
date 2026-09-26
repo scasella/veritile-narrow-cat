@@ -32,6 +32,13 @@ body to the CPU preview used for development.
 
 N is also 1.21–1.29× faster than automatic dynamic compilation, and 1.49–1.59× faster than eager.
 
+**How much of the standalone gap N captures:**
+- **Device time:** all of it at the larger shapes. At 32768 × issue: B0 3478 µs, N 2952 µs, standalone 2957 µs,
+  static 3022 µs.
+- **Complete-sequence time:** about half. T is 587 → 471 ms for B0 → N (mean of the two rounds), against 350 ms
+  for the standalone kernel. The other half is the sustained-versus-device gap listed under Open, which affects
+  only Inductor's dynamic kernels.
+
 Every configuration was valid in both rounds:
 - bitwise equal to eager at all 14 shapes;
 - no Dynamo or Inductor compile in any warm pass;
@@ -44,15 +51,16 @@ still faster at sustained load: 1.29× / 1.37× over N. Its cold sequence costs 
 
 ## Why the proved fast division did not transfer, and what did
 
-SASS (machine code) for the guarded branch, sm_89, XBLOCK=1024, 4 warps, 8 elements per thread
-(`sass_counts.json`; static instruction counts):
+SASS (machine code) for sm_89, XBLOCK=1024, 4 warps, 8 elements per thread (`sass_counts.json`; static counts).
+"Branch" means the guarded branch compiled alone, with the guard forced true. "Full kernel" is the kernel as it
+ran on the L4: both branches, since the `else` keeps the original body.
 
-| | instructions | IMAD | I2F/F2I/MUFU | CALL | registers |
-|---|---|---|---|---|---|
-| B0 | 1864 | 614 | 30 | 16 | 90 |
-| N | 1192 | 393 | 3 | 0 | 56 |
-| F | 1696 | 508 | 3 | 1 | 92 |
-| NF | 1336 | 428 | 3 | 1 | 64 |
+| | branch instructions | IMAD | I2F/F2I/MUFU | CALL | registers, branch | **registers, full kernel** |
+|---|---|---|---|---|---|---|
+| B0 | 1864 | 614 | 30 | 16 | 90 | 90 |
+| N | 1192 | 393 | 3 | 0 | 56 | **90** |
+| F | 1696 | 508 | 3 | 1 | 92 | **128** |
+| NF | 1336 | 428 | 3 | 1 | 64 | **128** |
 
 1. **B0 pays for width, not for a missing division trick.**
    - The divisor arrives as `i64`, so every `%` and `//` is a 64-bit operation. The compiler's 64-to-32-bit bypass
@@ -62,15 +70,25 @@ SASS (machine code) for the guarded branch, sm_89, XBLOCK=1024, 4 warps, 8 eleme
 2. **Narrowing alone (N) removes most of that.**
    - With an int32 divisor, the compiler computes the divisor-dependent part once and reuses it across the
      thread's elements: 3 MUFU/I2F in total and no calls.
-   - The address arithmetic becomes 32-bit: 393 IMADs, 56 registers.
+   - The address arithmetic becomes 32-bit: 393 IMADs.
    - In effect, the compiler already performs a fast division by a loop-invariant divisor once the types allow it.
+   - The branch's lower register count (56) does not carry over to the kernel. The guarded kernel still allocates
+     90 registers, the same as B0, because of the retained original body. So N's gain is instruction count, not
+     occupancy.
 3. **The proved IntDivider replacement (F) adds work that is not amortized.**
    - Computing the constants in-kernel costs, per thread, a 32-step shift count plus one true 64-bit division.
      That division is the remaining `CALL`: the numerator `2^32·(2^s − d)` exceeds 32 bits, so the bypass
      cannot apply.
    - With only 8 elements per thread, this costs more than the per-element divisions it replaces.
-   - F without N also leaves every other int64 operation in place, so it ends slower than B0. NF ends larger than
-     N by 144 instructions.
+   - F without N also leaves every other int64 operation in place. Compared branch to branch, NF is still larger
+     than N: 144 more instructions and 8 more registers.
+   - **Confound from the guard design.** As built, the F and NF kernels allocate 128 registers against 90 for B0
+     and N. The helper's branch together with the retained original body raises the kernel's register high-water
+     mark, which lowers occupancy. Part of F's 0.94× against B0 may therefore come from this guard layout rather
+     than from the divmod arithmetic.
+   - **Untested alternative.** A leaner guard around only the two divmod lines, instead of the whole body, might
+     avoid the register increase. That was not measured. The branch-to-branch comparison (NF against N) does not
+     depend on the guard layout, and it still favours N.
 4. **Where the standalone kernel's advantage came from.** It precomputes the constants on the host and runs all
    index math in int32. Inside Inductor, the width part reaches the same device time: at the 12 larger shapes, N's
    device time is 0.94–1.06× that of static and 0.97–1.06× that of the standalone kernel. The division part is either already done by the
@@ -116,4 +134,8 @@ showed the same pattern.
 - other GPUs, including the H100 from the issue;
 - cold-L2 timing;
 - other programs with symbolic non-leading `cat` dimensions;
-- the Inductor autotuner's chosen config (not recorded; the SASS table assumes XBLOCK=1024, 4 warps).
+- the Inductor autotuner's chosen config (not recorded; the SASS table assumes XBLOCK=1024, 4 warps);
+- **the guard's `else` branch was compiled but never executed.** Every tested shape had all size scalars below
+  2^31, both in the interpreter and on the GPU. That is the intended domain, but the fallback path itself has only
+  been compiled, not run on a GPU;
+- the leaner guard layout for F/NF described above.

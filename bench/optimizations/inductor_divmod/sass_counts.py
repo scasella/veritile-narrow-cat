@@ -29,11 +29,12 @@ SRC = (HERE / "fixtures/gpu_emitted_B0.py").read_text()
 NVDISASM = Path(triton.__file__).parent / "backends/nvidia/bin/nvdisasm"
 
 
-def load(src, tag):
+def load(src, tag, branch_only=True):
     s = src.replace("triton_helpers.set_driver_to_cpu()", "").replace("triton_helpers.set_driver_to_gpu()", "")
     s = re.sub(r"@triton_heuristics\.pointwise\((?:.|\n)*?\n\)\n", "", s)
     s = s.replace("Placeholder.KERNEL_NAME", "kern")
-    s = re.sub(r"^    if \(.*\):$", "    if True:", s, flags=re.M)  # analysis: keep only the guarded branch
+    if branch_only:
+        s = re.sub(r"^    if \(.*\):$", "    if True:", s, flags=re.M)  # analysis: keep only the guarded branch
     p = Path(tempfile.gettempdir()) / f"sass_{tag}.py"
     p.write_text(s)
     spec = importlib.util.spec_from_file_location(f"sass_{tag}", p)
@@ -64,6 +65,9 @@ if __name__ == "__main__":
         src = R.rewrite(SRC, v)[0]
         m = load(src, v)
         res[v] = {f"XBLOCK={xb}": sass(m, xb) for xb in (1024, 512)}
+        full = load(src, v + "_full", branch_only=False)   # the kernel as it ran: both branches
+        res[v]["full_kernel_XBLOCK=1024"] = sass(full, 1024)
     (HERE / "sass_counts.json").write_text(json.dumps(res, indent=1) + "\n")
     for v, r in res.items():
-        print(v, r["XBLOCK=1024"])
+        print(v, "branch:", r["XBLOCK=1024"]["resource_usage"][:7], "full:", r["full_kernel_XBLOCK=1024"]["resource_usage"][:7],
+              "full instr", r["full_kernel_XBLOCK=1024"]["instructions"])
