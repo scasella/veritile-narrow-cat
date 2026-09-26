@@ -1,0 +1,161 @@
+{
+ "n1_rewrite": {
+  "variant": "N1",
+  "before": "357ea6c4ac18f420",
+  "rewritten": true,
+  "structural": "IR equals the proved kernel",
+  "after": "ed29fc78afbc7620"
+ },
+ "sm_89": {
+  "B0": {
+   "XBLOCK=1024,warps=4": {
+    "instructions": 1864,
+    "IMAD": 614,
+    "I2F_F2I_MUFU": 30,
+    "CALL": 16,
+    "regs": 90,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=4": {
+    "instructions": 1008,
+    "IMAD": 338,
+    "I2F_F2I_MUFU": 18,
+    "CALL": 8,
+    "regs": 48,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=256,warps=4": {
+    "instructions": 520,
+    "IMAD": 177,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 2,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   }
+  },
+  "N_guarded": {
+   "XBLOCK=1024,warps=4": {
+    "instructions": 2992,
+    "IMAD": 975,
+    "I2F_F2I_MUFU": 33,
+    "CALL": 16,
+    "regs": 90,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=512,warps=4": {
+    "instructions": 1608,
+    "IMAD": 521,
+    "I2F_F2I_MUFU": 21,
+    "CALL": 8,
+    "regs": 55,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   },
+   "XBLOCK=256,warps=4": {
+    "instructions": 848,
+    "IMAD": 278,
+    "I2F_F2I_MUFU": 12,
+    "CALL": 2,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
+   }
+  },
+  "N1": {
+   "XBLOCK=1024,warps=4": {
+    "instructions": 1080,
+    "IMAD": 348,
+    "I2F_F2I_MUFU": 3,
+    "CALL": 0,
+    "regs": 48,
+    "ptx_ks_params": [
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32"
+    ]
+   },
+   "XBLOCK=512,warps=4": {
+    "instructions": 560,
+    "IMAD": 181,
+    "I2F_F2I_MUFU": 3,
+    "CALL": 0,
+    "regs": 44,
+    "ptx_ks_params": [
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32"
+    ]
+   },
+   "XBLOCK=256,warps=4": {
+    "instructions": 288,
+    "IMAD": 89,
+    "I2F_F2I_MUFU": 3,
+    "CALL": 0,
+    "regs": 30,
+    "ptx_ks_params": [
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32"
+    ]
+   }
+  }
+ }
+}
