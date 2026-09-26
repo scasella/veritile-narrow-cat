@@ -421,6 +421,20 @@ theorem narrow_cat_args_fit (L : Lane) (n : Nat)
     (H3 : L.xnumel = n * L.ks 0) (H4 : L.xnumel ≤ 2 ^ 31 - 1) (hn : 1 ≤ n) :
     0 < L.xnumel ∧ 0 < L.ks 0 ∧ L.ks 0 ≤ L.xnumel ∧
     ∀ i, i ≤ 6 → 0 ≤ L.ks i ∧ L.ks i < 2 ^ 31 ∧ (evI .i32 L (.ks i)).1 = L.ks i := by
-  sorry
+  have k := fun i (h1 : 1 ≤ i) (h6 : i ≤ 6) => H1' i h1 h6
+  have k1 := k 1 (by omega) (by omega); have k2 := k 2 (by omega) (by omega)
+  have k3 := k 3 (by omega) (by omega); have k4 := k 4 (by omega) (by omega)
+  have k5 := k 5 (by omega) (by omega); have k6 := k 6 (by omega) (by omega)
+  have hs : 0 < L.ks 0 := by rw [H2]; omega
+  have hn' : (1 : Int) ≤ n := by exact_mod_cast hn
+  have hle : L.ks 0 ≤ L.xnumel := by
+    rw [H3]; have := Int.mul_le_mul_of_nonneg_right hn' hs.le; simpa using this
+  have H4' : L.xnumel ≤ 2147483647 := by norm_num at H4; exact H4
+  refine ⟨by omega, hs, hle, fun i hi => ?_⟩
+  have hb : 0 ≤ L.ks i ∧ L.ks i < 2 ^ 31 := by
+    interval_cases i <;> constructor <;> norm_num <;> omega
+  refine ⟨hb.1, hb.2, ?_⟩
+  simp only [evI]
+  exact wrap_R32 ⟨by omega, by have := hb.2; norm_num at this; omega⟩ _
 
 end VeriTile.Bench.Optimizations.NarrowCat
