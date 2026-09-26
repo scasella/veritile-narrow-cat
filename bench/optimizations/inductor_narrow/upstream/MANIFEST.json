@@ -1,0 +1,10 @@
+{
+ "pytorch_commit": "6aa9e2fc40d8c71dc7db1177abd8f65474d1221b",
+ "nightly": "2.15.0.dev20260926",
+ "base_sha256": {
+  "torch/_inductor/codegen/triton.py": "82dc6cb68410c6bf72f5ded48c8adbad588497f958b6e1f0c47294581cb1f469",
+  "torch/_inductor/config.py": "f31fa1e912dc49878c7a3b20419fb6191c5bf13fecc471efd32d380502f74f5b"
+ },
+ "patch": "selective_ks_narrowing.patch",
+ "proved_class_sha256": "34f3438bd120082a5d7313f7c2a72784893577c12e792e2fa9fdf1c9ef99576c"
+}

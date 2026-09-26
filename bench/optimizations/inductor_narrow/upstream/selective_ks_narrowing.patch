@@ -1,0 +1,359 @@
+diff -ruN a/test/inductor/test_triton_size_arg_narrowing.py b/test/inductor/test_triton_size_arg_narrowing.py
+--- a/test/inductor/test_triton_size_arg_narrowing.py	1969-12-31 19:00:00
++++ b/test/inductor/test_triton_size_arg_narrowing.py	2026-09-26 09:56:05
+@@ -0,0 +1,94 @@
++# Owner(s): ["module: inductor"]
++"""Tests for config.triton.narrow_proven_size_args (codegen/triton_size_arg_narrowing.py)."""
++
++import re
++
++import torch
++import torch._dynamo
++from torch._inductor import config
++from torch._inductor.codegen import triton_size_arg_narrowing as narrowing
++from torch._inductor.test_case import run_tests, TestCase
++from torch._inductor.utils import run_and_get_code
++from torch.testing._internal.inductor_utils import GPU_TYPE, requires_gpu
++
++
++def nested_cat_add(q1, k1, v1a, v1b, q2, k2, v2a, v2b):
++    v1 = v1a + v1b
++    v2 = v2a + v2b
++    return torch.cat([torch.cat([q1, k1, v1], -1), torch.cat([q2, k2, v2], -1)], -1)
++
++
++def _inputs(n=64, widths=(2048, 256, 256, 256, 2048, 256, 256, 256)):
++    ins = [torch.randn(n, w, device=GPU_TYPE, dtype=torch.bfloat16) for w in widths]
++    for t in ins:
++        torch._dynamo.mark_dynamic(t, 1)
++    return ins
++
++
++def _ks_types(code: str) -> dict:
++    return dict(re.findall(r"'(ks\d+)': '(i\d+)'", code))
++
++
++def _kernel(code: str) -> tuple:
++    """(argument names, dedented body) of the first @triton.jit kernel in the generated code."""
++    m = re.search(r"@triton\.jit\ndef \w+\((.*?)\):\n((?:    .*\n|\n)+)", code)
++    args = [a.split(":")[0].strip() for a in m.group(1).split(",")]
++    body = "\n".join(line[4:] for line in m.group(2).splitlines())
++    return args, body
++
++
++class TestSizeArgNarrowing(TestCase):
++    def setUp(self):
++        super().setUp()
++        torch._dynamo.reset()
++
++    @requires_gpu()
++    @config.patch({"triton.narrow_proven_size_args": True})
++    def test_narrows_proven_cat_kernel(self):
++        ins = _inputs()
++        out, code = run_and_get_code(torch.compile(nested_cat_add, dynamic=True), *ins)
++        code = "\n".join(code)
++        self.assertEqual(set(_ks_types(code).values()), {"i32"})
++        self.assertEqual(out.view(torch.int16), nested_cat_add(*ins).view(torch.int16))
++        # a second shape reuses the same kernel (no recompile) and stays exact
++        ins2 = _inputs(n=3000, widths=(1000, 120, 136, 136, 1000, 120, 136, 136))
++        self.assertEqual(torch.compile(nested_cat_add, dynamic=True)(*ins2).view(torch.int16),
++                         nested_cat_add(*ins2).view(torch.int16))
++
++    @requires_gpu()
++    def test_default_is_unchanged(self):
++        _, code = run_and_get_code(torch.compile(nested_cat_add, dynamic=True), *_inputs())
++        self.assertEqual(set(_ks_types("\n".join(code)).values()), {"i64"})
++
++    @requires_gpu()
++    @config.patch({"triton.narrow_proven_size_args": True})
++    def test_other_kernel_is_unchanged(self):
++        def three(q, k, va, vb):
++            return torch.cat([q, k, va + vb], -1)
++
++        ins = _inputs(widths=(2048, 256, 256, 256))
++        _, code = run_and_get_code(torch.compile(three, dynamic=True), *ins)
++        self.assertNotIn("i32", set(_ks_types("\n".join(code)).values()))
++
++    @requires_gpu()
++    def test_recognizer_rejects_mutations(self):
++        _, code = run_and_get_code(torch.compile(nested_cat_add, dynamic=True), *_inputs())
++        args, body = _kernel("\n".join(code))
++        self.assertEqual(narrowing.canonical_sha256(args, body), narrowing._PROVED_CAT6_SHA256)
++        mutations = [
++            ("tmp32 = tmp30 + tmp31", "tmp32 = tmp30 + tmp31\ntmp99 = ks1 * ks2 < ks3"),  # extra size use
++            ("in_ptr0 + (ks1*x1 + (x0))", "in_ptr0 + (ks1*x1 + (x0) + ks2)"),  # different index
++            ("tmp41 = (ks0).to(tl.int32)", "tmp41 = (ks0).to(tl.int64)"),  # different cast
++        ]
++        for old, new in mutations:
++            self.assertIn(old, body)
++            mutated = body.replace(old, new, 1)
++            try:
++                digest = narrowing.canonical_sha256(args, mutated)
++            except narrowing._Unsupported:
++                continue
++            self.assertNotEqual(digest, narrowing._PROVED_CAT6_SHA256)
++
++
++if __name__ == "__main__":
++    run_tests()
+Binary files a/torch/_inductor/codegen/__pycache__/triton_size_arg_narrowing.cpython-312.pyc and b/torch/_inductor/codegen/__pycache__/triton_size_arg_narrowing.cpython-312.pyc differ
+diff -ruN a/torch/_inductor/codegen/triton.py b/torch/_inductor/codegen/triton.py
+--- a/torch/_inductor/codegen/triton.py	2026-09-26 09:53:54
++++ b/torch/_inductor/codegen/triton.py	2026-09-26 09:55:37
+@@ -7914,6 +7914,19 @@
+             )
+         ]
+ 
++        if config.triton.narrow_proven_size_args and not config.assume_32bit_indexing:
++            from .triton_size_arg_narrowing import proven_int32_size_args
++
++            for arg_name in proven_int32_size_args(
++                self,
++                [arg.name for arg in argdefs],
++                triton_meta["signature"],
++                self._get_heuristic(),
++                self._get_grid_type().__name__,
++                self.body.getvalue(),
++            ):
++                triton_meta["signature"][arg_name] = "i32"
++
+         for helper in self.helper_functions:
+             code.writeline("")
+             code.splice(helper)
+diff -ruN a/torch/_inductor/codegen/triton_size_arg_narrowing.py b/torch/_inductor/codegen/triton_size_arg_narrowing.py
+--- a/torch/_inductor/codegen/triton_size_arg_narrowing.py	1969-12-31 19:00:00
++++ b/torch/_inductor/codegen/triton_size_arg_narrowing.py	2026-09-26 09:55:37
+@@ -0,0 +1,218 @@
++"""Selective 32-bit size arguments for proven kernel classes.
++
++`signature_to_meta` declares every `ks*` size argument `tl.int64`. Its reason is that a product of symbols may
++overflow even when each symbol fits in int32. This module recognizes kernels for which a machine-checked proof
++shows that declaring those arguments `i32` changes no observable behaviour. For such a kernel it returns the
++argument names that may be narrowed; for every other kernel it returns nothing.
++
++There is one supported class today: the pointwise kernel Inductor emits for a nested `cat` of six segments along
++a dynamic last dimension (pytorch/pytorch#189940). Eligibility needs all of the following.
++
++C1 The kernel matches the proved class exactly:
++   - a pointwise heuristic, a 1-D grid, no fixed config;
++   - the proved argument list and signature;
++   - a body whose indexing, masks, payload dataflow and dead statements equal the proved IR, compared by a SHA-256
++     of their canonical form.
++C2 Inductor's symbolic state, not size hints, establishes:
++   - H1' ks1..ks6 are size symbols with value-range lower bound >= 1;
++   - H2  ks0 == ks1 + ... + ks6 (its precomputed definition);
++   - H3' numel == s * ks0 for a size symbol s with lower bound >= 1;
++   - H4  index dtype int32, and numel <= 2**31 - 1 guarded (or statically known).
++         Dynamo re-checks the guard every call. When it fails, the recompiled kernel has xnumel: i64 and is not
++         in the class.
++
++The proof: NarrowCat.narrow_cat_equiv (Lean 4). Under C1-C2, for every lane of the 1-D grid, the i64 and i32
++kernels agree on the store mask, the store address, the stored value, and every memory read. The companion
++lemmas give equal, positive divisors (no new UB) and exact i32 packing of every size argument.
++"""
++
++from __future__ import annotations
++
++import ast
++import hashlib
++from typing import Any
++
++
++# SHA-256 of the canonical IR of the proved kernel (see _canonical).
++_PROVED_CAT6_SHA256 = "34f3438bd120082a5d7313f7c2a72784893577c12e792e2fa9fdf1c9ef99576c"
++_PROVED_ARGS = (
++    "in_ptr0", "in_ptr1", "in_ptr2", "in_ptr3", "in_ptr4", "in_ptr5", "in_ptr6", "in_ptr7", "out_ptr0",
++    "ks0", "ks1", "ks2", "ks3", "ks4", "ks5", "ks6", "xnumel", "XBLOCK",
++)
++_KS = tuple(f"ks{i}" for i in range(7))
++_INT_MAX = 2**31 - 1
++_PROLOGUE = (
++    "xoffset = tl.program_id(0) * XBLOCK",
++    "xindex = xoffset + tl.arange(0, XBLOCK)[:]",
++    "xmask = xindex < xnumel",
++)
++
++
++class _Unsupported(Exception):
++    pass
++
++
++def _dtype(node: ast.AST) -> str:
++    s = ast.unparse(node)
++    if s in ("tl.int32", "tl.int64"):
++        return s
++    raise _Unsupported(s)
++
++
++def _canonical(arg_names: list[str], body: str) -> tuple[Any, ...]:
++    """Parse the kernel body into (store, dead statements). Raises _Unsupported on any unrecognized construct."""
++    lines = [ln for ln in body.splitlines() if ln.strip()]
++    if tuple(ln.strip() for ln in lines[:3]) != _PROLOGUE:
++        raise _Unsupported("prologue")
++    ptrs = [a for a in arg_names if a.startswith(("in_ptr", "out_ptr"))]
++    stmts = ast.parse("\n".join(ln.strip() for ln in lines[3:])).body
++    env: dict[str, tuple[str, Any]] = {"xindex": ("int", ("xindex",)), "xmask": ("bool", ("xmask",))}
++    used: set[str] = set()
++
++    def ref(name: str, kind: str) -> Any:
++        if name in _KS:
++            if kind != "int":
++                raise _Unsupported(name)
++            return ("ks", int(name[2:]))
++        k, v = env.get(name, (None, None))
++        if k != kind:
++            raise _Unsupported(name)
++        used.add(name)
++        return v
++
++    def ie(n: ast.AST) -> Any:
++        if isinstance(n, ast.Name):
++            return ref(n.id, "int")
++        if isinstance(n, ast.Constant) and type(n.value) is int:
++            return ("lit", n.value)
++        if isinstance(n, ast.UnaryOp) and isinstance(n.op, ast.USub) and isinstance(n.operand, ast.Constant):
++            return ("lit", -n.operand.value)
++        if isinstance(n, ast.BinOp):
++            op = {ast.Add: "add", ast.Mult: "mul", ast.Mod: "tmod", ast.FloorDiv: "tdiv"}.get(type(n.op))
++            if op:
++                return (op, ie(n.left), ie(n.right))
++        if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
++            f = ast.unparse(n.func)
++            if n.func.attr == "to" and len(n.args) == 1:
++                return ("cast", ie(n.func.value), _dtype(n.args[0]))
++            if f == "tl.broadcast_to" and ast.unparse(n.args[1]) == "[XBLOCK]":
++                return ie(n.args[0])
++            if f == "tl.full" and ast.unparse(n.args[0]) == "[1]" and type(getattr(n.args[1], "value", None)) is int:
++                return ("slit", n.args[1].value, _dtype(n.args[2]))
++        raise _Unsupported(ast.unparse(n)[:60])
++
++    def be(n: ast.AST) -> Any:
++        if isinstance(n, ast.Name):
++            return ref(n.id, "bool")
++        if isinstance(n, ast.Compare) and len(n.ops) == 1 and type(n.ops[0]) in (ast.Lt, ast.GtE):
++            return ("lt" if isinstance(n.ops[0], ast.Lt) else "ge", ie(n.left), ie(n.comparators[0]))
++        if isinstance(n, ast.BinOp) and isinstance(n.op, ast.BitAnd):
++            return ("and", be(n.left), be(n.right))
++        raise _Unsupported(ast.unparse(n)[:60])
++
++    def fe(n: ast.AST) -> Any:
++        if isinstance(n, ast.Name):
++            return ref(n.id, "float")
++        if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Add):
++            return ("fadd", fe(n.left), fe(n.right))
++        if isinstance(n, ast.Call):
++            f = ast.unparse(n.func)
++            if f == "tl.where":
++                return ("where", be(n.args[0]), fe(n.args[1]), fe(n.args[2]))
++            if (f == "tl.full" and type(getattr(n.args[1], "value", None)) is float and n.args[1].value == 0.0
++                    and ast.unparse(n.args[0]) != "[1]"):
++                return ("fzero",)
++            if isinstance(n.func, ast.Attribute) and n.func.attr == "to" and isinstance(n.func.value, ast.Call):
++                ld = n.func.value
++                if ast.unparse(ld.func) == "tl.load":
++                    kw = {k.arg: ast.unparse(k.value) for k in ld.keywords}
++                    a0 = ld.args[0]
++                    if (kw.get("other") == "0.0" and set(kw) <= {"other", "eviction_policy"}
++                            and isinstance(a0, ast.BinOp) and isinstance(a0.op, ast.Add)
++                            and isinstance(a0.left, ast.Name) and a0.left.id in ptrs):
++                        return ("load", ptrs.index(a0.left.id), ie(a0.right), be(ld.args[1]))
++        raise _Unsupported(ast.unparse(n)[:60])
++
++    store = None
++    for s in stmts:
++        if isinstance(s, ast.Assign) and len(s.targets) == 1 and isinstance(s.targets[0], ast.Name):
++            for kind, f in (("float", fe), ("bool", be), ("int", ie)):
++                snapshot = set(used)
++                try:
++                    env[s.targets[0].id] = (kind, f(s.value))
++                    break
++                except (_Unsupported, AttributeError, IndexError):
++                    used.clear()
++                    used.update(snapshot)
++            else:
++                raise _Unsupported(ast.unparse(s)[:60])
++        elif (isinstance(s, ast.Expr) and isinstance(s.value, ast.Call)
++              and ast.unparse(s.value.func) == "tl.store" and store is None):
++            a0 = s.value.args[0]
++            if not (isinstance(a0, ast.BinOp) and isinstance(a0.left, ast.Name) and a0.left.id in ptrs):
++                raise _Unsupported("store")
++            store = (ptrs.index(a0.left.id), ie(a0.right), fe(s.value.args[1]), be(s.value.args[2]))
++        else:
++            raise _Unsupported(ast.unparse(s)[:60])
++    if store is None:
++        raise _Unsupported("no store")
++    dead = tuple(sorted((k, v[1]) for k, v in env.items() if k not in used and k not in ("xindex", "xmask")))
++    return (tuple(arg_names), store, dead)
++
++
++def canonical_sha256(arg_names: list[str], body: str) -> str:
++    return hashlib.sha256(repr(_canonical(arg_names, body)).encode()).hexdigest()
++
++
++def _symbolic_facts(kernel: Any, numel: Any) -> dict[str, Any]:
++    import sympy
++
++    from ..virtualized import V
++
++    sv = V.graph.sizevars
++    se = sv.shape_env
++    name_of = {v: k for k, v in kernel.args.sizevars.items()}
++    full = {k: sv.inv_precomputed_replacements.get(name_of[k], name_of[k]) for k in _KS}
++
++    def lower_ge1(e: Any) -> bool:
++        rng = se.var_to_range.get(e) if isinstance(e, sympy.Symbol) else None
++        return rng is not None and rng.lower >= 1
++
++    facts: dict[str, Any] = {}
++    facts["H1"] = all(lower_ge1(full[k]) for k in _KS[1:])
++    facts["H2"] = sympy.expand(full["ks0"] - sum(full[k] for k in _KS[1:])) == 0
++    numel = sympy.expand(numel)
++    s = sympy.simplify(numel / full["ks0"])
++    facts["H3"] = lower_ge1(s) and sympy.expand(s * full["ks0"] - numel) == 0
++    guard = sympy.Le(numel, _INT_MAX)
++    installed = str(guard) in {str(g.expr) for g in se.guards}
++    facts["H4"] = str(kernel.index_dtype) == "tl.int32" and (
++        installed or bool(sv.statically_known_true(guard))
++    )
++    return facts
++
++
++def proven_int32_size_args(
++    kernel: Any,
++    arg_names: list[str],
++    signature: dict[str, str],
++    heuristic: str,
++    grid_type: str,
++    body: str,
++) -> list[str]:
++    """Names of size arguments that may be declared i32 for this kernel; [] unless C1 and C2 hold."""
++    if heuristic != "pointwise" or grid_type != "Grid1D" or kernel.fixed_config is not None:
++        return []
++    if kernel.inside_reduction or kernel.cooperative_reduction or tuple(arg_names) != _PROVED_ARGS:
++        return []
++    if any(signature.get(k) != "i64" for k in _KS) or signature.get("xnumel") != "i32":
++        return []
++    if any(not signature.get(p, "").startswith("*") for p in _PROVED_ARGS[:9]):
++        return []
++    try:
++        if canonical_sha256(arg_names, body) != _PROVED_CAT6_SHA256:
++            return []
++        facts = _symbolic_facts(kernel, kernel.numels["x"])
++    except Exception:
++        return []
++    return list(_KS) if all(facts.values()) else []
+diff -ruN a/torch/_inductor/config.py b/torch/_inductor/config.py
+--- a/torch/_inductor/config.py	2026-09-26 09:53:55
++++ b/torch/_inductor/config.py	2026-09-26 09:55:37
+@@ -2256,6 +2256,11 @@
+     # this should only be disabled for debugging/testing
+     autotune_pointwise = True
+ 
++    # Declare `ks*` size arguments int32 (instead of int64) for kernels in a proven class, where Inductor's
++    # symbolic state establishes the proof's premises (see codegen/triton_size_arg_narrowing.py). Unlike
++    # `assume_32bit_indexing`, this is not a global assumption: every other kernel is unchanged.
++    narrow_proven_size_args = False
++
+     # max autotune gemm with cublasLt
+     autotune_cublasLt = True
+ 
