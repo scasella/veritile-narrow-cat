@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-26T00:29:49Z",
- "git_head": "0438ab979896cdcdec8a5f7fa04dc1f3910386ab",
+ "generated": "2026-09-26T01:31:06Z",
+ "git_head": "d38496b2054363558a7844a72cea013570877074",
  "input_hashes": {
   "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
   "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
@@ -30,7 +30,7 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "38f1a7537c2f9bfeb8ea2c71bc2b3e877314958bba31b6b73d6d61da79cbe454",
+  "scripts/launch_local_check.py": "cd7673259adf50d563958232b0b7fa3ce7a8dacfd43270cbeab3ffbe1496ee40",
   "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
@@ -48,6 +48,8 @@
   "scripts/launch_latency_modal.py": "3ab511b5ed80899a43a8e22dc2be12c38e7cd4d96501ab728f5d239a7c2e4de1",
   "scripts/launch_probe.py": "8f70f96aac9d37483000a75b470d2b80845123e9b1554100d632d76ca8e8ac34",
   "scripts/launch_select.py": "e7bb7f15796384d923ce000ce8d39aa8fe17736708c5a93b7bb8f997a70b9071",
+  "scripts/launch_rotary.py": "8fccb212080d2b34fee4f708a4c08416fd71e318a861687da2070122a635fb86",
+  "scripts/launch_rotary_modal.py": "5b389133b5d33a9047c909a9e91b800a98f35d2fa5a21cb4af23c42770063fd2",
   "bench/tritonbench_g/add_example/improvement/relu_masked.py": "d70dae157e8fe56bd5218ae6262a12e580faab8519a81267e0b90b5d3f7fc51a",
   "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py": "5ce7107b2e57167e62682d51a302b72677d194b8c59c8735acf33d3bbcb0ad1c",
   "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py": "3581c60f75eb5314c472d4e9ccfd2c0cc8c6a089352352247258c8cbabe7f630",
@@ -80,11 +82,11 @@
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen"
   },
   "official_comparator": {
-   "status": "passed",
+   "status": "failed",
    "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/official_comparator.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['scripts/launch_rotary.py', 'scripts/launch_rotary_modal.py']",
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
@@ -111,15 +113,15 @@
    "assumptions": "",
    "evidence": "Lean (version 4.29.0, arm64-apple-darwin24.6.0, commit 98dc76e3c0a9b856c9b98726b713fb04fab16740, Release)",
    "reason": "",
-   "elapsed_s": 0.6
+   "elapsed_s": 2.7
   },
   "build": {
    "status": "passed",
    "scope": "project modules rebuilt from source",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/build.log",
-   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-a5k_shmn",
-   "elapsed_s": 492.8
+   "reason": "rc=0 workspace=/var/folders/t6/729dykmj637c4jrcp3p590pw0000gn/T/veritile-launch-fresh-49wiu09n",
+   "elapsed_s": 454.4
   },
   "placeholder_scan": {
    "status": "passed",
@@ -130,13 +132,13 @@
    "elapsed_s": 0.0
   },
   "upstream_pin_unchanged": {
-   "status": "failed",
+   "status": "passed",
    "scope": "working tree vs Lizn-zn/VeriTile@95a01f59: only declared paths change; pinned code in modified Lean files is verbatim",
    "assumptions": "",
-   "evidence": "undeclared change: bench/tritonbench_g/add_example.zip",
-   "reason": "1 problems",
-   "elapsed_s": 0.2,
-   "worktree_clean": false
+   "evidence": "git diff vs pin",
+   "reason": "no undeclared or non-additive changes",
+   "elapsed_s": 0.1,
+   "worktree_clean": true
   },
   "upstream_static_gates": {
    "status": "passed",
@@ -144,7 +146,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/proof_gap_manifest.log",
    "reason": "proof-gap rc=0, kernel-manifest rc=0, spec-sheet rc=0",
-   "elapsed_s": 4.8
+   "elapsed_s": 4.6
   },
   "kernel_file_axioms": {
    "status": "passed",
@@ -152,7 +154,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/audit_*.log",
    "reason": "6 files, axiom-clean 105 theorems",
-   "elapsed_s": 59.2,
+   "elapsed_s": 57.4,
    "files": {
     "bench/tritonbench_g/add_example/AddExample.lean": {
      "rc": 0,
@@ -264,7 +266,7 @@
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/frozen",
    "reason": "surface identical to frozen snapshot",
-   "elapsed_s": 23.0
+   "elapsed_s": 23.5
   },
   "source_link_adapter": {
    "status": "passed",
@@ -272,7 +274,7 @@
    "assumptions": "adapter recognition and torch metadata are trusted (tested, not proved)",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/adapter_results.json",
    "reason": "4 manifests, 47 cases, 37 accepted, all verdicts kernel-checked",
-   "elapsed_s": 7.4
+   "elapsed_s": 7.8
   },
   "adapter_tests": {
    "status": "passed",
@@ -288,14 +290,14 @@
    "assumptions": "the runtime path uses the mirror; trusted by this differential test, not proved",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/logs/invoke_differential.json",
    "reason": "elementwise rc=0, strided rc=0 (0 = no mismatch)",
-   "elapsed_s": 23.9
+   "elapsed_s": 24.3
   },
   "official_comparator": {
-   "status": "passed",
+   "status": "failed",
    "scope": "upstream comparator (Linux, Landlock, systemd) on the changed library + AddExample.lean",
    "assumptions": "",
    "evidence": "bench/tritonbench_g/add_example/launch_evidence/official_comparator.json",
-   "reason": "exit_code=0",
+   "reason": "STALE evidence: changed ['scripts/launch_local_check.py']; not hashed by the record ['scripts/launch_rotary.py', 'scripts/launch_rotary_modal.py']",
    "elapsed_s": 0.0
   },
   "gpu_correctness": {
