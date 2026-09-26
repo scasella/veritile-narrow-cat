@@ -204,3 +204,13 @@ Not measured: other GPUs (including the issue's H100), other programs, or cold L
     no longer masks bounds.
   - (D) The outcome labels are exhaustive, with the thresholds unchanged. "Meets the predeclared benefit
     criterion" does not mean ≥ 3% with 95% confidence. What each outcome triggers is declared in the docstring.
+- **Result: the patch itself, flag off versus on** (nightly 6aa9e2fc = `main` ef166fb2, one L4; one authorized run,
+  417 s, $2 cap; `REPORT.md` §8).
+  - Every validity condition held, including the executed-cubin binding and the rule premises.
+  - Pre-registered outcome: **MET, NON-REGRESSION AT ALL SMALL SHAPES**. OFF/ON on the sequence is 1.388
+    (CI 1.378–1.408); every small-shape CI lower bound is ≥ 1.289.
+  - The eligibility check costs 14.7 ms per compile of the target and 95 µs per rejected unrelated kernel.
+- **Related work found by the novelty check before the PR:**
+  - #193614 and #193964 (open) address alignment and vectorization in the same kernel and keep the `ks` types;
+  - #194127 (merged) narrows `ks*` globally under `assume_32bit_indexing`.
+  - The draft PR is pytorch/pytorch#198733.

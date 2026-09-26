@@ -4,17 +4,19 @@
 
 ## 0. What was measured where
 
-Two separate bodies of evidence support this contribution. They used different software stacks and answer
-different questions. Do not combine them.
+Three bodies of evidence support this contribution. The first used a different software stack from the other two, and
+they answer different questions. Do not combine them.
 
 | | Stack | Question it answers | Result |
 |---|---|---|---|
 | **Performance** (measured) | torch **2.14.0**, Triton 3.8.0, one NVIDIA L4 | Is the N1 kernel (the emitted kernel with `ks*: i32`) faster? | Yes on this device and workload: 1.35× over the emitted kernel and 1.09× over our earlier guarded variant, paired and pre-registered (§3). The kernel was produced by a local prototype of the rule, not by the upstream patch. |
-| **Port** (tested) | torch **2.15.0.dev20260926** (pinned `main` 6aa9e2fc), cu130, one L4 | Does the upstream patch apply, fire only where intended, and keep output exact? | Yes: 4/4 new tests pass; the 14-shape sequence is bitwise equal to eager with all seven `ks` as `i32` (§5). **No timing was taken on this stack.** |
+| **Port** (tested) | torch **2.15.0.dev20260926** (nightly git 6aa9e2fc, built from `main` ef166fb2), cu130, one L4 | Does the upstream patch apply, fire only where intended, and keep output exact? | Yes: 4/4 new tests pass; the 14-shape sequence is bitwise equal to eager with all seven `ks` as `i32` (§5). |
+| **Patch performance** (measured) | the same nightly, patch applied, one L4 | Does the patch itself, flag off versus on, keep the benefit on that revision? | Yes on this device and workload: OFF/ON 1.388× (CI 1.378–1.408), non-regression shown at all 10 small shapes, pre-registered, run once (§8). |
 
-The pinned revision emits the same Triton source for this program, byte for byte, as the measured stack did. That is
-encouraging, but it does not establish identical backend output, autotuning selection, or runtime overhead. An
-off-versus-on timing of the patch itself at 6aa9e2fc is designed but not yet run (§8).
+The pinned build emits the same Triton source for this program, byte for byte, as the torch 2.14 stack did. That alone
+did not establish identical backend output, autotuning selection or runtime overhead, which is why the patch was
+timed on its own revision (§8). The 6aa9e2fc commit is the nightly-branch release built from `main` ef166fb2; the two
+files the patch modifies are byte-identical at both.
 
 ## 1. Program
 
@@ -162,11 +164,11 @@ comment warns about. The rule answers it with relations Inductor already knows. 
   byte-identical; with the flag off, and for a 3-segment kernel, nothing changes; fault-injected symbol ranges with
   lower bound 0 are refused; body mutations (extra size use, changed index, changed cast, changed dead code, unknown
   op) are rejected.
-- **CUDA, one L4, torch 2.15.0.dev20260926+cu130 at 6aa9e2fc:** base files match the pin and the patch applies;
+- **CUDA, one L4, torch 2.15.0.dev20260926+cu130 (nightly 6aa9e2fc = `main` ef166fb2):** base files match the pin and the patch applies;
   4/4 tests in `test/inductor/test_triton_size_arg_narrowing.py` pass; with the flag on the 14-shape sequence is
   bitwise equal to eager at every shape, with one graph, one kernel, and all seven `ks` as `i32`.
 - The patch also applies (dry run) to a later `main`, 6f8b3cdb.
-- **Not established:** timing on this stack; PyTorch-wide CI. Four targeted tests are not a substitute for the
+- **Not established:** PyTorch-wide CI. (Timing on this stack: §8.) Four targeted tests are not a substitute for the
   project's integration testing.
 
 ## 6. Proof (proved; Lean 4, standard axioms only)
@@ -212,13 +214,82 @@ addresses; the Triton → PTX → SASS toolchain.
 - **Selection history.** Guarded N was selected by the first experiment; N1 was adopted after the separate
   confirmation (§3b). Guarded N is now a historical comparator.
 
-## 8. Next measurement (designed, not run)
+## 8. The patch itself, flag off versus on (measured; nightly 2.15.0.dev20260926 / one L4)
 
-The patch itself, flag off versus on, on the pinned revision 6aa9e2fc and the same L4 type: paired, balanced,
-pre-registered sequence and small-shape timing; compile-time cost of the eligibility check on the target kernel and
-on unrelated kernels (rejection cost); compile count, graph count, guards and recompiles; autotuning selections; and
-hashes of the timed cubins. A second device (ideally the issue's H100) would then address portability. Independent
-reproduction by a reviewer would be especially valuable.
+Harness `scripts/launch_patch_perf.py`, frozen at local 794cc696 before the GPU call (SHA-256 8755c3f6…). It ran once,
+in 417 s, under a $2 cap; there were no retries. Raw record: `launch_evidence/patch_perf.json`.
+
+- **Design.** OFF (`torch.compile(fn, dynamic=True)`) and ON (the same, with `triton.narrow_proven_size_args`) were
+  compiled in one patched process as distinct code objects. Blocks were warmed for at least 2 s; 24 pairs in
+  2 processes, with OFF-first and ON-first balanced; median of paired ratios; bootstrap 95% CI.
+- **Validity: all conditions held.**
+  - The pin and base files matched, and the patch applied.
+  - Output was bitwise equal to eager at every shape.
+  - Every OFF kernel had `ks*: i64`; the ON target had all `ks*: i32`.
+  - The autotuner actually executed by each callable was bound before and after measurement: OFF was compiled with
+    `i64` and ON with `i32`, the same objects ran throughout, and the selected cubins differed.
+  - ON's rule premises were present: `numel <= 2147483647` in the shape environment, lower bounds ≥ 1, and the bound
+    in the final guards.
+  - There were no compiles during measurement.
+- **Outcome (pre-registered): MET, NON-REGRESSION AT ALL SMALL SHAPES.**
+
+| | median | 95% CI |
+|---|---|---|
+| sequence time OFF / ON | 1.388 | 1.378 – 1.408 |
+
+Median sequence time: OFF 592.4 ms, ON 426.8 ms. The criterion (median ≥ 1.03 and CI lower bound ≥ 1.00) means a point
+estimate of at least 1.03× with evidence of a positive effect. The CI here happens to lie well above 1.03 as well.
+
+| shape (n × widths) | OFF µs | ON µs | paired OFF/ON (95% CI) |
+|---|---|---|---|
+| 1536 × (2048, 256, 256) | 218.4 | 162.4 | 1.351 (1.310–1.366) |
+| 2048 × (2048, 256, 256) | 275.3 | 202.5 | 1.374 (1.337–1.391) |
+| 2500 × (1000, 120, 136) | 197.6 | 148.4 | 1.316 (1.300–1.343) |
+| 3000 × (1000, 120, 136) | 195.3 | 143.3 | 1.337 (1.317–1.373) |
+| 3500 × (1000, 120, 136) | 262.6 | 194.2 | 1.330 (1.289–1.394) |
+| 2048 × (3072, 512, 512) | 421.4 | 303.7 | 1.391 (1.365–1.403) |
+| 4096 × (2048, 256, 256) | 573.3 | 382.6 | 1.459 (1.415–1.493) |
+| 2048 × (4096, 1024, 1024) | 754.4 | 496.2 | 1.498 (1.461–1.539) |
+| 12345 × (1000, 120, 136) | 941.5 | 687.3 | 1.379 (1.365–1.411) |
+| 4096 × (3072, 512, 512) | 1028.6 | 767.2 | 1.349 (1.340–1.355) |
+
+All 10 small shapes show "non-regression shown" (every CI lower bound ≥ 1.289). As in §3b, the µs columns are
+per-variant medians and the last column is the median of paired ratios.
+
+- **Descriptive comparison, declared in advance.** OFF/ON here is 1.388; the torch 2.14 prototype's emitted/N1 was
+  1.349. The stacks differ, so this comparison is descriptive only.
+- **Selected kernels.** Both processes selected the same configs: OFF XBLOCK 512 / 8 warps / 40 registers, and ON
+  XBLOCK 1024 / 4 warps / 48 registers, with no spills. This matches stage 13's torch 2.14 selections. The selected
+  cubin hashes are recorded; for the same variant and config they differ between the two processes, a difference we
+  did not investigate.
+- **Clocks.** Median SM clock during measured blocks: OFF 1118 MHz, ON 975 MHz. ON was faster at a lower clock, as in
+  §3c; not interpreted further.
+- **Compile cost** (6 fresh processes, private empty caches, remote caches off). Compile-cost validity held: every
+  measured program compiled inside its timed call, graph counts were equal OFF and ON, and the four unrelated kernels
+  were rejected with unchanged signatures. Guard text (normalized) was equal OFF and ON.
+  - Time inside the eligibility check: median 14.7 ms for the target (accepted; this is the canonical-IR build and
+    digest) and 95 µs per unrelated kernel (rejected). Each runs once per kernel compile, never per call.
+  - Framework-warmed, target-cold first-call latency (median of 3 processes each, OFF → ON):
+    - target: 2.852 → 2.854 s;
+    - cat3: 1.642 → 1.707 s;
+    - add_relu: 0.899 → 0.919 s;
+    - row_sum: 0.662 → 0.675 s;
+    - softmax: 0.996 → 1.028 s.
+
+    These are descriptive, with no threshold. The ON medians are 2–4% higher for the unrelated programs (target: +0.1%). That is
+    more than the check's measured 95 µs, so most of the difference is not the check itself; with three processes
+    per cell we do not separate it from noise.
+- **Scope.** One L4, one program. The issue's H100, other programs and the patch combined with #193614 are untested.
+  Independent reproduction by a reviewer would be especially valuable.
+
+## Related work
+
+- **#193614** (open, "Fixes #189940") and **#193964** address a different cost in the same kernel: missing
+  divisibility metadata, which keeps loads scalar. They dispatch at runtime to an alignment-hinted variant and report
+  that dynamic latency matches static on H100. Those variants keep the `ks*` argument types unchanged. This work
+  addresses index width and leaves alignment alone. The two could compose; we have not measured them together.
+- **`assume_32bit_indexing`** (#167784; honoured in `_decide_tl_dtype` since #194127) narrows `ks*` for every kernel
+  on the user's promise. This work narrows one proven class without that promise.
 
 ## 9. Questions for reviewers
 
