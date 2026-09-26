@@ -1,0 +1,633 @@
+inductive VeriTile.Bench.Optimizations.NarrowCat.Ty : Type
+number of parameters: 0
+constructors:
+VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 : VeriTile.Bench.Optimizations.NarrowCat.Ty
+VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 : VeriTile.Bench.Optimizations.NarrowCat.Ty
+def VeriTile.Bench.Optimizations.NarrowCat.Ty.bits : VeriTile.Bench.Optimizations.NarrowCat.Ty → ℕ :=
+fun x =>
+  match x with
+  | VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 => 32
+  | VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 => 64
+def VeriTile.Bench.Optimizations.NarrowCat.wrapT : Option VeriTile.Bench.Optimizations.NarrowCat.Ty → ℤ → ℤ :=
+fun x x_1 =>
+  match x, x_1 with
+  | none, v => v
+  | some t, v => v.bmod (2 ^ t.bits)
+def VeriTile.Bench.Optimizations.NarrowCat.join : Option VeriTile.Bench.Optimizations.NarrowCat.Ty →
+  Option VeriTile.Bench.Optimizations.NarrowCat.Ty → Option VeriTile.Bench.Optimizations.NarrowCat.Ty :=
+fun x x_1 =>
+  match x, x_1 with
+  | none, b => b
+  | a, none => a
+  | some VeriTile.Bench.Optimizations.NarrowCat.Ty.i64, x => some VeriTile.Bench.Optimizations.NarrowCat.Ty.i64
+  | x, some VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 => some VeriTile.Bench.Optimizations.NarrowCat.Ty.i64
+  | x, x_2 => some VeriTile.Bench.Optimizations.NarrowCat.Ty.i32
+inductive VeriTile.Bench.Optimizations.NarrowCat.IE : Type
+number of parameters: 0
+constructors:
+VeriTile.Bench.Optimizations.NarrowCat.IE.xindex : VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.ks : ℕ → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.lit : ℤ → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.slit : ℤ →
+  VeriTile.Bench.Optimizations.NarrowCat.Ty → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.cast : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.Ty → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.add : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.mul : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.tmod : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.IE
+VeriTile.Bench.Optimizations.NarrowCat.IE.tdiv : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.IE
+inductive VeriTile.Bench.Optimizations.NarrowCat.BE : Type
+number of parameters: 0
+constructors:
+VeriTile.Bench.Optimizations.NarrowCat.BE.xmask : VeriTile.Bench.Optimizations.NarrowCat.BE
+VeriTile.Bench.Optimizations.NarrowCat.BE.lt : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.BE
+VeriTile.Bench.Optimizations.NarrowCat.BE.ge : VeriTile.Bench.Optimizations.NarrowCat.IE →
+  VeriTile.Bench.Optimizations.NarrowCat.IE → VeriTile.Bench.Optimizations.NarrowCat.BE
+VeriTile.Bench.Optimizations.NarrowCat.BE.and : VeriTile.Bench.Optimizations.NarrowCat.BE →
+  VeriTile.Bench.Optimizations.NarrowCat.BE → VeriTile.Bench.Optimizations.NarrowCat.BE
+inductive VeriTile.Bench.Optimizations.NarrowCat.FE : Type
+number of parameters: 0
+constructors:
+VeriTile.Bench.Optimizations.NarrowCat.FE.zero : VeriTile.Bench.Optimizations.NarrowCat.FE
+VeriTile.Bench.Optimizations.NarrowCat.FE.load : ℕ →
+  VeriTile.Bench.Optimizations.NarrowCat.IE →
+    VeriTile.Bench.Optimizations.NarrowCat.BE → VeriTile.Bench.Optimizations.NarrowCat.FE
+VeriTile.Bench.Optimizations.NarrowCat.FE.add : VeriTile.Bench.Optimizations.NarrowCat.FE →
+  VeriTile.Bench.Optimizations.NarrowCat.FE → VeriTile.Bench.Optimizations.NarrowCat.FE
+VeriTile.Bench.Optimizations.NarrowCat.FE.where : VeriTile.Bench.Optimizations.NarrowCat.BE →
+  VeriTile.Bench.Optimizations.NarrowCat.FE →
+    VeriTile.Bench.Optimizations.NarrowCat.FE → VeriTile.Bench.Optimizations.NarrowCat.FE
+structure VeriTile.Bench.Optimizations.NarrowCat.Lane : Type
+number of parameters: 0
+fields:
+  VeriTile.Bench.Optimizations.NarrowCat.Lane.xi : ℤ
+  VeriTile.Bench.Optimizations.NarrowCat.Lane.ks : ℕ → ℤ
+  VeriTile.Bench.Optimizations.NarrowCat.Lane.xnumel : ℤ
+constructor:
+  VeriTile.Bench.Optimizations.NarrowCat.Lane.mk (xi : ℤ) (ks : ℕ → ℤ) (xnumel : ℤ) :
+    VeriTile.Bench.Optimizations.NarrowCat.Lane
+def VeriTile.Bench.Optimizations.NarrowCat.evI : VeriTile.Bench.Optimizations.NarrowCat.Ty →
+  VeriTile.Bench.Optimizations.NarrowCat.Lane →
+    VeriTile.Bench.Optimizations.NarrowCat.IE → ℤ × Option VeriTile.Bench.Optimizations.NarrowCat.Ty :=
+fun ksTy L x =>
+  VeriTile.Bench.Optimizations.NarrowCat.IE.brecOn x fun x f =>
+    (match (motive :=
+        (x : VeriTile.Bench.Optimizations.NarrowCat.IE) →
+          VeriTile.Bench.Optimizations.NarrowCat.IE.below x → ℤ × Option VeriTile.Bench.Optimizations.NarrowCat.Ty)
+        x with
+      | VeriTile.Bench.Optimizations.NarrowCat.IE.xindex => fun x =>
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT (some VeriTile.Bench.Optimizations.NarrowCat.Ty.i32) L.xi,
+          some VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+      | VeriTile.Bench.Optimizations.NarrowCat.IE.ks i => fun x =>
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT (some ksTy) (L.ks i), some ksTy)
+      | VeriTile.Bench.Optimizations.NarrowCat.IE.lit v => fun x => (v, none)
+      | VeriTile.Bench.Optimizations.NarrowCat.IE.slit v t => fun x =>
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT (some t) v, some t)
+      | e.cast t => fun x => (VeriTile.Bench.Optimizations.NarrowCat.wrapT (some t) x.1.1, some t)
+      | a.add b => fun x =>
+        let t := VeriTile.Bench.Optimizations.NarrowCat.join x.1.1.2 x.2.1.2;
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT t (x.1.1.1 + x.2.1.1), t)
+      | a.mul b => fun x =>
+        let t := VeriTile.Bench.Optimizations.NarrowCat.join x.1.1.2 x.2.1.2;
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT t (x.1.1.1 * x.2.1.1), t)
+      | a.tmod b => fun x =>
+        let t := VeriTile.Bench.Optimizations.NarrowCat.join x.1.1.2 x.2.1.2;
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT t (x.1.1.1.tmod x.2.1.1), t)
+      | a.tdiv b => fun x =>
+        let t := VeriTile.Bench.Optimizations.NarrowCat.join x.1.1.2 x.2.1.2;
+        (VeriTile.Bench.Optimizations.NarrowCat.wrapT t (x.1.1.1.tdiv x.2.1.1), t))
+      f
+def VeriTile.Bench.Optimizations.NarrowCat.evB : VeriTile.Bench.Optimizations.NarrowCat.Ty →
+  VeriTile.Bench.Optimizations.NarrowCat.Lane → VeriTile.Bench.Optimizations.NarrowCat.BE → Bool :=
+fun ksTy L x =>
+  VeriTile.Bench.Optimizations.NarrowCat.BE.brecOn x fun x f =>
+    (match (motive :=
+        (x : VeriTile.Bench.Optimizations.NarrowCat.BE) → VeriTile.Bench.Optimizations.NarrowCat.BE.below x → Bool)
+        x with
+      | VeriTile.Bench.Optimizations.NarrowCat.BE.xmask => fun x =>
+        decide
+          (VeriTile.Bench.Optimizations.NarrowCat.wrapT (some VeriTile.Bench.Optimizations.NarrowCat.Ty.i32) L.xi <
+            VeriTile.Bench.Optimizations.NarrowCat.wrapT (some VeriTile.Bench.Optimizations.NarrowCat.Ty.i32) L.xnumel)
+      | VeriTile.Bench.Optimizations.NarrowCat.BE.lt a b => fun x =>
+        decide
+          ((VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L a).1 <
+            (VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L b).1)
+      | VeriTile.Bench.Optimizations.NarrowCat.BE.ge a b => fun x =>
+        decide
+          ((VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L b).1 ≤
+            (VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L a).1)
+      | a.and b => fun x => x.1.1 && x.2.1)
+      f
+inductive VeriTile.Bench.Optimizations.NarrowCat.Val : Type
+number of parameters: 0
+constructors:
+VeriTile.Bench.Optimizations.NarrowCat.Val.zero : VeriTile.Bench.Optimizations.NarrowCat.Val
+VeriTile.Bench.Optimizations.NarrowCat.Val.mem : ℕ → ℤ → VeriTile.Bench.Optimizations.NarrowCat.Val
+VeriTile.Bench.Optimizations.NarrowCat.Val.add : VeriTile.Bench.Optimizations.NarrowCat.Val →
+  VeriTile.Bench.Optimizations.NarrowCat.Val → VeriTile.Bench.Optimizations.NarrowCat.Val
+def VeriTile.Bench.Optimizations.NarrowCat.evF : VeriTile.Bench.Optimizations.NarrowCat.Ty →
+  VeriTile.Bench.Optimizations.NarrowCat.Lane →
+    VeriTile.Bench.Optimizations.NarrowCat.FE → VeriTile.Bench.Optimizations.NarrowCat.Val :=
+fun ksTy L x =>
+  VeriTile.Bench.Optimizations.NarrowCat.FE.brecOn x fun x f =>
+    (match (motive :=
+        (x : VeriTile.Bench.Optimizations.NarrowCat.FE) →
+          VeriTile.Bench.Optimizations.NarrowCat.FE.below x → VeriTile.Bench.Optimizations.NarrowCat.Val)
+        x with
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.zero => fun x => VeriTile.Bench.Optimizations.NarrowCat.Val.zero
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.load p off m => fun x =>
+        if VeriTile.Bench.Optimizations.NarrowCat.evB ksTy L m = «true» then
+          VeriTile.Bench.Optimizations.NarrowCat.Val.mem p (VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L off).1
+        else VeriTile.Bench.Optimizations.NarrowCat.Val.zero
+      | a.add b => fun x => VeriTile.Bench.Optimizations.NarrowCat.Val.add x.1.1 x.2.1
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.where c a b => fun x =>
+        if VeriTile.Bench.Optimizations.NarrowCat.evB ksTy L c = «true» then x.1.1 else x.2.1)
+      f
+def VeriTile.Bench.Optimizations.NarrowCat.reads : VeriTile.Bench.Optimizations.NarrowCat.Ty →
+  VeriTile.Bench.Optimizations.NarrowCat.Lane → VeriTile.Bench.Optimizations.NarrowCat.FE → List (ℕ × ℤ) :=
+fun ksTy L x =>
+  VeriTile.Bench.Optimizations.NarrowCat.FE.brecOn x fun x f =>
+    (match (motive :=
+        (x : VeriTile.Bench.Optimizations.NarrowCat.FE) →
+          VeriTile.Bench.Optimizations.NarrowCat.FE.below x → List (ℕ × ℤ))
+        x with
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.zero => fun x => []
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.load p off m => fun x =>
+        if VeriTile.Bench.Optimizations.NarrowCat.evB ksTy L m = «true» then
+          [(p, (VeriTile.Bench.Optimizations.NarrowCat.evI ksTy L off).1)]
+        else []
+      | a.add b => fun x => x.1.1 ++ x.2.1
+      | VeriTile.Bench.Optimizations.NarrowCat.FE.where c a b => fun x => x.1.1 ++ x.2.1)
+      f
+def VeriTile.Bench.Optimizations.NarrowCat.catValue : VeriTile.Bench.Optimizations.NarrowCat.FE :=
+VeriTile.Bench.Optimizations.NarrowCat.FE.where
+  (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+    (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+      VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+    (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+      VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))
+  (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+    (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+      (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+      (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))
+    (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+      (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+        (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).cast VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))
+      (VeriTile.Bench.Optimizations.NarrowCat.FE.load 0
+        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).mul
+              (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+          (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)))
+        (((VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                  (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                  (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+              (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                      VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                      VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+          VeriTile.Bench.Optimizations.NarrowCat.BE.xmask))
+      (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+        ((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+          (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+            (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+            ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)))
+        (VeriTile.Bench.Optimizations.NarrowCat.FE.load 1
+          (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3).mul
+                (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+            (((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1)).add
+              (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))))
+          ((((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+                    (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                      (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                      ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+                (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                  (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                  (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+            VeriTile.Bench.Optimizations.NarrowCat.BE.xmask))
+        (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+          ((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+            (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+              (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)))
+          ((VeriTile.Bench.Optimizations.NarrowCat.FE.load 2
+                (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2).mul
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+                  ((((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1)).add
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).add
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))))
+                (((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                          (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+                      (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                        (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+                  VeriTile.Bench.Optimizations.NarrowCat.BE.xmask)).add
+            (VeriTile.Bench.Optimizations.NarrowCat.FE.load 3
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2).mul
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+                ((((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1)).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).add
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))))
+              (((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+                    (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                      (((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                      (((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+                VeriTile.Bench.Optimizations.NarrowCat.BE.xmask)))
+          VeriTile.Bench.Optimizations.NarrowCat.FE.zero)))
+    VeriTile.Bench.Optimizations.NarrowCat.FE.zero)
+  (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+    (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+      ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+        VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+      ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+        VeriTile.Bench.Optimizations.NarrowCat.Ty.i32))
+    (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+      (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+        ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                  ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).cast VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))
+      (VeriTile.Bench.Optimizations.NarrowCat.FE.load 4
+        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).mul
+              (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+          ((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+            ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))))
+        (((VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                  ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                            ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                  (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+              (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32))).and
+          VeriTile.Bench.Optimizations.NarrowCat.BE.xmask))
+      (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+        ((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+              ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                            ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+          (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+            ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                              ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+            ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).add
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)))
+        (VeriTile.Bench.Optimizations.NarrowCat.FE.load 5
+          (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5).mul
+                (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+            (((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4)).add
+              ((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)))))
+          ((((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                        ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                                  ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).cast
+                              VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)).and
+                    (VeriTile.Bench.Optimizations.NarrowCat.BE.lt
+                      ((((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64)
+                      ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i64).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i64))).and
+                (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                  ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                  ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                    VeriTile.Bench.Optimizations.NarrowCat.Ty.i32))).and
+            VeriTile.Bench.Optimizations.NarrowCat.BE.xmask))
+        (VeriTile.Bench.Optimizations.NarrowCat.FE.where
+          ((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                (((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                              ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).add
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5)).cast
+                  VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+            (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+              ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+              ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)))
+          ((VeriTile.Bench.Optimizations.NarrowCat.FE.load 6
+                (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 6).mul
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+                  ((((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4)).add
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5))).add
+                    ((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                              ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                          ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)))))
+                (((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                          (((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                                ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                          (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5)).cast
+                            VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+                      (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                        ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                  (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32))).and
+                  VeriTile.Bench.Optimizations.NarrowCat.BE.xmask)).add
+            (VeriTile.Bench.Optimizations.NarrowCat.FE.load 7
+              (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 6).mul
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tdiv
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0))).add
+                ((((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4)).add
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5))).add
+                  ((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                            ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                        ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                    ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                      (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)))))
+              (((VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                        (((((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                                          (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).add
+                                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                        (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1))).add
+                                  ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2))).add
+                              ((VeriTile.Bench.Optimizations.NarrowCat.IE.lit (-1)).mul
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3))).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                        (((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 4).add
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 5)).cast
+                          VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)).and
+                    (VeriTile.Bench.Optimizations.NarrowCat.BE.ge
+                      ((VeriTile.Bench.Optimizations.NarrowCat.IE.xindex.tmod
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i32)
+                      ((((VeriTile.Bench.Optimizations.NarrowCat.IE.ks 1).add
+                                (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 2)).add
+                            (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 3)).cast
+                        VeriTile.Bench.Optimizations.NarrowCat.Ty.i32))).and
+                VeriTile.Bench.Optimizations.NarrowCat.BE.xmask)))
+          VeriTile.Bench.Optimizations.NarrowCat.FE.zero)))
+    VeriTile.Bench.Optimizations.NarrowCat.FE.zero)
+def VeriTile.Bench.Optimizations.NarrowCat.catStoreOffset : VeriTile.Bench.Optimizations.NarrowCat.IE :=
+VeriTile.Bench.Optimizations.NarrowCat.IE.xindex
+def VeriTile.Bench.Optimizations.NarrowCat.catStoreMask : VeriTile.Bench.Optimizations.NarrowCat.BE :=
+VeriTile.Bench.Optimizations.NarrowCat.BE.xmask
+@VeriTile.Bench.Optimizations.NarrowCat.grid_xindex_lt : ∀ {xnumel k pid j : ℕ},
+  k ≤ 31 → xnumel ≤ 2 ^ 31 - 1 → pid < (xnumel + 2 ^ k - 1) / 2 ^ k → j < 2 ^ k → pid * 2 ^ k + j < 2 ^ 31
+VeriTile.Bench.Optimizations.NarrowCat.narrow_cat_equiv : ∀ (L : VeriTile.Bench.Optimizations.NarrowCat.Lane) (n : ℕ),
+  (∀ (i : ℕ), 1 ≤ i → i ≤ 6 → 0 ≤ L.ks i) →
+    L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6 →
+      L.xnumel = ↑n * L.ks 0 →
+        L.xnumel ≤ 2 ^ 31 - 1 →
+          0 ≤ L.xi →
+            L.xi < 2 ^ 31 →
+              VeriTile.Bench.Optimizations.NarrowCat.evB VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                    VeriTile.Bench.Optimizations.NarrowCat.catStoreMask =
+                  VeriTile.Bench.Optimizations.NarrowCat.evB VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                    VeriTile.Bench.Optimizations.NarrowCat.catStoreMask ∧
+                (VeriTile.Bench.Optimizations.NarrowCat.evB VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                        VeriTile.Bench.Optimizations.NarrowCat.catStoreMask =
+                      «true» →
+                    (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                            VeriTile.Bench.Optimizations.NarrowCat.catStoreOffset).1 =
+                        (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                            VeriTile.Bench.Optimizations.NarrowCat.catStoreOffset).1 ∧
+                      VeriTile.Bench.Optimizations.NarrowCat.evF VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                          VeriTile.Bench.Optimizations.NarrowCat.catValue =
+                        VeriTile.Bench.Optimizations.NarrowCat.evF VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                          VeriTile.Bench.Optimizations.NarrowCat.catValue) ∧
+                  VeriTile.Bench.Optimizations.NarrowCat.reads VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                      VeriTile.Bench.Optimizations.NarrowCat.catValue =
+                    VeriTile.Bench.Optimizations.NarrowCat.reads VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                      VeriTile.Bench.Optimizations.NarrowCat.catValue
+VeriTile.Bench.Optimizations.NarrowCat.narrow_cat_divisor : ∀ (L : VeriTile.Bench.Optimizations.NarrowCat.Lane) (n : ℕ),
+  (∀ (i : ℕ), 1 ≤ i → i ≤ 6 → 0 ≤ L.ks i) →
+    L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6 →
+      L.xnumel = ↑n * L.ks 0 →
+        L.xnumel ≤ 2 ^ 31 - 1 →
+          0 < L.xnumel →
+            (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).1 =
+                (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i64 L
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).1 ∧
+              0 <
+                (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                    (VeriTile.Bench.Optimizations.NarrowCat.IE.ks 0)).1
+VeriTile.Bench.Optimizations.NarrowCat.guarded_N_else_unreachable : ∀ (L : VeriTile.Bench.Optimizations.NarrowCat.Lane)
+  (n : ℕ),
+  (∀ (i : ℕ), 1 ≤ i → i ≤ 6 → 0 ≤ L.ks i) →
+    L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6 →
+      L.xnumel = ↑n * L.ks 0 → L.xnumel ≤ 2 ^ 31 - 1 → 0 < L.xnumel → ∀ i ≤ 6, 0 ≤ L.ks i ∧ L.ks i < 2 ^ 31
