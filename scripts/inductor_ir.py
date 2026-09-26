@@ -188,7 +188,7 @@ def extract(src: str) -> dict:
     walk(store[2])
     dead = [k for k in env if k not in used and k not in ("xindex", "xmask")]
     return {"store": store, "loads": reach, "dead": dead, "kernel_args": args, "pointers": ptrs, "ks": ks,
-            "dead_kinds": {k: kinds[k] for k in dead}}
+            "dead_kinds": {k: kinds[k] for k in dead}, "dead_ir": {k: env[k] for k in dead}}
 
 
 # ---------------------------------------------------------------------------- Python semantics
