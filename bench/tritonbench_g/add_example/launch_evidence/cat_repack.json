@@ -1,0 +1,1176 @@
+{
+ "kind": "cat_repack (PyTorch #189940 reproduction + two candidates)",
+ "device": "cuda",
+ "gpu_name": "NVIDIA L4",
+ "compute_capability": [
+  8,
+  9
+ ],
+ "torch": "2.14.0+cu130",
+ "triton": "3.8.0",
+ "torch_cuda": "13.0",
+ "cpu": "model name\t: unknown\n1",
+ "TRITON_INTERPRET": null,
+ "sequence": [
+  [
+   2048,
+   "issue"
+  ],
+  [
+   4096,
+   "issue"
+  ],
+  [
+   16384,
+   "issue"
+  ],
+  [
+   2048,
+   "llama8b"
+  ],
+  [
+   4096,
+   "llama8b"
+  ],
+  [
+   16384,
+   "llama8b"
+  ],
+  [
+   2048,
+   "mid"
+  ],
+  [
+   4096,
+   "mid"
+  ],
+  [
+   16384,
+   "mid"
+  ],
+  [
+   32768,
+   "issue"
+  ]
+ ],
+ "widths": {
+  "issue": [
+   2048,
+   256,
+   256
+  ],
+  "llama8b": [
+   4096,
+   1024,
+   1024
+  ],
+  "mid": [
+   3072,
+   512,
+   512
+  ]
+ },
+ "rows": [
+  {
+   "n": 2048,
+   "widths": [
+    2048,
+    256,
+    256
+   ],
+   "wset": "issue",
+   "compile_s": {
+    "compiled_dynamic": 8.6742263,
+    "compiled_static": 1.7473194930000027,
+    "fallback_equiv": 1.1187942960000008,
+    "cand_A_tiled": 0.16404269700000285,
+    "cand_B_fastdiv": 0.3123131689999994
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 0.2582732772827148,
+      "compiled_dynamic": 0.2044211196899414,
+      "fallback_equiv": 0.26177536010742186,
+      "compiled_static": 0.08418304443359376,
+      "cand_A_tiled": 0.05301248073577881,
+      "cand_B_fastdiv": 0.09069567680358886
+     },
+     "single_us": {
+      "eager": 246.85300000015786,
+      "compiled_dynamic": 350.8334999988705,
+      "fallback_equiv": 397.1375000002553,
+      "compiled_static": 140.1164999990101,
+      "cand_A_tiled": 83.15649999879327,
+      "cand_B_fastdiv": 138.31399999908456
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 0.18897920608520508,
+      "fallback_equiv": 0.26097663879394534,
+      "compiled_static": 0.08392704010009766,
+      "cand_A_tiled": 0.05261312007904053,
+      "cand_B_fastdiv": 0.08491007804870605,
+      "eager": 0.2269900894165039
+     },
+     "single_us": {
+      "compiled_dynamic": 355.9850000023346,
+      "fallback_equiv": 397.33999999924663,
+      "compiled_static": 140.53900000021713,
+      "cand_A_tiled": 83.78200000080938,
+      "cand_B_fastdiv": 136.50799999886942,
+      "eager": 243.77999999991573
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 0.2613043212890625,
+      "compiled_static": 0.08419327735900879,
+      "cand_A_tiled": 0.052643837928771975,
+      "cand_B_fastdiv": 0.0849407958984375,
+      "eager": 0.2266009521484375,
+      "compiled_dynamic": 0.24016895294189453
+     },
+     "single_us": {
+      "fallback_equiv": 397.3419999994121,
+      "compiled_static": 144.27200000000084,
+      "cand_A_tiled": 85.51700000047902,
+      "cand_B_fastdiv": 140.36500000003116,
+      "eager": 244.389999998873,
+      "compiled_dynamic": 329.88249999910124
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 0.2269900894165039,
+     "compiled_dynamic": 0.2044211196899414,
+     "fallback_equiv": 0.2613043212890625,
+     "compiled_static": 0.08418304443359376,
+     "cand_A_tiled": 0.052643837928771975,
+     "cand_B_fastdiv": 0.0849407958984375
+    },
+    "single_us": {
+     "eager": 244.389999998873,
+     "compiled_dynamic": 350.8334999988705,
+     "fallback_equiv": 397.33999999924663,
+     "compiled_static": 140.53900000021713,
+     "cand_A_tiled": 83.78200000080938,
+     "cand_B_fastdiv": 138.31399999908456
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 254.7545,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 189.78699999999992,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 251.69349999999986,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 64.30199999999991,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 24.89149999999995,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 73.88549999999987,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "n": 4096,
+   "widths": [
+    2048,
+    256,
+    256
+   ],
+   "wset": "issue",
+   "compile_s": {
+    "compiled_dynamic": 3.4462296620000004,
+    "compiled_static": 2.142246122000003,
+    "fallback_equiv": 0.11125026500000246,
+    "cand_A_tiled": 0.011737476000000413,
+    "cand_B_fastdiv": 0.007749617999998293
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 0.7063654327392578,
+      "compiled_dynamic": 0.5633126449584961,
+      "fallback_equiv": 0.7445401763916015,
+      "compiled_static": 0.382289924621582,
+      "cand_A_tiled": 0.34510848999023436,
+      "cand_B_fastdiv": 0.3337420654296875
+     },
+     "single_us": {
+      "eager": 724.9135000009232,
+      "compiled_dynamic": 645.8454999958008,
+      "fallback_equiv": 872.4699999973495,
+      "compiled_static": 467.6164999999344,
+      "cand_A_tiled": 403.8235000010104,
+      "cand_B_fastdiv": 394.9695000002862
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 0.5996646499633789,
+      "fallback_equiv": 0.7451750183105469,
+      "compiled_static": 0.3817472076416016,
+      "cand_A_tiled": 0.3441356658935547,
+      "cand_B_fastdiv": 0.33395713806152344,
+      "eager": 0.7064575958251953
+     },
+     "single_us": {
+      "compiled_dynamic": 682.4400000020603,
+      "fallback_equiv": 865.3754999983221,
+      "compiled_static": 465.0354999995443,
+      "cand_A_tiled": 408.54099999521054,
+      "cand_B_fastdiv": 396.19949999902815,
+      "eager": 724.2854999987003
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 0.7421234893798828,
+      "compiled_static": 0.38221824645996094,
+      "cand_A_tiled": 0.3455487823486328,
+      "cand_B_fastdiv": 0.33416191101074216,
+      "eager": 0.7055769348144532,
+      "compiled_dynamic": 0.6240707015991211
+     },
+     "single_us": {
+      "fallback_equiv": 865.2770000026067,
+      "compiled_static": 465.9914999969317,
+      "cand_A_tiled": 405.0010000007376,
+      "cand_B_fastdiv": 395.733499999551,
+      "eager": 725.401000000403,
+      "compiled_dynamic": 693.2105000032607
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 0.7063654327392578,
+     "compiled_dynamic": 0.5996646499633789,
+     "fallback_equiv": 0.7445401763916015,
+     "compiled_static": 0.38221824645996094,
+     "cand_A_tiled": 0.34510848999023436,
+     "cand_B_fastdiv": 0.33395713806152344
+    },
+    "single_us": {
+     "eager": 724.9135000009232,
+     "compiled_dynamic": 682.4400000020603,
+     "fallback_equiv": 865.3754999983221,
+     "compiled_static": 465.9914999969317,
+     "cand_A_tiled": 405.0010000007376,
+     "cand_B_fastdiv": 395.733499999551
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 722.9850000000001,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 414.87350000000015,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 718.8620000000004,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 355.846,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 327.20349999999996,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 312.6075000000001,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "n": 16384,
+   "widths": [
+    2048,
+    256,
+    256
+   ],
+   "wset": "issue",
+   "compile_s": {
+    "compiled_dynamic": 3.5244323319999964,
+    "compiled_static": 2.092331381000001,
+    "fallback_equiv": 0.1090609429999958,
+    "cand_A_tiled": 0.012311027999999169,
+    "cand_B_fastdiv": 0.008868589999998733
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 3.0630502319335937,
+      "compiled_dynamic": 2.539356231689453,
+      "fallback_equiv": 3.0807040405273436,
+      "compiled_static": 1.5197080993652343,
+      "cand_A_tiled": 1.4790144348144532,
+      "cand_B_fastdiv": 1.4148812866210938
+     },
+     "single_us": {
+      "eager": 3080.658500003608,
+      "compiled_dynamic": 2747.4294999976223,
+      "fallback_equiv": 3221.67699999909,
+      "compiled_static": 1634.0679999942154,
+      "cand_A_tiled": 1549.5780000023274,
+      "cand_B_fastdiv": 1493.7589999988177
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 2.7030938720703124,
+      "fallback_equiv": 3.080714111328125,
+      "compiled_static": 1.513850860595703,
+      "cand_A_tiled": 1.4789018249511718,
+      "cand_B_fastdiv": 1.4363340759277343,
+      "eager": 3.05691650390625
+     },
+     "single_us": {
+      "compiled_dynamic": 2625.971500002322,
+      "fallback_equiv": 3215.7469999987143,
+      "compiled_static": 1624.3840000029763,
+      "cand_A_tiled": 1546.014500000581,
+      "cand_B_fastdiv": 1485.5475000032925,
+      "eager": 3078.313500004981
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 3.0800384521484374,
+      "compiled_static": 1.5165132141113282,
+      "cand_A_tiled": 1.4778060913085938,
+      "cand_B_fastdiv": 1.4371430969238281,
+      "eager": 3.056066589355469,
+      "compiled_dynamic": 2.716200866699219
+     },
+     "single_us": {
+      "fallback_equiv": 3211.7969999987395,
+      "compiled_static": 1622.096000005513,
+      "cand_A_tiled": 1545.991000000413,
+      "cand_B_fastdiv": 1487.7109999957838,
+      "eager": 3077.4794999999244,
+      "compiled_dynamic": 2711.6230000032715
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 3.05691650390625,
+     "compiled_dynamic": 2.7030938720703124,
+     "fallback_equiv": 3.0807040405273436,
+     "compiled_static": 1.5165132141113282,
+     "cand_A_tiled": 1.4789018249511718,
+     "cand_B_fastdiv": 1.4363340759277343
+    },
+    "single_us": {
+     "eager": 3078.313500004981,
+     "compiled_dynamic": 2711.6230000032715,
+     "fallback_equiv": 3215.7469999987143,
+     "compiled_static": 1624.3840000029763,
+     "cand_A_tiled": 1546.014500000581,
+     "cand_B_fastdiv": 1487.7109999957838
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 3085.3465000000006,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 1739.2115000000001,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 3068.1790000000005,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 1503.7275,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 1461.8339999999998,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 1388.881,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "n": 2048,
+   "widths": [
+    4096,
+    1024,
+    1024
+   ],
+   "wset": "llama8b",
+   "compile_s": {
+    "compiled_dynamic": 4.544697600999996,
+    "compiled_static": 1.6601498609999936,
+    "fallback_equiv": 0.31923297799998807,
+    "cand_A_tiled": 0.013099267000001191,
+    "cand_B_fastdiv": 0.3338338410000006
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 0.917760009765625,
+      "compiled_dynamic": 0.6980198669433594,
+      "fallback_equiv": 0.9486335754394531,
+      "compiled_static": 0.47453182220458984,
+      "cand_A_tiled": 0.43880447387695315,
+      "cand_B_fastdiv": 0.42424320220947265
+     },
+     "single_us": {
+      "eager": 937.2769999984598,
+      "compiled_dynamic": 792.16950000216,
+      "fallback_equiv": 1072.960000001899,
+      "compiled_static": 558.0985000008809,
+      "cand_A_tiled": 499.4225000061192,
+      "cand_B_fastdiv": 485.620500001005
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 0.7984537506103515,
+      "fallback_equiv": 0.9483878326416015,
+      "compiled_static": 0.47507457733154296,
+      "cand_A_tiled": 0.4392140960693359,
+      "cand_B_fastdiv": 0.42515457153320313,
+      "eager": 0.916858901977539
+     },
+     "single_us": {
+      "compiled_dynamic": 783.6794999960262,
+      "fallback_equiv": 1075.0539999975217,
+      "compiled_static": 558.0194999978971,
+      "cand_A_tiled": 500.2860000047349,
+      "cand_B_fastdiv": 484.7749999967732,
+      "eager": 936.4585000000147
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 0.9489510345458985,
+      "compiled_static": 0.4743782424926758,
+      "cand_A_tiled": 0.439920654296875,
+      "cand_B_fastdiv": 0.42371070861816407,
+      "eager": 0.9179545593261719,
+      "compiled_dynamic": 0.7448063659667968
+     },
+     "single_us": {
+      "fallback_equiv": 1072.8625000027137,
+      "compiled_static": 558.6549999989643,
+      "cand_A_tiled": 499.7395000074789,
+      "cand_B_fastdiv": 485.55150000595404,
+      "eager": 936.512000002665,
+      "compiled_dynamic": 830.3969999943206
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 0.917760009765625,
+     "compiled_dynamic": 0.7448063659667968,
+     "fallback_equiv": 0.9486335754394531,
+     "compiled_static": 0.47453182220458984,
+     "cand_A_tiled": 0.4392140960693359,
+     "cand_B_fastdiv": 0.42424320220947265
+    },
+    "single_us": {
+     "eager": 936.512000002665,
+     "compiled_dynamic": 792.16950000216,
+     "fallback_equiv": 1072.960000001899,
+     "compiled_static": 558.0985000008809,
+     "cand_A_tiled": 499.7395000074789,
+     "cand_B_fastdiv": 485.55150000595404
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 943.8199999999997,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 507.2415000000001,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 923.6674999999998,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 447.847,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 423.9735000000002,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 400.82899999999995,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "n": 4096,
+   "widths": [
+    4096,
+    1024,
+    1024
+   ],
+   "wset": "llama8b",
+   "compile_s": {
+    "compiled_dynamic": 3.5240932350000094,
+    "compiled_static": 2.211458087000011,
+    "fallback_equiv": 0.12106255300000157,
+    "cand_A_tiled": 0.011789475000000493,
+    "cand_B_fastdiv": 0.00846122299999763
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 1.8998477172851562,
+      "compiled_dynamic": 1.537013702392578,
+      "fallback_equiv": 1.9281304931640626,
+      "compiled_static": 0.9402982330322266,
+      "cand_A_tiled": 0.9027788543701172,
+      "cand_B_fastdiv": 0.862402572631836
+     },
+     "single_us": {
+      "eager": 1921.8349999974293,
+      "compiled_dynamic": 1632.578500007753,
+      "fallback_equiv": 2049.130999992599,
+      "compiled_static": 1029.4275000006792,
+      "cand_A_tiled": 966.3595000048986,
+      "cand_B_fastdiv": 923.4684999981368
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 1.6716390991210937,
+      "fallback_equiv": 1.9267890930175782,
+      "compiled_static": 0.9428275299072265,
+      "cand_A_tiled": 0.9038540649414063,
+      "cand_B_fastdiv": 0.8600678253173828,
+      "eager": 1.9002470397949218
+     },
+     "single_us": {
+      "compiled_dynamic": 1690.0305000007165,
+      "fallback_equiv": 2055.253500003573,
+      "compiled_static": 1035.93050000228,
+      "cand_A_tiled": 968.377499994233,
+      "cand_B_fastdiv": 924.3694999980789,
+      "eager": 1921.8644999980938
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 1.9254066467285156,
+      "compiled_static": 0.9420697784423828,
+      "cand_A_tiled": 0.9030655670166016,
+      "cand_B_fastdiv": 0.8637235260009766,
+      "eager": 1.9002777099609376,
+      "compiled_dynamic": 1.6895896911621093
+     },
+     "single_us": {
+      "fallback_equiv": 2054.886999999894,
+      "compiled_static": 1035.311499997249,
+      "cand_A_tiled": 969.2900000004556,
+      "cand_B_fastdiv": 928.258000001847,
+      "eager": 1923.449499997787,
+      "compiled_dynamic": 1613.6240000079738
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 1.9002470397949218,
+     "compiled_dynamic": 1.6716390991210937,
+     "fallback_equiv": 1.9267890930175782,
+     "compiled_static": 0.9420697784423828,
+     "cand_A_tiled": 0.9030655670166016,
+     "cand_B_fastdiv": 0.862402572631836
+    },
+    "single_us": {
+     "eager": 1921.8644999980938,
+     "compiled_dynamic": 1632.578500007753,
+     "fallback_equiv": 2054.886999999894,
+     "compiled_static": 1035.311499997249,
+     "cand_A_tiled": 968.377499994233,
+     "cand_B_fastdiv": 924.3694999980789
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 1917.7689999999993,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 1037.5324999999998,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 1910.7655,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 924.6005,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 889.053,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 838.8925,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "n": 16384,
+   "widths": [
+    4096,
+    1024,
+    1024
+   ],
+   "wset": "llama8b",
+   "compile_s": {
+    "compiled_dynamic": 3.4536076339999937,
+    "compiled_static": 2.240601538000007,
+    "fallback_equiv": 0.11944274799998311,
+    "cand_A_tiled": 0.015110426000006782,
+    "cand_B_fastdiv": 0.010727707000000919
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 7.785953369140625,
+      "compiled_dynamic": 6.38403564453125,
+      "fallback_equiv": 7.760619506835938,
+      "compiled_static": 3.755704345703125,
+      "cand_A_tiled": 3.700684814453125,
+      "cand_B_fastdiv": 3.6388555908203126
+     },
+     "single_us": {
+      "eager": 7786.893000002237,
+      "compiled_dynamic": 6724.600500007227,
+      "fallback_equiv": 7871.4710000014065,
+      "compiled_static": 3892.384499991408,
+      "cand_A_tiled": 3811.08050000023,
+      "cand_B_fastdiv": 3676.0695000026544
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 6.284769287109375,
+      "fallback_equiv": 7.741757202148437,
+      "compiled_static": 3.760506896972656,
+      "cand_A_tiled": 3.697735595703125,
+      "cand_B_fastdiv": 3.654410095214844,
+      "eager": 7.76226806640625
+     },
+     "single_us": {
+      "compiled_dynamic": 6716.445999998655,
+      "fallback_equiv": 7880.040000003419,
+      "compiled_static": 3888.596500019048,
+      "cand_A_tiled": 3770.3940000000102,
+      "cand_B_fastdiv": 3739.048499994624,
+      "eager": 7784.115000006864
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 7.745730590820313,
+      "compiled_static": 3.757926330566406,
+      "cand_A_tiled": 3.6967422485351564,
+      "cand_B_fastdiv": 3.775784912109375,
+      "eager": 7.757240600585938,
+      "compiled_dynamic": 6.675875854492188
+     },
+     "single_us": {
+      "fallback_equiv": 7888.401499997144,
+      "compiled_static": 3894.202500006827,
+      "cand_A_tiled": 3768.908000012061,
+      "cand_B_fastdiv": 3734.7579999931213,
+      "eager": 7791.152499990517,
+      "compiled_dynamic": 7139.944000002174
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 7.76226806640625,
+     "compiled_dynamic": 6.38403564453125,
+     "fallback_equiv": 7.745730590820313,
+     "compiled_static": 3.757926330566406,
+     "cand_A_tiled": 3.697735595703125,
+     "cand_B_fastdiv": 3.654410095214844
+    },
+    "single_us": {
+     "eager": 7786.893000002237,
+     "compiled_dynamic": 6724.600500007227,
+     "fallback_equiv": 7880.040000003419,
+     "compiled_static": 3892.384499991408,
+     "cand_A_tiled": 3770.3940000000102,
+     "cand_B_fastdiv": 3734.7579999931213
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 7771.067999999999,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 4331.3385,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 7761.5615,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 3745.2295000000004,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 3684.3835,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 3535.146,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"/repo/scripts/launch_cat.py\", line 388, in <module>\n    print(\"RESULT \" + json.dumps(measure_shape(int(sys.argv[i + 1]), sys.argv[i + 2]), default=str))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 274, in measure_shape\n    t0 = time.perf_counter(); out_b = Bk(*ins); sync(); rec[\"compile_s\"][\"cand_B_fastdiv\"] = time.perf_counter() - t0\n                                      ^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 186, in run\n    fastdiv[((total + B - 1) // B,)](*ins, out, wq, wk, wv, total, m1, s, BLOCK=B)\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 374, in <lambda>\n    return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 757, in run\n    kernel = self._do_compile(key, signature, device, constexprs, options, attrs, warmup)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 902, in _do_compile\n    kernel = self.compile(src, target=target, options=options.__dict__)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 307, in compile\n    module = src.make_ir(target, options, codegen_fns, module_map, context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 80, in make_ir\n    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 7:26:\ndef repack_fastdiv(q1, k1, va1, vb1, q2, k2, va2, vb2, out, wq, wk, wv, total, magic, shift,\n                   BLOCK: tl.constexpr):\n    x = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)          # int32: total < 2^31 (checked)\n    xm = x < total\n    W = 2 * (wq + wk + wv)\n    xu = x.to(tl.uint32)\n    row = ((tl.umulhi(xu, magic.to(tl.uint32)) + xu) >> shift.to(tl.uint32)).to(tl.int32)\n                          ^\nAttributeError(\"'int' object has no attribute 'to'\")\n"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"/repo/scripts/launch_cat.py\", line 388, in <module>\n    print(\"RESULT \" + json.dumps(measure_shape(int(sys.argv[i + 1]), sys.argv[i + 2]), default=str))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 274, in measure_shape\n    t0 = time.perf_counter(); out_b = Bk(*ins); sync(); rec[\"compile_s\"][\"cand_B_fastdiv\"] = time.perf_counter() - t0\n                                      ^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 186, in run\n    fastdiv[((total + B - 1) // B,)](*ins, out, wq, wk, wv, total, m1, s, BLOCK=B)\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 374, in <lambda>\n    return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 757, in run\n    kernel = self._do_compile(key, signature, device, constexprs, options, attrs, warmup)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 902, in _do_compile\n    kernel = self.compile(src, target=target, options=options.__dict__)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 307, in compile\n    module = src.make_ir(target, options, codegen_fns, module_map, context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 80, in make_ir\n    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 7:26:\ndef repack_fastdiv(q1, k1, va1, vb1, q2, k2, va2, vb2, out, wq, wk, wv, total, magic, shift,\n                   BLOCK: tl.constexpr):\n    x = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)          # int32: total < 2^31 (checked)\n    xm = x < total\n    W = 2 * (wq + wk + wv)\n    xu = x.to(tl.uint32)\n    row = ((tl.umulhi(xu, magic.to(tl.uint32)) + xu) >> shift.to(tl.uint32)).to(tl.int32)\n                          ^\nAttributeError(\"'int' object has no attribute 'to'\")\n"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"/repo/scripts/launch_cat.py\", line 388, in <module>\n    print(\"RESULT \" + json.dumps(measure_shape(int(sys.argv[i + 1]), sys.argv[i + 2]), default=str))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 274, in measure_shape\n    t0 = time.perf_counter(); out_b = Bk(*ins); sync(); rec[\"compile_s\"][\"cand_B_fastdiv\"] = time.perf_counter() - t0\n                                      ^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 186, in run\n    fastdiv[((total + B - 1) // B,)](*ins, out, wq, wk, wv, total, m1, s, BLOCK=B)\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 374, in <lambda>\n    return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 757, in run\n    kernel = self._do_compile(key, signature, device, constexprs, options, attrs, warmup)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 902, in _do_compile\n    kernel = self.compile(src, target=target, options=options.__dict__)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 307, in compile\n    module = src.make_ir(target, options, codegen_fns, module_map, context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 80, in make_ir\n    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 7:26:\ndef repack_fastdiv(q1, k1, va1, vb1, q2, k2, va2, vb2, out, wq, wk, wv, total, magic, shift,\n                   BLOCK: tl.constexpr):\n    x = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)          # int32: total < 2^31 (checked)\n    xm = x < total\n    W = 2 * (wq + wk + wv)\n    xu = x.to(tl.uint32)\n    row = ((tl.umulhi(xu, magic.to(tl.uint32)) + xu) >> shift.to(tl.uint32)).to(tl.int32)\n                          ^\nAttributeError(\"'int' object has no attribute 'to'\")\n"
+  },
+  {
+   "n": 32768,
+   "widths": [
+    2048,
+    256,
+    256
+   ],
+   "wset": "issue",
+   "compile_s": {
+    "compiled_dynamic": 3.5091497999999888,
+    "compiled_static": 2.1681911770000113,
+    "fallback_equiv": 0.11782210700002338,
+    "cand_A_tiled": 0.013660633000000644,
+    "cand_B_fastdiv": 0.00993410899999958
+   },
+   "dynamic_code": {
+    "has_mod_ks": true,
+    "has_div_ks": true,
+    "kernels": [
+     "triton_poi_fused_add_cat_0"
+    ]
+   },
+   "bitwise_equal_eager": {
+    "compiled_dynamic": true,
+    "compiled_static": true,
+    "fallback_equiv": true,
+    "cand_A_tiled": true,
+    "cand_B_fastdiv": true
+   },
+   "trials": [
+    {
+     "issue_ms": {
+      "eager": 6.186434326171875,
+      "compiled_dynamic": 5.5364404296875,
+      "fallback_equiv": 6.175405883789063,
+      "compiled_static": 3.031613464355469,
+      "cand_A_tiled": 2.9905715942382813,
+      "cand_B_fastdiv": 2.92969482421875
+     },
+     "single_us": {
+      "eager": 6194.28199999561,
+      "compiled_dynamic": 5695.436000010545,
+      "fallback_equiv": 6310.004499994193,
+      "compiled_static": 3156.608999987043,
+      "cand_A_tiled": 3057.4634999993577,
+      "cand_B_fastdiv": 2940.385499996978
+     }
+    },
+    {
+     "issue_ms": {
+      "compiled_dynamic": 5.445682983398438,
+      "fallback_equiv": 6.168831787109375,
+      "compiled_static": 3.035299987792969,
+      "cand_A_tiled": 2.990162048339844,
+      "cand_B_fastdiv": 2.9400372314453125,
+      "eager": 6.16489990234375
+     },
+     "single_us": {
+      "compiled_dynamic": 5776.477000011937,
+      "fallback_equiv": 6311.14799999466,
+      "compiled_static": 3171.2705000046526,
+      "cand_A_tiled": 3071.6294999990623,
+      "cand_B_fastdiv": 2943.715499995392,
+      "eager": 6190.612500006409
+     }
+    },
+    {
+     "issue_ms": {
+      "fallback_equiv": 6.167470092773438,
+      "compiled_static": 3.032074279785156,
+      "cand_A_tiled": 2.9898138427734375,
+      "cand_B_fastdiv": 2.9842022705078124,
+      "eager": 6.166835327148437,
+      "compiled_dynamic": 5.59552490234375
+     },
+     "single_us": {
+      "fallback_equiv": 6315.22400000506,
+      "compiled_static": 3158.217499986904,
+      "cand_A_tiled": 3063.6705000119946,
+      "cand_B_fastdiv": 3008.853999986627,
+      "eager": 6193.834000015386,
+      "compiled_dynamic": 5629.457500006652
+     }
+    }
+   ],
+   "summary": {
+    "issue_ms": {
+     "eager": 6.166835327148437,
+     "compiled_dynamic": 5.5364404296875,
+     "fallback_equiv": 6.168831787109375,
+     "compiled_static": 3.032074279785156,
+     "cand_A_tiled": 2.990162048339844,
+     "cand_B_fastdiv": 2.9400372314453125
+    },
+    "single_us": {
+     "eager": 6193.834000015386,
+     "compiled_dynamic": 5695.436000010545,
+     "fallback_equiv": 6311.14799999466,
+     "compiled_static": 3158.217499986904,
+     "cand_A_tiled": 3063.6705000119946,
+     "cand_B_fastdiv": 2943.715499995392
+    }
+   },
+   "kernel_us": {
+    "eager": {
+     "median": 6178.7245,
+     "kernels": [
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat1"
+     ]
+    },
+    "compiled_dynamic": {
+     "median": 3569.131,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "fallback_equiv": {
+     "median": 6147.692,
+     "kernels": [
+      "triton_poi_fused_add_0",
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonym"
+     ]
+    },
+    "compiled_static": {
+     "median": 3022.8415,
+     "kernels": [
+      "triton_poi_fused_add_cat_0"
+     ]
+    },
+    "cand_A_tiled": {
+     "median": 2975.5665,
+     "kernels": [
+      "repack_tiled"
+     ]
+    },
+    "cand_B_fastdiv": {
+     "median": 2831.9545000000003,
+     "kernels": [
+      "repack_fastdiv"
+     ]
+    }
+   }
+  }
+ ],
+ "cold_sequence": {
+  "error": "Traceback (most recent call last):\n  File \"/repo/scripts/launch_cat.py\", line 392, in <module>\n    print(\"RESULT \" + json.dumps(cold_sequence(), default=str))\n                                 ^^^^^^^^^^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 311, in cold_sequence\n    t0 = time.perf_counter(); fn(*a); sync(); row[name] = time.perf_counter() - t0\n                              ^^^^^^\n  File \"/repo/scripts/launch_cat.py\", line 186, in run\n    fastdiv[((total + B - 1) // B,)](*ins, out, wq, wk, wv, total, m1, s, BLOCK=B)\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 374, in <lambda>\n    return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 757, in run\n    kernel = self._do_compile(key, signature, device, constexprs, options, attrs, warmup)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/runtime/jit.py\", line 902, in _do_compile\n    kernel = self.compile(src, target=target, options=options.__dict__)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 307, in compile\n    module = src.make_ir(target, options, codegen_fns, module_map, context)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 80, in make_ir\n    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 7:26:\ndef repack_fastdiv(q1, k1, va1, vb1, q2, k2, va2, vb2, out, wq, wk, wv, total, magic, shift,\n                   BLOCK: tl.constexpr):\n    x = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)          # int32: total < 2^31 (checked)\n    xm = x < total\n    W = 2 * (wq + wk + wv)\n    xu = x.to(tl.uint32)\n    row = ((tl.umulhi(xu, magic.to(tl.uint32)) + xu) >> shift.to(tl.uint32)).to(tl.int32)\n                          ^\nAttributeError(\"'int' object has no attribute 'to'\")\n",
+  "returncode": 1
+ },
+ "reproduce": {
+  "shapes": 7,
+  "reproducing": 0,
+  "reproduced": false
+ },
+ "go": {
+  "cand_A_tiled": {
+   "best_valid_baseline": "compiled_dynamic",
+   "sequence_speedup": 1.8011915568645316,
+   "min_shape_ratio": 1.6957706335755194,
+   "bitwise_all": true,
+   "go": false
+  },
+  "cand_B_fastdiv": {
+   "best_valid_baseline": "compiled_dynamic",
+   "sequence_speedup": 1.8327347307000834,
+   "min_shape_ratio": 1.7469401293770042,
+   "bitwise_all": true,
+   "go": false
+  }
+ },
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Serial.lean": "f79aef0c55c04905e544fff60db59b3e5ba78a4498180f1934e7dcc6eacb5776",
+  "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
+  "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
+  "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
+  "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
+  "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "b18f22ac68eb733572960449291d155b6b80b57f2903d6176f7c51020935015b",
+  "VeriTile/Triton/Launch/Relational.lean": "a08287db2c2724bb1dc9a96f43ab3bef18a94a0799ba4c6586ce6d87fda3a77f",
+  "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean": "b77f0ff3f250b4563271127d972185ea8e7aa25ba40c0fecacf8edc6aca2445f",
+  "VeriTile/Triton/Launch.lean": "8690dd6f04cfb1fe8439ad6eb4693e92bee38f75bd6732556f3c2f6957eef214",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
+  "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
+  "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
+  "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
+  "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
+  "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
+  "scripts/launch_local_check.py": "3d49bdbc6ac9a588236bca2c246359fd0fc652bbcd245baee47fcd7e333a78df",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
+  "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
+  "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
+  "scripts/test_launch_check.py": "61df5a2a7996d1d60d1d92f4bbcf80a0c4979418f909a8a690d9cca4ccaf72de",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
+  "bench/tritonbench_g/add_example/improvement/add_relu_fused.py": "1721d008dc13c60cf1793ee6fc5b964ec5ab3cd2fca4f89c50bed76c59558437",
+  "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
+  "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
+  "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
+  "scripts/launch_fast.py": "4cb9756fdd76c12986feccd55ac5281b16a44fa7c46e85b9fe801c423fbbae09",
+  "scripts/launch_latency.py": "0ee7714a7d268a1a99070753f646acbb4ac857c6afb583aeb6c5f9add0bec858",
+  "scripts/launch_latency_modal.py": "3ab511b5ed80899a43a8e22dc2be12c38e7cd4d96501ab728f5d239a7c2e4de1",
+  "scripts/launch_probe.py": "8f70f96aac9d37483000a75b470d2b80845123e9b1554100d632d76ca8e8ac34",
+  "scripts/launch_select.py": "e7bb7f15796384d923ce000ce8d39aa8fe17736708c5a93b7bb8f997a70b9071",
+  "scripts/launch_rotary.py": "8fccb212080d2b34fee4f708a4c08416fd71e318a861687da2070122a635fb86",
+  "scripts/launch_rotary_modal.py": "5b389133b5d33a9047c909a9e91b800a98f35d2fa5a21cb4af23c42770063fd2",
+  "scripts/launch_cat.py": "7b60b97a52a6d51fb76220b86543365e0d65864c33196d88e8e50234f8564371",
+  "scripts/launch_cat_modal.py": "d51641a980041221bf754cf96af73c3428a36ecc78f25317df2455f534efd6d8",
+  "scripts/launch_addrelu_followup.py": "a704c1d89a27d2dbac23fa51f8dbae05c7e22ff0c02d2a790939e64f8e1218c0",
+  "bench/tritonbench_g/add_example/improvement/relu_masked.py": "d70dae157e8fe56bd5218ae6262a12e580faab8519a81267e0b90b5d3f7fc51a",
+  "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py": "5ce7107b2e57167e62682d51a302b72677d194b8c59c8735acf33d3bbcb0ad1c",
+  "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py": "3581c60f75eb5314c472d4e9ccfd2c0cc8c6a089352352247258c8cbabe7f630",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ }
+}
