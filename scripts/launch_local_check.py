@@ -176,7 +176,7 @@ AUDIT_TARGETS = [
      ["kernel_divmod"]),
     ("bench/optimizations/inductor_narrow/NarrowCat.lean", NRW,
      [f"{NRW}.{t}" for t in ("narrow_cat_equiv", "narrow_cat_divisor", "guarded_N_else_unreachable",
-                            "grid_xindex_lt")],
+                            "grid_xindex_lt", "narrow_cat_args_fit")],
      ["narrow_cat_equiv"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
@@ -327,7 +327,7 @@ NARROW_SURFACE_PRINTS = (
     [f"#print {NRW}.{d}" for d in ("Ty", "Ty.bits", "wrapT", "join", "IE", "BE", "FE", "Lane", "evI", "evB",
                                    "Val", "evF", "reads", "catValue", "catStoreOffset", "catStoreMask")]
     + [f"#check @{NRW}.{t}" for t in ("grid_xindex_lt", "narrow_cat_equiv", "narrow_cat_divisor",
-                                     "guarded_N_else_unreachable")])
+                                     "guarded_N_else_unreachable", "narrow_cat_args_fit")])
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),

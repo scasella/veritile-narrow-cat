@@ -631,3 +631,19 @@ VeriTile.Bench.Optimizations.NarrowCat.guarded_N_else_unreachable : ∀ (L : Ver
   (∀ (i : ℕ), 1 ≤ i → i ≤ 6 → 0 ≤ L.ks i) →
     L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6 →
       L.xnumel = ↑n * L.ks 0 → L.xnumel ≤ 2 ^ 31 - 1 → 0 < L.xnumel → ∀ i ≤ 6, 0 ≤ L.ks i ∧ L.ks i < 2 ^ 31
+VeriTile.Bench.Optimizations.NarrowCat.narrow_cat_args_fit : ∀ (L : VeriTile.Bench.Optimizations.NarrowCat.Lane)
+  (n : ℕ),
+  (∀ (i : ℕ), 1 ≤ i → i ≤ 6 → 1 ≤ L.ks i) →
+    L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6 →
+      L.xnumel = ↑n * L.ks 0 →
+        L.xnumel ≤ 2 ^ 31 - 1 →
+          1 ≤ n →
+            0 < L.xnumel ∧
+              0 < L.ks 0 ∧
+                L.ks 0 ≤ L.xnumel ∧
+                  ∀ i ≤ 6,
+                    0 ≤ L.ks i ∧
+                      L.ks i < 2 ^ 31 ∧
+                        (VeriTile.Bench.Optimizations.NarrowCat.evI VeriTile.Bench.Optimizations.NarrowCat.Ty.i32 L
+                              (VeriTile.Bench.Optimizations.NarrowCat.IE.ks i)).1 =
+                          L.ks i

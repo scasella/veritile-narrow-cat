@@ -412,4 +412,15 @@ theorem guarded_N_else_unreachable (L : Lane) (n : Nat)
   intro i hi
   interval_cases i <;> constructor <;> norm_num <;> omega
 
+/-- **Nonempty launches and exact `i32` packing** (the rule's premises H1' and H3'). When every width and the row
+count are at least 1, as Inductor's value ranges establish, the launch is nonempty and `0 < ks0 ≤ xnumel`.
+Every size argument lies in `[0, 2^31)`, so passing it as `i32` is exact: the launcher's value equals the host's. -/
+theorem narrow_cat_args_fit (L : Lane) (n : Nat)
+    (H1' : ∀ i, 1 ≤ i → i ≤ 6 → 1 ≤ L.ks i)
+    (H2 : L.ks 0 = L.ks 1 + L.ks 2 + L.ks 3 + L.ks 4 + L.ks 5 + L.ks 6)
+    (H3 : L.xnumel = n * L.ks 0) (H4 : L.xnumel ≤ 2 ^ 31 - 1) (hn : 1 ≤ n) :
+    0 < L.xnumel ∧ 0 < L.ks 0 ∧ L.ks 0 ≤ L.xnumel ∧
+    ∀ i, i ≤ 6 → 0 ≤ L.ks i ∧ L.ks i < 2 ^ 31 ∧ (evI .i32 L (.ks i)).1 = L.ks i := by
+  sorry
+
 end VeriTile.Bench.Optimizations.NarrowCat
