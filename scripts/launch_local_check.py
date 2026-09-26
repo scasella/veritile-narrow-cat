@@ -412,6 +412,7 @@ def evidence_deps(name: str, root: Path = REPO):
                                           "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                                           "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py"],
         "cat_repack.json": ["scripts/launch_cat.py", "scripts/launch_cat_modal.py"],
+        "cat_validation.json": ["scripts/launch_cat.py", "scripts/launch_cat_modal.py"],
         "addrelu_followup.json": ["scripts/launch_addrelu_followup.py", "scripts/launch_cat_modal.py",
                                   "scripts/launch_fast.py", "scripts/launch_select.py"] + INVOKE,
         "rotary_bench.json": ["scripts/launch_rotary.py", "scripts/launch_rotary_modal.py",

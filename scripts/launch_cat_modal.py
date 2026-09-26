@@ -5,6 +5,7 @@ add+ReLU follow-ups (`launch_addrelu_followup.py`) on one Modal GPU; write
 
     python3 scripts/launch_cat_modal.py --list   # print the upload set; no Modal call
     modal run scripts/launch_cat_modal.py        # one L4 call (needs an explicit spending allowance)
+    modal run scripts/launch_cat_modal.py --mode validate   # re-registered validation -> cat_validation.json
 
 Uploads only UPLOAD: the files `launch_local_check.input_hashes` names (sources,
 Lean files, harness scripts; no `.git`, `.lake`, credentials or other files).
@@ -48,10 +49,17 @@ app = modal.App("veritile-cat-bench", image=image)
 
 
 @app.function(gpu=GPU, timeout=3000)
-def bench() -> dict:
+def bench(mode: str = "all") -> dict:
     import traceback
     sys.path.insert(0, f"{REMOTE}/scripts")
     out = {}
+    if mode == "validate":
+        try:
+            import launch_cat
+            out["cat_validation"] = launch_cat.validate()
+        except Exception:  # noqa: BLE001
+            out["error_cat_validation"] = {"traceback": traceback.format_exc()[-4000:]}
+        return out
     for key, mod in (("cat_repack", "launch_cat"), ("addrelu_followup", "launch_addrelu_followup")):
         try:
             out[key] = __import__(mod).bench()
@@ -61,8 +69,8 @@ def bench() -> dict:
 
 
 @app.local_entrypoint()
-def main() -> None:
-    res = bench.remote()
+def main(mode: str = "all") -> None:
+    res = bench.remote(mode)
     (LOG_DIR / "cat_raw.json").write_text(json.dumps(res, indent=1, default=str) + "\n")
     errors = {k: v for k, v in res.items() if k.startswith("error_")}
     if errors:

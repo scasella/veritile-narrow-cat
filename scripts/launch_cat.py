@@ -28,7 +28,24 @@ PREDECLARED CRITERIA (fixed before the GPU run):
              shapes) is >= 1.15x faster than the best valid baseline's total,
              with no shape below 0.95x of that baseline, and bitwise-equal output
              at every shape.
-If reproduce fails, the gap is absent on this stack and the go test is moot.
+OUTCOME OF CALL 1 (L4, torch 2.14.0): the reproduce test above FAILED as written —
+compiled_dynamic was faster than eager at all 7 measured shapes — while the symbolic
+divmod was present and compiled_dynamic was ~1.8x slower than compiled_static. The
+sentence that stood here ("if reproduce fails, the gap is absent") was a wrong
+inference: the test compared against eager, whose cost here is dominated by its
+extra memory passes, not against what a dynamic kernel can achieve.
+
+RE-REGISTERED VALIDATION CRITERION (written after call 1, before call 2; `--validate`):
+  baseline:  compiled_dynamic (the best valid baseline on this stack in call 1);
+             compiled_static is reported as reference with its per-shape compile cost
+  go iff, for a candidate:
+    - all 10 SEQUENCE shapes measured; sequence total >= 1.15x faster than the
+      baseline, and every sequence shape >= 0.95x;
+    - the 4 HELD_OUT shapes (non-power-of-two and non-multiple-of-16 widths) each
+      >= 0.95x, and their total >= 1.15x;
+    - bitwise equal to eager at every timed shape and every EDGE case;
+  EDGE cases are correctness only: n = 1, width 1, n*W just below 2^31 (B must run),
+  n*W = 2^31 (B must refuse, A must run).
 
 Timing per shape (each shape in its own process; no CUDA graphs):
   issue_ms       the issue's method: 25 warm-up, 100 back-to-back calls between
@@ -54,6 +71,9 @@ import torch
 REPO = Path(__file__).resolve().parents[1]
 WIDTHS = {"issue": (2048, 256, 256), "llama8b": (4096, 1024, 1024), "mid": (3072, 512, 512)}
 SEQUENCE = [(n, w) for w in ("issue", "llama8b", "mid") for n in (2048, 4096, 16384)] + [(32768, "issue")]
+WIDTHS.update({"odd": (1000, 120, 136), "wide": (5120, 640, 640), "unit": (1, 1, 1), "narrow": (48, 8, 8)})
+HELD_OUT = [(3000, "odd"), (12345, "odd"), (3000, "wide"), (12345, "wide")]
+EDGE = [(1, "issue"), (1000, "unit"), (7, "odd"), (2 ** 24 - 1, "narrow"), (2 ** 24, "narrow")]
 TRIALS = 3
 
 
@@ -108,7 +128,7 @@ def _kernels():
         val = tl.where(mq, tl.where(g2, q_b, q_a), tl.where(mk, tl.where(g2, k_b, k_a), tl.where(g2, v_b, v_a)))
         tl.store(out + row * (2 * G) + c, val, mask=inb)
 
-    @triton.jit
+    @triton.jit(do_not_specialize=["total", "magic", "shift"])
     def repack_fastdiv(q1, k1, va1, vb1, q2, k2, va2, vb2, out, wq, wk, wv, total, magic, shift,
                        BLOCK: tl.constexpr):
         x = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)          # int32: total < 2^31 (checked)
@@ -173,6 +193,8 @@ def cand(which, kernels):
             raise ValueError(fails)
         n, (wq, wk, wv) = ins[0].shape[0], (ins[0].shape[1], ins[1].shape[1], ins[2].shape[1])
         W = 2 * (wq + wk + wv)
+        if which == "B" and n * W >= 2 ** 31:
+            raise ValueError("n*W < 2^31 required by the 32-bit fast division")
         out = torch.empty(n, W, dtype=ins[0].dtype, device=ins[0].device)
         if which == "A":
             B = 1024
@@ -292,6 +314,21 @@ def measure_shape(n, wset) -> dict:
     return rec
 
 
+def edge_case(n, wset) -> dict:
+    """Correctness only (no timing)."""
+    kernels = _kernels()
+    ins = make_inputs(n, wset, "cuda")
+    ref = nested_cat_add(*ins)
+    res = {"n": n, "wset": wset, "nW": n * 2 * sum(WIDTHS[wset])}
+    for name, which in (("cand_A_tiled", "A"), ("cand_B_fastdiv", "B")):
+        try:
+            res[name] = "bitwise_equal" if bits_equal(cand(which, kernels)(*ins), ref) else "MISMATCH"
+        except ValueError as e:
+            res[name] = "refused: " + str(e)
+    torch.cuda.synchronize()
+    return res
+
+
 def cold_sequence() -> dict:
     """One process, cold: first-call time of each shape in sequence order."""
     import torch._dynamo as dynamo
@@ -310,7 +347,13 @@ def cold_sequence() -> dict:
                             ("eager", nested_cat_add, ins)):
             t0 = time.perf_counter(); fn(*a); sync(); row[name] = time.perf_counter() - t0
         res.append(row)
-    return {"first_call_s": res,
+    compiled_variants = {}
+    for kname, kern in zip(("repack_tiled", "repack_fastdiv"), kernels):
+        try:
+            compiled_variants[kname] = sum(len(c[0]) for c in kern.device_caches.values())
+        except Exception as e:  # noqa: BLE001
+            compiled_variants[kname] = repr(e)[:100]
+    return {"first_call_s": res, "triton_compiled_variants": compiled_variants,
             "dynamo_counters": {k: dict(v) for k, v in dynamo.utils.counters.items() if k in ("stats", "frames")}}
 
 
@@ -362,11 +405,49 @@ def bench() -> dict:
     return rec
 
 
+def validate() -> dict:
+    rec = {"kind": "cat_repack validation (re-registered criterion; see module docstring)", **env(),
+           "sequence": SEQUENCE, "held_out": HELD_OUT, "edge": EDGE, "widths": WIDTHS,
+           "rows": [], "held_out_rows": [], "edge_rows": []}
+    for n, wset in SEQUENCE:
+        rec["rows"].append(_sub(["--shape", str(n), wset]))
+    for n, wset in HELD_OUT:
+        rec["held_out_rows"].append(_sub(["--shape", str(n), wset]))
+    for n, wset in EDGE:
+        rec["edge_rows"].append(_sub(["--edge", str(n), wset]))
+    rec["cold_sequence"] = _sub(["--cold"], timeout=2400)
+    base = "compiled_dynamic"
+    seq = [r for r in rec["rows"] if "summary" in r]
+    ho = [r for r in rec["held_out_rows"] if "summary" in r]
+    tot = lambda rows, k: sum(r["summary"]["issue_ms"][k] for r in rows)  # noqa: E731
+    edge_ok = lambda c: all(r.get(c) == "bitwise_equal" or  # noqa: E731
+                            (c == "cand_B_fastdiv" and r.get("nW", 0) >= 2 ** 31 and str(r.get(c)).startswith("refused"))
+                            for r in rec["edge_rows"])
+    go = {}
+    for c in ("cand_A_tiled", "cand_B_fastdiv"):
+        s_ratio = [r["summary"]["issue_ms"][base] / r["summary"]["issue_ms"][c] for r in seq]
+        h_ratio = [r["summary"]["issue_ms"][base] / r["summary"]["issue_ms"][c] for r in ho]
+        bit = all(r["bitwise_equal_eager"][c] for r in seq + ho)
+        g = {"sequence_speedup": tot(seq, base) / tot(seq, c) if seq else None,
+             "sequence_min_ratio": min(s_ratio) if s_ratio else None,
+             "held_out_speedup": tot(ho, base) / tot(ho, c) if ho else None,
+             "held_out_min_ratio": min(h_ratio) if h_ratio else None,
+             "bitwise_timed": bit, "edge_ok": edge_ok(c)}
+        g["go"] = bool(len(seq) == 10 and len(ho) == 4 and g["sequence_speedup"] >= 1.15
+                       and g["sequence_min_ratio"] >= 0.95 and g["held_out_speedup"] >= 1.15
+                       and g["held_out_min_ratio"] >= 0.95 and bit and g["edge_ok"])
+        go[c] = g
+    rec["go"] = go
+    import launch_local_check as LC
+    rec["input_hashes"] = LC.input_hashes()
+    return rec
+
+
 def dry() -> dict:
     """CPU interpreter, float32 (numpy has no bf16): indexing/plumbing only."""
     kernels = _kernels()
     out = {"note": "float32 under TRITON_INTERPRET=1; bf16 is first exercised on the GPU"}
-    for n, w in ((3, (8, 4, 4)), (5, (16, 8, 8)), (7, (40, 8, 24))):
+    for n, w in ((3, (8, 4, 4)), (5, (16, 8, 8)), (7, (40, 8, 24)), (4, (1, 1, 1)), (3, (48, 8, 8))):
         ins = make_inputs(n, w, "cpu", torch.float32)
         ref = nested_cat_add(*ins)
         out[f"n{n}_w{w}"] = {"A": torch.equal(cand("A", kernels)(*ins), ref),
@@ -374,6 +455,9 @@ def dry() -> dict:
     out["magic_exhaustive_small"] = all(((((x * m) >> 32) + x) >> s) == x // d
                                         for d in (1, 2, 3, 7, 10, 640, 5120, 11264, 12288)
                                         for m, s in [magic_for(d)] for x in range(0, 200000, 37))
+    out["magic_power_of_two"] = all(((((x * m) >> 32) + x) >> s) == x // d
+                                     for d in (1, 2, 8192, 2 ** 20) for m, s in [magic_for(d)]
+                                     for x in (0, 1, d - 1, d, 2 ** 31 - 1))
     out["magic_edge"] = all(((((x * m) >> 32) + x) >> s) == x // d for d in (5120, 11264, 12288, 2 ** 20 - 3)
                             for m, s in [magic_for(d)] for x in (2 ** 31 - 1, 2 ** 31 - 2, 2 ** 30, d - 1, d, d + 1))
     return out
@@ -388,6 +472,14 @@ if __name__ == "__main__":
             print("RESULT " + json.dumps(measure_shape(int(sys.argv[i + 1]), sys.argv[i + 2]), default=str))
         except Exception:  # noqa: BLE001
             print("RESULT " + json.dumps({"error": traceback.format_exc()[-3000:]}))
+    elif "--edge" in sys.argv:
+        i = sys.argv.index("--edge")
+        try:
+            print("RESULT " + json.dumps(edge_case(int(sys.argv[i + 1]), sys.argv[i + 2]), default=str))
+        except Exception:  # noqa: BLE001
+            print("RESULT " + json.dumps({"error": traceback.format_exc()[-3000:]}))
+    elif "--validate" in sys.argv:
+        print(json.dumps(validate(), indent=1, default=str))
     elif "--cold" in sys.argv:
         print("RESULT " + json.dumps(cold_sequence(), default=str))
     elif torch.cuda.is_available():
