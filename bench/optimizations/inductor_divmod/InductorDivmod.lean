@@ -50,28 +50,82 @@ def kQuot (d x : Nat) : Nat :=
 /-- The counted shift is `FastDiv.shiftFor`, the least `s` with `d ≤ 2^s`. -/
 theorem shiftCount_eq_shiftFor {d : Nat} (hd : 0 < d) (hd' : d ≤ 2 ^ 31) :
     shiftCount d = FastDiv.shiftFor d := by
-  sorry
+  have hd32 : d ≤ 2 ^ 32 := le_trans hd' (Nat.pow_le_pow_right (by norm_num) (by norm_num))
+  obtain ⟨hle, hmin⟩ := FastDiv.shiftFor_spec hd hd32
+  set t := FastDiv.shiftFor d
+  have key : ∀ j, 2 ^ j < d ↔ j < t := by
+    intro j
+    constructor
+    · intro h
+      by_contra hj
+      have : 2 ^ t ≤ 2 ^ j := Nat.pow_le_pow_right (by norm_num) (by omega)
+      omega
+    · intro hj
+      rcases hmin with h0 | h1
+      · omega
+      · exact lt_of_le_of_lt (Nat.pow_le_pow_right (by norm_num) (by omega)) h1
+  have ht : t ≤ 31 := by
+    rcases hmin with h0 | h1
+    · omega
+    · have : 2 ^ (t - 1) < 2 ^ 31 := lt_of_lt_of_le h1 hd'
+      have := (Nat.pow_lt_pow_iff_right (by norm_num : 1 < 2)).mp this
+      omega
+  have count : ∀ n, ((List.range n).filter (fun j => decide (j < t))).length = min n t := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ m ih =>
+      rw [List.range_succ, List.filter_append, List.length_append, ih]
+      by_cases hm : m < t
+      · simp [hm]; omega
+      · simp [hm]; omega
+  unfold shiftCount
+  rw [List.filter_congr (p := fun j => decide (2 ^ j < d)) (q := fun j => decide (j < t))
+    (fun j _ => by simp [key j]), count 32]
+  omega
 
 /-- The shift is at most 31, so `>> s` on `uint32` is a defined shift. -/
 theorem shiftCount_le {d : Nat} (hd : 0 < d) (hd' : d ≤ 2 ^ 31) : shiftCount d ≤ 31 := by
-  sorry
+  have hd32 : d ≤ 2 ^ 32 := le_trans hd' (Nat.pow_le_pow_right (by norm_num) (by norm_num))
+  rw [shiftCount_eq_shiftFor hd hd']
+  obtain ⟨-, hmin⟩ := FastDiv.shiftFor_spec hd hd32
+  rcases hmin with h0 | h1
+  · omega
+  · have : 2 ^ (FastDiv.shiftFor d - 1) < 2 ^ 31 := lt_of_lt_of_le h1 hd'
+    have := (Nat.pow_lt_pow_iff_right (by norm_num : 1 < 2)).mp this
+    omega
 
 /-- The int64 intermediates are in range. `(1 << s) - d` does not underflow, and
 `(1 << 32) * ((1 << s) - d)` is below `2^63`. -/
 theorem int64_in_range {d : Nat} (hd : 0 < d) (hd' : d < 2 ^ 31) :
     d ≤ 2 ^ shiftCount d ∧ 2 ^ 32 * (2 ^ shiftCount d - d) < 2 ^ 63 := by
-  sorry
+  have hd32 : d ≤ 2 ^ 32 := by omega
+  rw [shiftCount_eq_shiftFor hd hd'.le]
+  obtain ⟨hle, -⟩ := FastDiv.shiftFor_spec hd hd32
+  have hlt := FastDiv.pow_shift_lt hd hd32
+  refine ⟨hle, ?_⟩
+  have : 2 ^ FastDiv.shiftFor d - d < 2 ^ 31 := by omega
+  calc 2 ^ 32 * (2 ^ FastDiv.shiftFor d - d) < 2 ^ 32 * 2 ^ 31 := Nat.mul_lt_mul_of_pos_left this (by positivity)
+    _ = 2 ^ 63 := by norm_num
 
 /-- The in-kernel multiplier is `FastDiv.magic`, and it fits the `uint32` cast. -/
 theorem kMagic_eq {d : Nat} (hd : 0 < d) (hd' : d < 2 ^ 31) :
     kMagic d = FastDiv.magic d ∧ kMagic d < 2 ^ 32 := by
-  sorry
+  have h : kMagic d = FastDiv.magic d := by
+    unfold kMagic FastDiv.magic; rw [shiftCount_eq_shiftFor hd hd'.le]
+  exact ⟨h, h ▸ FastDiv.magic_lt hd hd'⟩
 
 /-- **The helper returns `(x / d, x % d)`** for `0 < d < 2^31` and `x < 2^31`. The quotient
 also fits the `int32` cast, and `q * d ≤ x`, so the `int32` remainder `x - q * d` neither
 overflows nor goes negative. -/
-theorem kernel_divmod {d x : Nat} (hd : 0 < d) (hd' : d < 2 ^ 31) (hx : x < 2 ^ 31) :
+specification kernel_divmod {d x : Nat} (hd : 0 < d) (hd' : d < 2 ^ 31) (hx : x < 2 ^ 31) :
     kQuot d x = x / d ∧ x - kQuot d x * d = x % d ∧ kQuot d x < 2 ^ 31 ∧ kQuot d x * d ≤ x := by
-  sorry
+  have hq : kQuot d x = x / d := by
+    unfold kQuot
+    rw [(kMagic_eq hd hd').1, shiftCount_eq_shiftFor hd hd'.le]
+    exact FastDiv.bitvec_quotient hd hd' hx
+  rw [hq]
+  refine ⟨rfl, ?_, lt_of_le_of_lt (Nat.div_le_self x d) hx, Nat.div_mul_le_self x d⟩
+  rw [Nat.mod_eq_sub_mul_div, Nat.mul_comm]
 
 end VeriTile.Bench.Optimizations.InductorDivmod
