@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """GPU-free: compile B0, guarded N (stage 12) and N1 for sm_89 and record full-kernel SASS and registers.
+Includes the configs the stage-13 L4 run actually timed: XBLOCK=512 with 8 warps (B0 and N, autotuned) and 1024 with
+4 warps (N1, autotuned; all three in fixed mode). These are local recompilations of the same source with the same
+Triton version; the cubins of the L4 run were not captured, but its Triton cache hashes were.
 Writes local_checks.json. Analysis only; the timed artifacts are recorded on the GPU host by the harness.
 
     docker run --rm -v "$PWD":/w veritile-interp:1 python3 /w/bench/optimizations/inductor_narrow/local_checks.py
@@ -56,7 +59,7 @@ if __name__ == "__main__":
     variants = {"B0": SRC, "N_guarded": R.rewrite(SRC, "N")[0], "N1": n1_src}
     out = {"n1_rewrite": {k: v for k, v in n1_rec.items() if k != "eligibility"}, "sm_89": {}}
     for name, src in variants.items():
-        out["sm_89"][name] = {f"XBLOCK={xb},warps={w}": stats(src, name, xb, w) for xb, w in ((1024, 4), (512, 4), (256, 4))}
+        out["sm_89"][name] = {f"XBLOCK={xb},warps={w}": stats(src, name, xb, w) for xb, w in ((1024, 4), (512, 4), (256, 4), (512, 8))}
     (HERE / "local_checks.json").write_text(json.dumps(out, indent=1) + "\n")
     for name, r in out["sm_89"].items():
         print(name, {k: (v["instructions"], v["regs"], v["CALL"]) for k, v in r.items()}, r["XBLOCK=1024,warps=4"]["ptx_ks_params"])

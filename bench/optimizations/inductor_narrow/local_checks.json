@@ -55,6 +55,22 @@
      "u64",
      "u64"
     ]
+   },
+   "XBLOCK=512,warps=8": {
+    "instructions": 520,
+    "IMAD": 177,
+    "I2F_F2I_MUFU": 9,
+    "CALL": 2,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
    }
   },
   "N_guarded": {
@@ -105,6 +121,22 @@
      "u64",
      "u64"
     ]
+   },
+   "XBLOCK=512,warps=8": {
+    "instructions": 848,
+    "IMAD": 278,
+    "I2F_F2I_MUFU": 12,
+    "CALL": 2,
+    "regs": 40,
+    "ptx_ks_params": [
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64",
+     "u64"
+    ]
    }
   },
   "N1": {
@@ -141,6 +173,22 @@
     ]
    },
    "XBLOCK=256,warps=4": {
+    "instructions": 288,
+    "IMAD": 89,
+    "I2F_F2I_MUFU": 3,
+    "CALL": 0,
+    "regs": 30,
+    "ptx_ks_params": [
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32",
+     "u32"
+    ]
+   },
+   "XBLOCK=512,warps=8": {
     "instructions": 288,
     "IMAD": 89,
     "I2F_F2I_MUFU": 3,
