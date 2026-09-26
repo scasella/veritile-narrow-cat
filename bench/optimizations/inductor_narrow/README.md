@@ -145,3 +145,24 @@ before each call.
   decision to accept the one-shape miss.
 
 Not measured: other GPUs (including the issue's H100), other programs, or cold L2.
+
+## 5. Stage 14 update: confirmation and upstream port (`CONFIRM.md`, `RULE.md`, `upstream/`)
+
+- **The stage-13 verdict stands in the record.** Its pre-registered rule did not adopt N1.
+- **A separate, pre-registered confirmation recommends ADOPT N1.**
+  - Design: 24 paired triples of B0, N and N1, independently warmed with at least 2 s of sustained load, balanced
+    over all six orders, with a fixed stopping point.
+  - N/N1 on the complete sequence: 1.090 (95% CI 1.082–1.094). B0/N1: 1.349.
+  - All 10 small shapes show "non-regression shown" (every CI lower bound ≥ 1.023). At 3000 × odd, N1 takes
+    155 µs against 161 µs for N.
+  - **N1 is now the recommended implementation.**
+- **The rule is stated in full in `RULE.md`,** with all four premise groups: C1 expression class, C2 symbolic facts,
+  C3 launch, C4 guard maintenance.
+  - The symbolic facts now require value-range lower bounds ≥ 1, which makes launches nonempty.
+  - The new Lean corollary `narrow_cat_args_fit` proves that exact `i32` packing follows.
+- **Ported to pinned PyTorch `main` 6aa9e2fc** (nightly 2.15.0.dev20260926).
+  - That revision emits the proved kernel byte-identically.
+  - The patch adds the opt-in `config.triton.narrow_proven_size_args`, a recognizer pinned by the canonical-IR
+    SHA-256, and the symbolic checks.
+  - On the pinned CUDA nightly it applies, passes 4/4 upstream tests on an L4, and is bitwise at 14 shapes.
+  - Binding tests connect the patch's recognizer, the extractor, and the Lean `catValue`.
