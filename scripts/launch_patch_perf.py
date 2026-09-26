@@ -42,9 +42,16 @@ PRE-REGISTERED ANALYSIS (fixed before the GPU call; do not edit after it)
     - bitwise equal to eager for OFF and ON at every SEQ and SMALL shape;
     - every OFF kernel has ks*: i64, and the ON target kernel has all ks*: i32;
     - in Part B, every unrelated kernel is rejected by the check and has the same ks types OFF and ON;
-    - Dynamo unique graphs and guard text are identical OFF and ON for every program;
+    - Dynamo unique graphs are identical OFF and ON for every program;
     - no Dynamo or Inductor compile during any measured block.
-  Not compared: absolute times against stage 14 (a different stack and image).
+  Reported, expected equal, NOT a validity condition (a difference is a finding about the patch): normalized guard
+    text OFF versus ON (object ids, source-location comments and variant names masked; the text is saved).
+  Descriptive comparison, declared now: the median OFF/ON sequence ratio is reported next to stage 14's
+    B0/N1 = 1.349 (torch 2.14). Absolute times are not compared across the two stacks.
+  Compile cost: each compile process first compiles an untimed trivial program, so first-call times exclude
+    one-time initialisation.
+  Artifacts are descriptive: cubins are attributed to OFF or ON by the Triton cache entries each variant's compile
+    created; `ttir_args` keeps whatever argument names TTIR prints (they may be positional, e.g. %arg3).
 
     python3 scripts/launch_patch_perf.py --dry        # print the design; no torch needed
     python3 scripts/launch_patch_perf.py --cpu-dry    # in the local veritile-nightly image: codegen-only checks
@@ -145,12 +152,18 @@ class Probe:
             lg.addHandler(H())
             lg.propagate = False
 
-    def guard_digest(self, tag) -> str:
+    def guard_text(self, tag) -> str:
         # Normalized: source-location comments (they name the variant's function), object ids, and the variant
         # suffix of function names are dropped, so OFF and ON compare equal unless a guard itself differs.
         norm = lambda m: "\n".join(re.sub(r"\s+#.*$", "", ln) for ln in m.splitlines()  # noqa: E731
                                    if not ln.startswith("Guard eval latency"))
-        text = "\n".join(re.sub(r"0x[0-9a-f]+|\b\w+_(?:OFF|ON)\b", "#", norm(m)) for t, m in self.guards if t == tag)
+        # Object ids (hex or long decimals, e.g. ___check_obj_id / ___check_current_backend) differ between
+        # processes and between compile wrappers, so they are masked too.
+        return "\n".join(re.sub(r"0x[0-9a-f]+|\b\d{6,}\b|\b\w+_(?:OFF|ON)\b", "#", norm(m))
+                         for t, m in self.guards if t == tag)
+
+    def guard_digest(self, tag) -> str:
+        text = self.guard_text(tag)
         return hashlib.sha256(text.encode()).hexdigest()[:16] if text else ""
 
 
@@ -203,7 +216,9 @@ def worker_time(proc: int) -> dict:
     for s in shapes:
         for t in ins[s]:
             dynamo.mark_dynamic(t, t.dim() - 1)
-    fns, bitwise = {}, {}
+    fns, bitwise, cache_new = {}, {}, {}
+    tdir = Path(os.environ["TRITON_CACHE_DIR"])
+    seen = set()
     for v in VARIANTS:
         probe.tag = v
         f = compile_variant(C14.make_fn(f"cat_{v}"), v)
@@ -212,6 +227,8 @@ def worker_time(proc: int) -> dict:
             bitwise[f"{v}:{s[0]}x{s[1]}"] = bool(torch.equal(out.view(torch.int16),
                                                              S12.nested_cat_add(*ins[s]).view(torch.int16)))
         fns[v] = f
+        now = set(os.listdir(tdir)) if tdir.exists() else set()
+        cache_new[v], seen = sorted(now - seen), now   # Triton cache entries created while compiling this variant
     torch.cuda.synchronize()
     probe.tag = "MEASURE"
     n_before = len(probe.kernels)
@@ -264,6 +281,7 @@ def worker_time(proc: int) -> dict:
     return {"proc": proc, "bitwise": bitwise, "kernels": probe.kernels[:n_before], "checks": probe.checks,
             "compiles_during_measurement": len(probe.kernels) - n_before, "pairs": pairs,
             "guards": {v: probe.guard_digest(v) for v in VARIANTS},
+            "guard_text": {v: probe.guard_text(v) for v in VARIANTS}, "cache_entries_by_variant": cache_new,
             "unique_graphs": dynamo.utils.counters["stats"]["unique_graphs"],
             "launchers": artifacts(), "cubins": cache_cubins(os.environ["TRITON_CACHE_DIR"]),
             "telemetry_ok": tel.ok, "telemetry_error": tel.err, "telemetry_static": tel.static}
@@ -278,6 +296,11 @@ def worker_compile(v: str, dev: str = "cuda") -> dict:
     progs = {"target": (C14.SRC_FN, lambda: S12.make_inputs(2048, "issue"))}
     progs.update({k: (s, (lambda k=k: other_inputs(k, dev))) for k, s in OTHER_SRC.items()})
     rec = {"variant": v, "programs": {}}
+    probe.tag = "warmup"   # untimed: absorbs CUDA context, Triton import and Inductor lazy setup
+    try:
+        compile_variant(make("def {n}(x):\n    return x + 1\n", f"warm_{v}"), v)(torch.ones(8, device=dev))
+    except Exception:  # noqa: BLE001 - expected only in --cpu-dry
+        pass
     for prog, (src, mk) in progs.items():
         probe.tag = prog
         ins = mk()
@@ -298,7 +321,7 @@ def worker_compile(v: str, dev: str = "cuda") -> dict:
             "graphs": dynamo.utils.counters["stats"]["unique_graphs"] - g0,
             "kernels": [k for k in probe.kernels if k["tag"] == prog],
             "checks": [c for c in probe.checks if c["tag"] == prog],
-            "guards": probe.guard_digest(prog)}
+            "guards": probe.guard_digest(prog), "guard_text": probe.guard_text(prog)}
     rec["counters"] = {k: dict(dynamo.utils.counters[k]) for k in ("stats", "recompiles") if k in dynamo.utils.counters}
     if dev == "cuda":
         rec["cubins"] = cache_cubins(os.environ["TRITON_CACHE_DIR"])
@@ -355,20 +378,21 @@ def analyse(rec: dict) -> dict:
            "off_i64": all(set(k["ks"].values()) <= {"i64"} for p in tp for k in p["kernels"] if k["tag"] == "OFF"),
            "on_i32": all(any(k["tag"] == "ON" and k["ks"] and set(k["ks"].values()) == {"i32"} for k in p["kernels"])
                          for p in tp),
-           "no_compiles_during_measurement": all(p["compiles_during_measurement"] == 0 for p in tp),
-           "guards_equal_time": all(p["guards"]["OFF"] == p["guards"]["ON"] for p in tp)}
+           "no_compiles_during_measurement": all(p["compiles_during_measurement"] == 0 for p in tp)}
     by = {v: [c for c in cp if c["variant"] == v] for v in VARIANTS}
     progs = ["target"] + list(OTHER_SRC)
     same = lambda f: all(len({f(c["programs"][g]) for c in cp}) == 1 for g in progs)  # noqa: E731
     val["graphs_equal_compile"] = bool(cp) and same(lambda x: x["graphs"])
-    val["guards_equal_compile"] = bool(cp) and same(lambda x: x["guards"])
     val["unrelated_rejected"] = all(not ch["accepted"] for c in by["ON"] for g in OTHER_SRC
                                     for ch in c["programs"][g]["checks"])
     val["unrelated_ks_unchanged"] = bool(cp) and all(
         len({json.dumps([k["ks"] for k in c["programs"][g]["kernels"]], sort_keys=True) for c in cp}) == 1
         for g in OTHER_SRC)
     val["valid"] = all(val.values())
-    res = {"validity": val, "pairs": len(pairs)}
+    res = {"validity": val, "pairs": len(pairs),
+           "reported_expected_equal": {   # findings about the patch if false; not validity conditions
+               "guards_equal_time": all(p["guards"]["OFF"] == p["guards"]["ON"] for p in tp),
+               "guards_equal_compile": bool(cp) and same(lambda x: x["guards"])}}
     if not pairs:
         return res
     rng = random.Random(SEED)
@@ -396,6 +420,7 @@ def analyse(rec: dict) -> dict:
                          for g in progs}}
     res["clock_median_mhz"] = {v: statistics.median(x["blocks"][v]["telemetry"].get("sm_median", 0) for x in pairs)
                                for v in VARIANTS}
+    res["stage14_B0_over_N1_for_comparison"] = 1.349   # descriptive only (different stack); declared in advance
     res["verdict"] = res["sequence"]["verdict"] if val["valid"] else "INVALID"
     return res
 

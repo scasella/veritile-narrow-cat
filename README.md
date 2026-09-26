@@ -8,7 +8,7 @@
 > not been upstreamed.
 >
 > **Fork point:** upstream commit `95a01f59` ("Refactor audit source helpers and shared scatter-store proofs",
-> 2026-09-24). The fork adds 146 files and modifies 13. Modified upstream Lean files keep their original code
+> 2026-09-24). To list what it adds and changes, run `git diff --stat 95a01f59`. Modified upstream Lean files keep their original code
 > verbatim; the fork's gate (`scripts/launch_local_check.py`) enforces that.
 
 ## What this fork adds
