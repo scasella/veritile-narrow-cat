@@ -187,7 +187,12 @@ def artifacts() -> list:
             try:
                 cr = [r for r in obj.compile_results if r.config is ln.config or r.config == ln.config]
                 binary = cr[0].kernel if cr else None
-                cubin = binary.asm.get("cubin") if binary is not None else None
+                cubin = None
+                if binary is not None and hasattr(binary, "asm"):
+                    cubin = binary.asm.get("cubin")
+                elif binary is not None and getattr(binary, "cubin_path", None):
+                    cubin = Path(binary.cubin_path).read_bytes()
+                    rec["launcher_kind"] = "static"
                 if cubin:
                     rec["cubin_sha256"] = hashlib.sha256(cubin).hexdigest()
                     with tempfile.NamedTemporaryFile(suffix=".cubin", delete=False) as f:
@@ -350,15 +355,16 @@ def worker(config: str, mode: str, do_fallback: bool) -> dict:
                 fn(*ins[s])
         sync()
         prof_pass_s = time.perf_counter() - t0
-    kev = sorted([(e.time_range.start, e.time_range.end, e.name[:60]) for e in prof.events()
-                  if e.device_type.name == "CUDA"], key=lambda x: x[0])
+    allk = [(e.time_range.start, e.time_range.end, e.name[:60]) for e in prof.events() if e.device_type.name == "CUDA"]
+    kev = sorted([k for k in allk if k[2].startswith(("triton_", "repack"))], key=lambda x: x[0])
     per_shape = []
     for i in range(len(shapes)):
         chunk = kev[i * CALLS:(i + 1) * CALLS] if len(kev) == len(shapes) * CALLS else []
         per_shape.append(statistics.median(e - b for b, e, _ in chunk) if chunk else None)
     span = (kev[-1][1] - kev[0][0]) if kev else None
     ksum = sum(e - b for b, e, _ in kev)
-    rec["full_pass"] = {"pass_s": prof_pass_s, "kernels": len(kev), "kernel_sum_us": ksum, "span_us": span,
+    rec["full_pass"] = {"pass_s": prof_pass_s, "kernels": len(kev), "other_device_events": len(allk) - len(kev),
+                        "kernel_sum_us": ksum, "span_us": span,
                         "gap_fraction": (1 - ksum / span) if span else None,
                         "per_shape_median_kernel_us": per_shape,
                         "kernel_names": sorted({n for _, _, n in kev})}
@@ -366,8 +372,8 @@ def worker(config: str, mode: str, do_fallback: bool) -> dict:
     rec["artifacts"] = artifacts()
     rec["counters_final"] = S12._counters()
     rec["recompile_log_seq"] = list(recompile_log)
-    rec["hook_events"] = events
-    rec["sources"] = sources
+    rec["hook_events"] = list(events)        # snapshot: the fallback shape appends its own events later
+    rec["sources"] = dict(sources)
 
     if do_fallback and config != "static":
         del ins, ref
