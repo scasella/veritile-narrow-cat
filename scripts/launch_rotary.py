@@ -20,6 +20,16 @@ replay cannot see them): every kv_length >= 1; the block-table column
 (len-1)//block_size is in range and its block id < num_blocks; the slot map
 token -> (block id, (len-1) % block_size) is injective over tokens.
 
+Run 2 (robustness): three PyTorch formulations of the same step, each compiled
+and graph-captured — `inplace` (q.copy_(cat(...)), run 1's), `outofplace` (rotated
+q returned as a new tensor), `slices` (two slice assignments into q) — and the
+checks of the value-dependent conditions done vectorised on the host (one D2H
+copy) and entirely on the device (one `.item()`).
+
+GO THRESHOLD (fixed before run 2): go iff corpus_graph beats the BEST compiled
+formulation's graph replay by >= 10% in repeated mode (ratio >= 1.10) at >= 7 of
+the 10 shapes, with every trial at those shapes >= 1.0; otherwise no-go.
+
 Timings: perf_counter single (call + synchronize, median) and repeated (K calls,
 one synchronize), TRIALS trials with rotated order; device time warm
 (torch.profiler kernel sum, no flush) and flushed (triton.testing.do_bench,
@@ -140,6 +150,74 @@ def ref(q, k, v, cos, sin, kc, vc, bt, lens):
     vc[blk, :, off, :] = v
 
 
+def ref_outofplace(q, k, v, cos, sin, kc, vc, bt, lens):
+    """Same step; the rotated q is returned instead of written in place."""
+    T, D = q.shape[0], q.shape[2]
+    h = D // 2
+    c, s = cos[:T, :h][:, None, :], sin[:T, :h][:, None, :]
+    q0, q1 = q[..., :h], q[..., h:]
+    qr = torch.cat([q0 * c - q1 * s, q0 * s + q1 * c], -1)
+    k0, k1 = k[..., :h], k[..., h:]
+    kr = torch.cat([k0 * c - k1 * s, k0 * s + k1 * c], -1)
+    p = (lens - 1).long()
+    blk = bt[torch.arange(T, device=q.device), p // kc.shape[2]].long()
+    off = p % kc.shape[2]
+    kc[blk, :, off, :] = kr
+    vc[blk, :, off, :] = v
+    return qr
+
+
+def ref_slices(q, k, v, cos, sin, kc, vc, bt, lens):
+    """Same step; q updated by two slice assignments."""
+    T, D = q.shape[0], q.shape[2]
+    h = D // 2
+    c, s = cos[:T, :h][:, None, :], sin[:T, :h][:, None, :]
+    q0, q1 = q[..., :h], q[..., h:]
+    n0, n1 = q0 * c - q1 * s, q0 * s + q1 * c
+    q[..., :h] = n0
+    q[..., h:] = n1
+    k0, k1 = k[..., :h], k[..., h:]
+    p = (lens - 1).long()
+    blk = bt[torch.arange(T, device=q.device), p // kc.shape[2]].long()
+    off = p % kc.shape[2]
+    kc[blk, :, off, :h] = k0 * c - k1 * s
+    kc[blk, :, off, h:] = k0 * s + k1 * c
+    vc[blk, :, off, :] = v
+
+
+FORMULATIONS = {"inplace": ref, "outofplace": ref_outofplace, "slices": ref_slices}
+
+
+def value_conditions_vec(lens, bt, block_size, num_blocks) -> bool:
+    """The same three conditions, vectorised (works on host or device tensors)."""
+    T = lens.shape[0]
+    L = lens.long()
+    if not bool((L >= 1).all()):
+        return False
+    col = (L - 1) // block_size
+    if not bool((col < bt.shape[1]).all()):
+        return False
+    blk = bt[torch.arange(T, device=bt.device), col].long()
+    if not bool(((blk >= 0) & (blk < num_blocks)).all()):
+        return False
+    slot = blk * block_size + (L - 1) % block_size
+    return torch.unique(slot).numel() == T
+
+
+def value_conditions_device(lens, bt, block_size, num_blocks) -> bool:
+    """All on the device; one host synchronisation (`.item()`) at the end."""
+    T = lens.shape[0]
+    L = lens.long()
+    col = ((L - 1).clamp(min=0)) // block_size
+    colc = col.clamp(max=bt.shape[1] - 1)
+    blk = bt[torch.arange(T, device=bt.device), colc].long()
+    slot = blk * block_size + (L - 1).clamp(min=0) % block_size
+    s_sorted = torch.sort(slot).values
+    dup = (s_sorted[1:] == s_sorted[:-1]).any() if T > 1 else torch.zeros((), dtype=torch.bool, device=bt.device)
+    ok = (L >= 1).all() & (col < bt.shape[1]).all() & ((blk >= 0) & (blk < num_blocks)).all() & ~dup
+    return bool(ok.item())
+
+
 def value_conditions(lens_h, bt_h, block_size, num_blocks) -> list:
     """The value-dependent obligations, checked on host copies; returns failures."""
     fails = []
@@ -185,7 +263,6 @@ def candidates(T, D, device, compiled_fn, wrapper, kern):
     tens = [d[n] for n in names]
     fns, errors = {}, {}
     fns["eager"] = lambda: ref(*tens)
-    fns["compiled"] = lambda: compiled_fn(*tens)
     fns["corpus_wrapper"] = lambda: wrapper(q=d["q"], k=d["k"], v=d["v"], cos=d["cos"], sin=d["sin"],
                                              k_cache=d["kc"], v_cache=d["vc"], block_tables=d["bt"],
                                              kv_lengths=d["lens"])
@@ -199,6 +276,20 @@ def candidates(T, D, device, compiled_fn, wrapper, kern):
             raise RuntimeError(fails)
         kern[grid](*args, **kw)
     fns["corpus_verify_jit"] = verify
+
+    def verify_vec():
+        if not value_conditions_vec(d["lens"].cpu(), d["bt"].cpu(), BS, NB):
+            raise RuntimeError("value conditions")
+        kern[grid](*args, **kw)
+
+    def verify_dev():
+        if not value_conditions_device(d["lens"], d["bt"], BS, NB):
+            raise RuntimeError("value conditions")
+        kern[grid](*args, **kw)
+    fns["corpus_verify_host_vec_jit"] = verify_vec
+    fns["corpus_verify_device_jit"] = verify_dev
+    for fname, cfn in compiled_fn.items():
+        fns[f"compiled_{fname}"] = (lambda c: lambda: c(*tens))(cfn)
     if device == "cuda":
         try:
             ck = kern.warmup(*args, grid=grid, **kw)
@@ -212,16 +303,17 @@ def candidates(T, D, device, compiled_fn, wrapper, kern):
             fns["corpus_graph"] = g1.replay
         except Exception:  # noqa: BLE001
             errors["corpus_compiled/graph"] = traceback.format_exc()[-1500:]
-        try:
-            for _ in range(3):
-                compiled_fn(*tens)
-            sync(device)
-            g2 = torch.cuda.CUDAGraph()
-            with torch.cuda.graph(g2):
-                compiled_fn(*tens)
-            fns["compiled_graph"] = g2.replay
-        except Exception:  # noqa: BLE001
-            errors["compiled_graph"] = traceback.format_exc()[-1500:]
+        for fname, cfn in compiled_fn.items():
+            try:
+                for _ in range(3):
+                    cfn(*tens)
+                sync(device)
+                g2 = torch.cuda.CUDAGraph()
+                with torch.cuda.graph(g2):
+                    cfn(*tens)
+                fns[f"compiled_{fname}_graph"] = (lambda gg: gg.replay)(g2)
+            except Exception:  # noqa: BLE001
+                errors[f"compiled_{fname}_graph"] = traceback.format_exc()[-1500:]
     return fns, errors
 
 
@@ -234,12 +326,31 @@ def correctness(T, D, device, compiled_fn, wrapper, kern):
     runs = {"corpus_wrapper": lambda f: wrapper(q=f["q"], k=f["k"], v=f["v"], cos=f["cos"], sin=f["sin"],
                                                   k_cache=f["kc"], v_cache=f["vc"], block_tables=f["bt"],
                                                   kv_lengths=f["lens"])}
-    if compiled_fn is not None:
-        runs["compiled"] = lambda f: compiled_fn(*(f[n] for n in ("q", "k", "v", "cos", "sin", "kc", "vc", "bt", "lens")))
+    names = ("q", "k", "v", "cos", "sin", "kc", "vc", "bt", "lens")
+    for fname, cfn in (compiled_fn or {}).items():
+        def run(f, cfn=cfn):
+            r = cfn(*(f[n] for n in names))
+            if r is not None:
+                f["q"] = r
+        runs[f"compiled_{fname}"] = run
+    results = {}
     for name, run in runs.items():
         f = fresh(); run(f); sync(device)
-        out[name] = {n: max_ulp(f[key], e[key]) for n, key in (("q", "q"), ("k_cache", "kc"), ("v_cache", "vc"))}
+        results[name] = f
+        out[name] = {n: errs(f[key], e[key]) for n, key in (("q", "q"), ("k_cache", "kc"), ("v_cache", "vc"))}
+    if "compiled_inplace" in results:
+        out["corpus_vs_compiled_inplace"] = {n: errs(results["corpus_wrapper"][key], results["compiled_inplace"][key])
+                                             for n, key in (("q", "q"), ("k_cache", "kc"), ("v_cache", "vc"))}
     return out
+
+
+def errs(a, b) -> dict:
+    """max |a-b|, max relative error where |b| > 1e-3, and max ULP (context only)."""
+    d = (a - b).abs()
+    big = b.abs() > 1e-3
+    rel = (d[big] / b.abs()[big]).max().item() if big.any() else 0.0
+    return {"max_abs": d.max().item() if d.numel() else 0.0, "max_rel_where_ref_gt_1e-3": rel,
+            "max_ulp": max_ulp(a, b)}
 
 
 def env(device):
@@ -260,8 +371,10 @@ def bench(device="cuda") -> dict:
     import torch._dynamo as dynamo
     dynamo.config.cache_size_limit = 64
     wrapper, kern = corpus(device)
-    compiled_fn = torch.compile(ref, dynamic=False)
-    rec = {"kind": "rotary_decode_bench (go/no-go)", **env(device),
+    compiled_fn = {k: torch.compile(f, dynamic=False) for k, f in FORMULATIONS.items()}
+    rec = {"kind": "rotary_decode_bench (go/no-go, run 2: formulation robustness)", **env(device),
+           "go_threshold": ("corpus_graph vs the best compiled formulation's graph replay, repeated mode: "
+                            "ratio >= 1.10 at >= 7 of 10 shapes, every trial >= 1.0 at those shapes"),
            "config": {"q_heads": QH, "kv_heads": KH, "block_size": BS, "blocks_per_seq": BLOCKS_PER_SEQ,
                       "cache_layout": "old (use_new_kcache_layout=False)", "dtype": "float32"},
            "tokens": TOKENS, "head_dims": HEAD_DIMS, "rows": []}
@@ -284,13 +397,22 @@ def bench(device="cuda") -> dict:
                 row["trials"] = trials
                 row["summary"] = {m: {n: statistics.median(tr[m][n] for tr in trials) for n in names}
                                   for m in ("single", "repeated")}
-                row["device_warm"] = {n: kernels(fns[n]) for n in names if n != "corpus_verify_jit"}
-                row["device_flushed"] = {n: flushed_us(fns[n]) for n in
-                                         ("eager", "compiled", "compiled_graph", "corpus_jit", "corpus_graph")
-                                         if n in fns}
+                row["device_warm"] = {n: kernels(fns[n]) for n in names if "verify" not in n}
+                row["device_flushed"] = {n: flushed_us(fns[n]) for n in names
+                                         if n.endswith("_graph") or n in ("eager", "corpus_jit")}
+                graphs = [n for n in names if n.startswith("compiled_") and n.endswith("_graph")]
+                if graphs and "corpus_graph" in fns:
+                    best = min(graphs, key=lambda n: row["summary"]["repeated"][n])
+                    ratios = [t["repeated"][best] / t["repeated"]["corpus_graph"] for t in trials]
+                    row["go_test"] = {"best_compiled_graph": best, "median_ratio": statistics.median(ratios),
+                                      "min_trial_ratio": min(ratios)}
             except Exception:  # noqa: BLE001
                 row["error"] = traceback.format_exc()[-2500:]
             rec["rows"].append(row)
+    tests = [r["go_test"] for r in rec["rows"] if "go_test" in r]
+    passing = [t for t in tests if t["median_ratio"] >= 1.10 and t["min_trial_ratio"] >= 1.0]
+    rec["go_decision"] = {"shapes": len(tests), "passing": len(passing),
+                          "go": len(tests) == 10 and len(passing) >= 7}
     import launch_local_check as LC
     rec["input_hashes"] = LC.input_hashes()
     return rec
@@ -311,6 +433,18 @@ def dry() -> dict:
     res["conditions_duplicate_slot"] = value_conditions(lens2, bad, BS, NB)
     lens3 = d["lens"].clone(); lens3[2] = 0
     res["conditions_zero_length"] = value_conditions(lens3, d["bt"], BS, NB)
+    res["vec_agree"] = [value_conditions_vec(a, b, BS, NB) == (not value_conditions(a, b, BS, NB))
+                        == value_conditions_device(a, b, BS, NB) for a, b in
+                        ((d["lens"], d["bt"]), (lens2, bad), (lens3, d["bt"]))]
+    for fname, f in FORMULATIONS.items():
+        base = make(4, 64, "cpu", seed=5)
+        e = {kk: (vv.clone() if torch.is_tensor(vv) else vv) for kk, vv in base.items()}
+        ref(*(e[n] for n in ("q", "k", "v", "cos", "sin", "kc", "vc", "bt", "lens")))
+        g = {kk: (vv.clone() if torch.is_tensor(vv) else vv) for kk, vv in base.items()}
+        r = f(*(g[n] for n in ("q", "k", "v", "cos", "sin", "kc", "vc", "bt", "lens")))
+        if r is not None:
+            g["q"] = r
+        res[f"formulation_{fname}_matches_ref"] = all(torch.allclose(g[n], e[n], atol=1e-6) for n in ("q", "kc", "vc"))
     return res
 
 

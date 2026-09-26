@@ -1,0 +1,2520 @@
+{
+ "kind": "rotary_decode_bench (go/no-go)",
+ "device": "cuda",
+ "triton": "3.8.0",
+ "torch": "2.14.0+cu130",
+ "TRITON_INTERPRET": null,
+ "gpu_name": "NVIDIA L4",
+ "compute_capability": [
+  8,
+  9
+ ],
+ "cpu": "model name\t: unknown\n1",
+ "config": {
+  "q_heads": 32,
+  "kv_heads": 8,
+  "block_size": 16,
+  "blocks_per_seq": 64,
+  "cache_layout": "old (use_new_kcache_layout=False)",
+  "dtype": "float32"
+ },
+ "tokens": [
+  1,
+  8,
+  32,
+  64,
+  256
+ ],
+ "head_dims": [
+  64,
+  128
+ ],
+ "rows": [
+  {
+   "T": 1,
+   "D": 64,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 59,
+     "k_cache": 32,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 52,
+     "k_cache": 32,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 346.0390000000757,
+      "compiled": 106.23299999856783,
+      "corpus_wrapper": 52.616500001434474,
+      "corpus_jit": 41.36599999959856,
+      "corpus_verify_jit": 112.21749999990038,
+      "corpus_compiled": 20.34050000077059,
+      "corpus_graph": 11.14000000157489,
+      "compiled_graph": 11.385000002306356
+     },
+     "repeated": {
+      "eager": 311.57934999999526,
+      "compiled": 83.12482000000898,
+      "corpus_wrapper": 35.22715999999093,
+      "corpus_jit": 24.75790000001865,
+      "corpus_verify_jit": 95.11039999999582,
+      "corpus_compiled": 10.069850000000713,
+      "corpus_graph": 3.557190000016419,
+      "compiled_graph": 4.251400000008232
+     }
+    },
+    {
+     "single": {
+      "compiled": 103.19300000105613,
+      "corpus_wrapper": 51.7210000001711,
+      "corpus_jit": 41.3559999969948,
+      "corpus_verify_jit": 109.2529999997538,
+      "corpus_compiled": 20.641000000765075,
+      "corpus_graph": 11.125000000333785,
+      "compiled_graph": 11.145000000212235,
+      "eager": 324.88800000152196
+     },
+     "repeated": {
+      "compiled": 82.42028999998041,
+      "corpus_wrapper": 33.02619999999479,
+      "corpus_jit": 26.104930000023785,
+      "corpus_verify_jit": 93.36715999999967,
+      "corpus_compiled": 9.97763999997403,
+      "corpus_graph": 3.7307900000271843,
+      "compiled_graph": 4.095600000013633,
+      "eager": 308.7221799999895
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 51.87100000014766,
+      "corpus_jit": 41.61599999896737,
+      "corpus_verify_jit": 108.92249999905346,
+      "corpus_compiled": 19.880999998278526,
+      "corpus_graph": 10.910000000308173,
+      "compiled_graph": 11.00100000073212,
+      "eager": 325.81300000167346,
+      "compiled": 105.3479999999496
+     },
+     "repeated": {
+      "corpus_wrapper": 34.03193000000471,
+      "corpus_jit": 25.817620000019303,
+      "corpus_verify_jit": 93.74248000000307,
+      "corpus_compiled": 10.205749999983027,
+      "corpus_graph": 3.9429899999987588,
+      "compiled_graph": 4.1105000000030145,
+      "eager": 309.0913999999856,
+      "compiled": 82.51789999999204
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 41.58600000003787,
+      "corpus_verify_jit": 108.48249999995119,
+      "corpus_compiled": 19.789999999630936,
+      "corpus_graph": 11.200000001210242,
+      "compiled_graph": 11.55499999860865,
+      "eager": 325.30749999892805,
+      "compiled": 104.45250000046258,
+      "corpus_wrapper": 51.21599999924342
+     },
+     "repeated": {
+      "corpus_jit": 24.932110000008834,
+      "corpus_verify_jit": 94.41599000002299,
+      "corpus_compiled": 10.002239999984397,
+      "corpus_graph": 3.9933999999774983,
+      "compiled_graph": 4.0919999999999845,
+      "eager": 305.1498099999961,
+      "compiled": 83.61502999999715,
+      "corpus_wrapper": 35.05504999999687
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 108.77300000089463,
+      "corpus_compiled": 19.855000001456347,
+      "corpus_graph": 10.93999999923767,
+      "compiled_graph": 10.975500000398597,
+      "eager": 330.77299999817456,
+      "compiled": 105.23299999931623,
+      "corpus_wrapper": 50.7059999996784,
+      "corpus_jit": 41.43099999964761
+     },
+     "repeated": {
+      "corpus_verify_jit": 95.16020999999597,
+      "corpus_compiled": 10.217150000002562,
+      "corpus_graph": 3.4799799999873926,
+      "compiled_graph": 4.110600000011289,
+      "eager": 307.8579700000006,
+      "compiled": 84.13853999996945,
+      "corpus_wrapper": 34.210730000019396,
+      "corpus_jit": 25.406419999995933
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 325.81300000167346,
+     "compiled": 105.23299999931623,
+     "corpus_wrapper": 51.7210000001711,
+     "corpus_jit": 41.43099999964761,
+     "corpus_verify_jit": 108.92249999905346,
+     "corpus_compiled": 19.880999998278526,
+     "corpus_graph": 11.125000000333785,
+     "compiled_graph": 11.145000000212235
+    },
+    "repeated": {
+     "eager": 308.7221799999895,
+     "compiled": 83.12482000000898,
+     "corpus_wrapper": 34.210730000019396,
+     "corpus_jit": 25.406419999995933,
+     "corpus_verify_jit": 94.41599000002299,
+     "corpus_compiled": 10.069850000000713,
+     "corpus_graph": 3.7307900000271843,
+     "compiled_graph": 4.1105000000030145
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 40.569999999999595,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.6330000000002656,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.2170000000000982,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.6725000000001273,
+      "Memcpy DtoD (Device -> Device)": 1.1200000000000045,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1524999999999181,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.4069999999998117,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0234999999997854,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.5204999999998563,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.558999999999969,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5359999999998308,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.7315000000000964
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 3.7459999999997535,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_view_0": 1.4559999999999036,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.1849999999999454,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.0889999999999418
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 1.600500000000011,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.600500000000011
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 1.6005000000001246,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.6005000000001246
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 1.5995000000000346,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.5995000000000346
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 1.600500000000011,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.600500000000011
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 3.456500000000119,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_view_0": 1.344000000000051,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.0880000000000223,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.0240000000001146
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 55.23199960589409,
+     "median": 55.904000997543335,
+     "p80": 56.32000043988228
+    },
+    "compiled": {
+     "p20": 8.895999751985073,
+     "median": 9.424000047147274,
+     "p80": 9.836800023913385
+    },
+    "compiled_graph": {
+     "p20": 8.00000037997961,
+     "median": 8.608000352978706,
+     "p80": 9.184000082314014
+    },
+    "corpus_jit": {
+     "p20": 5.478399991989137,
+     "median": 5.95200015231967,
+     "p80": 6.2975998036563405
+    },
+    "corpus_graph": {
+     "p20": 5.311999935656786,
+     "median": 6.016000173985958,
+     "p80": 7.020799815654755
+    }
+   }
+  },
+  {
+   "T": 8,
+   "D": 64,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 503,
+     "k_cache": 490,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 503,
+     "k_cache": 490,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 534.8929999993146,
+      "compiled": 122.35300000007499,
+      "corpus_wrapper": 60.97650000036481,
+      "corpus_jit": 48.28099999976132,
+      "corpus_verify_jit": 167.83449999913103,
+      "corpus_compiled": 25.425500000508805,
+      "corpus_graph": 14.870499999375397,
+      "compiled_graph": 15.635000000457921
+     },
+     "repeated": {
+      "eager": 522.7385799999951,
+      "compiled": 114.5372799999933,
+      "corpus_wrapper": 42.58983000003269,
+      "corpus_jit": 29.564019999988034,
+      "corpus_verify_jit": 154.61845000000807,
+      "corpus_compiled": 12.749710000008463,
+      "corpus_graph": 5.42692999999872,
+      "compiled_graph": 6.121750000005477
+     }
+    },
+    {
+     "single": {
+      "compiled": 121.11250000046425,
+      "corpus_wrapper": 60.336500000701676,
+      "corpus_jit": 47.60100000034129,
+      "corpus_verify_jit": 172.59450000040033,
+      "corpus_compiled": 26.055999999385904,
+      "corpus_graph": 14.500000000694513,
+      "compiled_graph": 15.59600000078376,
+      "eager": 494.99200000013843
+     },
+     "repeated": {
+      "compiled": 96.79864999998955,
+      "corpus_wrapper": 42.57263999999594,
+      "corpus_jit": 36.056480000006275,
+      "corpus_verify_jit": 176.69617999999332,
+      "corpus_compiled": 18.394539999988524,
+      "corpus_graph": 5.477839999983303,
+      "compiled_graph": 6.314449999997862,
+      "eager": 509.8382600000306
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 59.75649999889754,
+      "corpus_jit": 49.51600000069334,
+      "corpus_verify_jit": 167.94899999972301,
+      "corpus_compiled": 27.990999999616406,
+      "corpus_graph": 14.765999999610813,
+      "compiled_graph": 16.19050000023492,
+      "eager": 514.937500000201,
+      "compiled": 120.72299999843494
+     },
+     "repeated": {
+      "corpus_wrapper": 42.307529999980886,
+      "corpus_jit": 32.03327999997896,
+      "corpus_verify_jit": 147.83329000000123,
+      "corpus_compiled": 13.892740000009951,
+      "corpus_graph": 5.124519999988308,
+      "compiled_graph": 6.336050000008697,
+      "eager": 409.5470300000059,
+      "compiled": 96.56104999997694
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 49.61149999971326,
+      "corpus_verify_jit": 167.95399999836036,
+      "corpus_compiled": 27.155499997988386,
+      "corpus_graph": 14.375999999316491,
+      "compiled_graph": 16.305000000826908,
+      "eager": 450.50599999996166,
+      "compiled": 119.17800000027512,
+      "corpus_wrapper": 59.66650000033269
+     },
+     "repeated": {
+      "corpus_jit": 33.79501999997814,
+      "corpus_verify_jit": 181.25580000003083,
+      "corpus_compiled": 15.405469999976162,
+      "corpus_graph": 8.076300000006142,
+      "compiled_graph": 9.92565000000667,
+      "eager": 475.8937400000107,
+      "compiled": 96.39012999997476,
+      "corpus_wrapper": 41.30509999999532
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 168.3794999998156,
+      "corpus_compiled": 27.565999999978885,
+      "corpus_graph": 14.010000001007938,
+      "compiled_graph": 15.2799999995068,
+      "eager": 442.3309999985747,
+      "compiled": 116.39799999940692,
+      "corpus_wrapper": 60.5069999988217,
+      "corpus_jit": 49.525999999744386
+     },
+     "repeated": {
+      "corpus_verify_jit": 149.13041999999876,
+      "corpus_compiled": 13.94204000000343,
+      "corpus_graph": 5.32272000000944,
+      "compiled_graph": 6.226349999991498,
+      "eager": 399.15487999998334,
+      "compiled": 95.7203200000123,
+      "corpus_wrapper": 41.51059999998097,
+      "corpus_jit": 32.752689999995255
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 494.99200000013843,
+     "compiled": 120.72299999843494,
+     "corpus_wrapper": 60.336500000701676,
+     "corpus_jit": 49.51600000069334,
+     "corpus_verify_jit": 167.95399999836036,
+     "corpus_compiled": 27.155499997988386,
+     "corpus_graph": 14.500000000694513,
+     "compiled_graph": 15.635000000457921
+    },
+    "repeated": {
+     "eager": 475.8937400000107,
+     "compiled": 96.56104999997694,
+     "corpus_wrapper": 42.307529999980886,
+     "corpus_jit": 32.752689999995255,
+     "corpus_verify_jit": 154.61845000000807,
+     "corpus_compiled": 13.94204000000343,
+     "corpus_graph": 5.42692999999872,
+     "compiled_graph": 6.314449999997862
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 41.16999999999996,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.6984999999999673,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.25,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.698000000000036,
+      "Memcpy DtoD (Device -> Device)": 1.1539999999999964,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1525000000000318,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.3834999999999127,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0080000000000382,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.4740000000000464,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.5639999999999645,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5120000000000573,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.7275000000000773
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 4.026499999999942,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.5510000000000446,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.2794999999999845,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.1844999999999573
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 1.7275000000000205,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.7275000000000205
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 1.7280000000000086,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.7280000000000086
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 1.728999999999985,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.728999999999985
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 1.7280000000000086,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.7280000000000086
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 3.651999999999987,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.43850000000009,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.1535000000000082,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.05600000000004
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 55.96800148487091,
+     "median": 56.223999708890915,
+     "p80": 56.671999394893646
+    },
+    "compiled": {
+     "p20": 9.216000325977802,
+     "median": 9.855999611318111,
+     "p80": 10.412799939513206
+    },
+    "compiled_graph": {
+     "p20": 8.00000037997961,
+     "median": 8.736000396311283,
+     "p80": 9.631999768316746
+    },
+    "corpus_jit": {
+     "p20": 5.785599909722806,
+     "median": 6.016000173985958,
+     "p80": 6.752000190317631
+    },
+    "corpus_graph": {
+     "p20": 6.175999995321035,
+     "median": 6.976000033318996,
+     "p80": 7.807999849319458
+    }
+   }
+  },
+  {
+   "T": 32,
+   "D": 64,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 2804,
+     "k_cache": 1200,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 2804,
+     "k_cache": 1200,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 439.6750000008609,
+      "compiled": 121.42799999992349,
+      "corpus_wrapper": 60.841499999853,
+      "corpus_jit": 48.5664999985147,
+      "corpus_verify_jit": 287.4875000014043,
+      "corpus_compiled": 28.0855000021063,
+      "corpus_graph": 14.520000000572963,
+      "compiled_graph": 16.19000000019355
+     },
+     "repeated": {
+      "eager": 409.144810000015,
+      "compiled": 95.26841000003117,
+      "corpus_wrapper": 41.482100000003186,
+      "corpus_jit": 30.646040000021916,
+      "corpus_verify_jit": 271.7618899999863,
+      "corpus_compiled": 13.731230000004757,
+      "corpus_graph": 5.096619999989116,
+      "compiled_graph": 6.309460000011313
+     }
+    },
+    {
+     "single": {
+      "compiled": 123.26799999939908,
+      "corpus_wrapper": 61.26649999949052,
+      "corpus_jit": 49.30599999930507,
+      "corpus_verify_jit": 280.3569999993982,
+      "corpus_compiled": 27.435499999839408,
+      "corpus_graph": 14.244999999135644,
+      "compiled_graph": 15.87999999941303,
+      "eager": 441.8360000002508
+     },
+     "repeated": {
+      "compiled": 96.23563000001667,
+      "corpus_wrapper": 40.470280000022285,
+      "corpus_jit": 31.719969999990383,
+      "corpus_verify_jit": 270.18565000002326,
+      "corpus_compiled": 12.956019999990076,
+      "corpus_graph": 5.077720000024044,
+      "compiled_graph": 6.594650000018021,
+      "eager": 410.57196000000573
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 59.831499999773996,
+      "corpus_jit": 49.31700000021522,
+      "corpus_verify_jit": 279.5369999990527,
+      "corpus_compiled": 27.925999999567352,
+      "corpus_graph": 14.480500000857432,
+      "compiled_graph": 16.220000000899404,
+      "eager": 440.190500000881,
+      "compiled": 119.34299999971643
+     },
+     "repeated": {
+      "corpus_wrapper": 41.392609999988395,
+      "corpus_jit": 29.867219999992756,
+      "corpus_verify_jit": 270.22345999998976,
+      "corpus_compiled": 13.136319999986767,
+      "corpus_graph": 5.457030000002305,
+      "compiled_graph": 6.529859999986343,
+      "eager": 408.7462100000039,
+      "compiled": 92.4835500000043
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 48.63100000029874,
+      "corpus_verify_jit": 280.3865000000627,
+      "corpus_compiled": 25.061000000548006,
+      "corpus_graph": 14.560999998636248,
+      "compiled_graph": 16.125500000185866,
+      "eager": 442.6710000000611,
+      "compiled": 120.26299999945422,
+      "corpus_wrapper": 59.86200000052122
+     },
+     "repeated": {
+      "corpus_jit": 30.686749999979668,
+      "corpus_verify_jit": 269.307629999993,
+      "corpus_compiled": 15.166159999999707,
+      "corpus_graph": 5.650539999990656,
+      "compiled_graph": 6.481459999996275,
+      "eager": 409.49423000000706,
+      "compiled": 93.04624999998623,
+      "corpus_wrapper": 40.13806999999758
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 284.86199999910866,
+      "corpus_compiled": 25.290499999996996,
+      "corpus_graph": 14.72099999944021,
+      "compiled_graph": 16.160000001264052,
+      "eager": 436.2305000000788,
+      "compiled": 119.05800000100442,
+      "corpus_wrapper": 59.63149999921313,
+      "corpus_jit": 47.79600000048845
+     },
+     "repeated": {
+      "corpus_verify_jit": 265.65433999998334,
+      "corpus_compiled": 12.732910000003983,
+      "corpus_graph": 5.634639999989588,
+      "compiled_graph": 6.774360000001423,
+      "eager": 404.84181999996594,
+      "compiled": 91.767429999976,
+      "corpus_wrapper": 39.75107000002254,
+      "corpus_jit": 29.745430000005513
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 440.190500000881,
+     "compiled": 120.26299999945422,
+     "corpus_wrapper": 59.86200000052122,
+     "corpus_jit": 48.63100000029874,
+     "corpus_verify_jit": 280.3865000000627,
+     "corpus_compiled": 27.435499999839408,
+     "corpus_graph": 14.520000000572963,
+     "compiled_graph": 16.160000001264052
+    },
+    "repeated": {
+     "eager": 409.144810000015,
+     "compiled": 93.04624999998623,
+     "corpus_wrapper": 40.470280000022285,
+     "corpus_jit": 30.646040000021916,
+     "corpus_verify_jit": 270.18565000002326,
+     "corpus_compiled": 13.136319999986767,
+     "corpus_graph": 5.457030000002305,
+     "compiled_graph": 6.529859999986343
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 42.12050000000022,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.759999999999991,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.2799999999999727,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.7915000000000418,
+      "Memcpy DtoD (Device -> Device)": 1.3740000000000236,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1520000000000437,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.3780000000002701,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 0.9925000000000637,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.4745000000001482,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.586500000000001,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5345000000000937,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.75
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 4.341000000000008,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.6335000000000264,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.4010000000000673,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.3100000000000591
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 2.4635000000000673,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.4635000000000673
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 2.4909999999999854,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.4909999999999854
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 2.45799999999997,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.45799999999997
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 2.4729999999999563,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.4729999999999563
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 3.9050000000002,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.5209999999999013,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.2485000000000355,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.1509999999999536
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 57.69599974155426,
+     "median": 58.43200162053108,
+     "p80": 58.905601501464844
+    },
+    "compiled": {
+     "p20": 10.879999957978725,
+     "median": 11.615999974310398,
+     "p80": 12.575999833643436
+    },
+    "compiled_graph": {
+     "p20": 9.945600293576717,
+     "median": 10.528000071644783,
+     "p80": 11.02719996124506
+    },
+    "corpus_jit": {
+     "p20": 6.425600033253431,
+     "median": 7.104000076651573,
+     "p80": 7.2639998979866505
+    },
+    "corpus_graph": {
+     "p20": 7.391999941319227,
+     "median": 8.287999778985977,
+     "p80": 9.02399979531765
+    }
+   }
+  },
+  {
+   "T": 64,
+   "D": 64,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 15317,
+     "k_cache": 22571,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 10690,
+     "k_cache": 22571,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 433.0499999980475,
+      "compiled": 116.28300000054992,
+      "corpus_wrapper": 58.93650000032835,
+      "corpus_jit": 47.37149999911594,
+      "corpus_verify_jit": 443.5110000002851,
+      "corpus_compiled": 24.885499996685212,
+      "corpus_graph": 14.120999999533979,
+      "compiled_graph": 15.019999999310585
+     },
+     "repeated": {
+      "eager": 404.8852200000397,
+      "compiled": 91.5790199999833,
+      "corpus_wrapper": 38.04651999999464,
+      "corpus_jit": 28.66459999999904,
+      "corpus_verify_jit": 420.04259000002264,
+      "corpus_compiled": 12.38699999994708,
+      "corpus_graph": 5.111030000009009,
+      "compiled_graph": 5.678140000000553
+     }
+    },
+    {
+     "single": {
+      "compiled": 115.37749999845914,
+      "corpus_wrapper": 58.461500000106525,
+      "corpus_jit": 47.13100000230952,
+      "corpus_verify_jit": 444.32600000021694,
+      "corpus_compiled": 25.33100000334798,
+      "corpus_graph": 14.055999997708568,
+      "compiled_graph": 15.155500001640121,
+      "eager": 439.9155000029964
+     },
+     "repeated": {
+      "compiled": 92.84886000003212,
+      "corpus_wrapper": 37.923920000011435,
+      "corpus_jit": 28.754689999956895,
+      "corpus_verify_jit": 428.3070800000388,
+      "corpus_compiled": 12.843409999945266,
+      "corpus_graph": 4.8048100000386285,
+      "compiled_graph": 5.9814499999788495,
+      "eager": 405.2835299999913
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 58.83150000229875,
+      "corpus_jit": 47.78649999792606,
+      "corpus_verify_jit": 437.54550000230097,
+      "corpus_compiled": 24.490999997794916,
+      "corpus_graph": 14.450500000151578,
+      "compiled_graph": 15.17100000114624,
+      "eager": 430.2105000029144,
+      "compiled": 115.93749999860847
+     },
+     "repeated": {
+      "corpus_wrapper": 38.250229999974295,
+      "corpus_jit": 28.3334899999943,
+      "corpus_verify_jit": 418.5086500000068,
+      "corpus_compiled": 12.662100000042642,
+      "corpus_graph": 5.531929999946783,
+      "compiled_graph": 6.254950000013082,
+      "eager": 406.50106000001074,
+      "compiled": 94.74289999999996
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 47.64649999700055,
+      "corpus_verify_jit": 432.73600000048873,
+      "corpus_compiled": 24.979999999175106,
+      "corpus_graph": 14.579999998431958,
+      "compiled_graph": 15.49499999953241,
+      "eager": 444.2054999991285,
+      "compiled": 115.43800000168858,
+      "corpus_wrapper": 58.326499999594716
+     },
+     "repeated": {
+      "corpus_jit": 28.92420000002005,
+      "corpus_verify_jit": 436.681189999959,
+      "corpus_compiled": 13.0723099999841,
+      "corpus_graph": 5.21222000003263,
+      "compiled_graph": 6.307049999989545,
+      "eager": 418.60235000001467,
+      "compiled": 95.0232000000284,
+      "corpus_wrapper": 39.979570000028275
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 448.13100000240524,
+      "corpus_compiled": 25.41099999930907,
+      "corpus_graph": 14.539999998675057,
+      "compiled_graph": 16.000999998766474,
+      "eager": 440.90049999923053,
+      "compiled": 115.75799999974379,
+      "corpus_wrapper": 59.831499999773996,
+      "corpus_jit": 49.57600000210505
+     },
+     "repeated": {
+      "corpus_verify_jit": 419.43187000001103,
+      "corpus_compiled": 13.172419999989415,
+      "corpus_graph": 5.067330000017023,
+      "compiled_graph": 6.13514999997733,
+      "eager": 412.4795999999975,
+      "compiled": 91.71441999995977,
+      "corpus_wrapper": 40.21158000000469,
+      "corpus_jit": 31.22756000003335
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 439.9155000029964,
+     "compiled": 115.75799999974379,
+     "corpus_wrapper": 58.83150000229875,
+     "corpus_jit": 47.64649999700055,
+     "corpus_verify_jit": 443.5110000002851,
+     "corpus_compiled": 24.979999999175106,
+     "corpus_graph": 14.450500000151578,
+     "compiled_graph": 15.17100000114624
+    },
+    "repeated": {
+     "eager": 406.50106000001074,
+     "compiled": 92.84886000003212,
+     "corpus_wrapper": 38.250229999974295,
+     "corpus_jit": 28.754689999956895,
+     "corpus_verify_jit": 420.04259000002264,
+     "corpus_compiled": 12.843409999945266,
+     "corpus_graph": 5.111030000009009,
+     "compiled_graph": 6.13514999997733
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 44.27549999999985,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.842999999999961,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.3924999999999272,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.9024999999999181,
+      "Memcpy DtoD (Device -> Device)": 1.8284999999999627,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1520000000000437,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.3769999999999527,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0219999999999345,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.4729999999999563,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.593499999999949,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5080000000000382,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.8845000000000027
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 5.190000000000055,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.752999999999929,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.9214999999999236,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.5045000000000641
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 3.390000000000043,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.390000000000043
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 3.40300000000002,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.40300000000002
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 3.383000000000152,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.383000000000152
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 3.393000000000029,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.393000000000029
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 4.7009999999997945,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.5989999999999327,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.7659999999999627,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.342999999999961
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 60.60799956321716,
+     "median": 61.055999249219894,
+     "p80": 61.97759881615639
+    },
+    "compiled": {
+     "p20": 11.58399973064661,
+     "median": 11.744000017642975,
+     "p80": 12.319999746978283
+    },
+    "compiled_graph": {
+     "p20": 11.481599882245064,
+     "median": 11.839999817311764,
+     "p80": 12.390400096774101
+    },
+    "corpus_jit": {
+     "p20": 7.699200045317412,
+     "median": 8.224000222980976,
+     "p80": 9.171199798583984
+    },
+    "corpus_graph": {
+     "p20": 8.287999778985977,
+     "median": 9.02399979531765,
+     "p80": 9.920000098645687
+    }
+   }
+  },
+  {
+   "T": 256,
+   "D": 64,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 16806,
+     "k_cache": 3217,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 22163,
+     "k_cache": 3217,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 442.2405000035212,
+      "compiled": 121.81800000021781,
+      "corpus_wrapper": 60.426499999266525,
+      "corpus_jit": 48.33599999898297,
+      "corpus_verify_jit": 1362.242999999097,
+      "corpus_compiled": 25.700500003722482,
+      "corpus_graph": 16.93049999573759,
+      "compiled_graph": 19.00599999871133
+     },
+     "repeated": {
+      "eager": 407.7532900000591,
+      "compiled": 94.80949999996824,
+      "corpus_wrapper": 38.91454999994437,
+      "corpus_jit": 29.182009999999536,
+      "corpus_verify_jit": 1341.4515099999846,
+      "corpus_compiled": 13.201020000010999,
+      "corpus_graph": 8.508299999974156,
+      "compiled_graph": 9.796540000053255
+     }
+    },
+    {
+     "single": {
+      "compiled": 124.75300000147627,
+      "corpus_wrapper": 61.15650000282358,
+      "corpus_jit": 49.68649999881336,
+      "corpus_verify_jit": 1352.573000001911,
+      "corpus_compiled": 28.40099999801282,
+      "corpus_graph": 17.20049999676121,
+      "compiled_graph": 19.50099999703525,
+      "eager": 447.7810000018678
+     },
+     "repeated": {
+      "compiled": 96.53385000000014,
+      "corpus_wrapper": 39.57135999996808,
+      "corpus_jit": 30.065530000058516,
+      "corpus_verify_jit": 1343.349049999958,
+      "corpus_compiled": 13.508230000027766,
+      "corpus_graph": 8.490410000021598,
+      "compiled_graph": 9.77732999999148,
+      "eager": 409.0411100000324
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 58.265999999917995,
+      "corpus_jit": 48.70649999944021,
+      "corpus_verify_jit": 1354.3579999968358,
+      "corpus_compiled": 27.91050000183759,
+      "corpus_graph": 16.89999999854308,
+      "compiled_graph": 19.075000000867703,
+      "eager": 430.5005000020401,
+      "compiled": 116.94300000186786
+     },
+     "repeated": {
+      "corpus_wrapper": 39.748569999957795,
+      "corpus_jit": 30.411130000018716,
+      "corpus_verify_jit": 1321.7283499999864,
+      "corpus_compiled": 13.645130000057293,
+      "corpus_graph": 8.47870999997724,
+      "compiled_graph": 9.809640000000286,
+      "eager": 411.9005000000442,
+      "compiled": 94.24959000000399
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 47.87600000000225,
+      "corpus_verify_jit": 1377.1889999993903,
+      "corpus_compiled": 26.821000002286155,
+      "corpus_graph": 17.070000001950802,
+      "compiled_graph": 19.23100000311706,
+      "eager": 475.97700000068244,
+      "compiled": 119.38300000124968,
+      "corpus_wrapper": 59.081500001667564
+     },
+     "repeated": {
+      "corpus_jit": 30.287430000015547,
+      "corpus_verify_jit": 1319.3082800000154,
+      "corpus_compiled": 13.564240000007999,
+      "corpus_graph": 8.537009999969314,
+      "compiled_graph": 9.787629999991054,
+      "eager": 424.2250800000136,
+      "compiled": 94.11847999999168,
+      "corpus_wrapper": 39.83206000000905
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 1348.1525000003103,
+      "corpus_compiled": 26.480999999023425,
+      "corpus_graph": 17.530000000931523,
+      "compiled_graph": 19.65100000234088,
+      "eager": 456.78049999864356,
+      "compiled": 119.31299999901057,
+      "corpus_wrapper": 57.97599999723957,
+      "corpus_jit": 46.20099999996796
+     },
+     "repeated": {
+      "corpus_verify_jit": 1326.575450000007,
+      "corpus_compiled": 13.426420000044459,
+      "corpus_graph": 8.491809999995326,
+      "compiled_graph": 9.825340000020333,
+      "eager": 423.7975800000271,
+      "compiled": 94.65429999998776,
+      "corpus_wrapper": 38.50042999999914,
+      "corpus_jit": 29.696219999948426
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 447.7810000018678,
+     "compiled": 119.38300000124968,
+     "corpus_wrapper": 59.081500001667564,
+     "corpus_jit": 48.33599999898297,
+     "corpus_verify_jit": 1354.3579999968358,
+     "corpus_compiled": 26.821000002286155,
+     "corpus_graph": 17.070000001950802,
+     "compiled_graph": 19.23100000311706
+    },
+    "repeated": {
+     "eager": 411.9005000000442,
+     "compiled": 94.65429999998776,
+     "corpus_wrapper": 39.57135999996808,
+     "corpus_jit": 30.065530000058516,
+     "corpus_verify_jit": 1326.575450000007,
+     "corpus_compiled": 13.508230000027766,
+     "corpus_graph": 8.491809999995326,
+     "compiled_graph": 9.796540000053255
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 57.972499999999854,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 2.5534999999999286,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.9359999999999218,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 2.755000000000109,
+      "Memcpy DtoD (Device -> Device)": 3.1340000000000146,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1820000000000164,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.7059999999999036,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.025000000000091,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.7499999999998863,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 3.3940000000000055,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.740000000000009,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 4.307999999999993
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 9.506999999999948,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 2.7305000000000064,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 3.5990000000000464,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 3.1359999999999673
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 9.05499999999995,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.05499999999995
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 9.058499999999981,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.058499999999981
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 9.085000000000036,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.085000000000036
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 9.106499999999926,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.106499999999926
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 9.054000000000087,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 2.619000000000028,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 3.496499999999969,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 2.923000000000002
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 89.63199704885483,
+     "median": 90.40000289678574,
+     "p80": 90.94399958848953
+    },
+    "compiled": {
+     "p20": 28.940800577402115,
+     "median": 30.112000182271004,
+     "p80": 30.94400092959404
+    },
+    "compiled_graph": {
+     "p20": 28.460800647735596,
+     "median": 29.24799919128418,
+     "p80": 30.131200328469276
+    },
+    "corpus_jit": {
+     "p20": 23.60319942235947,
+     "median": 24.4159996509552,
+     "p80": 25.196800008416176
+    },
+    "corpus_graph": {
+     "p20": 23.795200511813164,
+     "median": 24.25600029528141,
+     "p80": 24.902399629354477
+    }
+   }
+  },
+  {
+   "T": 1,
+   "D": 128,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 1297,
+     "k_cache": 27,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 1297,
+     "k_cache": 27,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 451.5960000013308,
+      "compiled": 120.32300000086593,
+      "corpus_wrapper": 59.995999997397575,
+      "corpus_jit": 48.98650000129123,
+      "corpus_verify_jit": 127.6229999973566,
+      "corpus_compiled": 26.825000002617116,
+      "corpus_graph": 16.39999999980546,
+      "compiled_graph": 18.004999997600635
+     },
+     "repeated": {
+      "eager": 417.5565299999562,
+      "compiled": 95.90881999997691,
+      "corpus_wrapper": 40.133870000005345,
+      "corpus_jit": 29.738120000004642,
+      "corpus_verify_jit": 108.10662000004356,
+      "corpus_compiled": 13.183020000013812,
+      "corpus_graph": 5.452430000048025,
+      "compiled_graph": 6.164350000048557
+     }
+    },
+    {
+     "single": {
+      "compiled": 118.98800000054166,
+      "corpus_wrapper": 61.06650000248237,
+      "corpus_jit": 49.60099999706813,
+      "corpus_verify_jit": 128.15850000080786,
+      "corpus_compiled": 26.230999999654614,
+      "corpus_graph": 16.210999998378384,
+      "compiled_graph": 16.829999999856682,
+      "eager": 452.3960000035743
+     },
+     "repeated": {
+      "compiled": 95.25979999999379,
+      "corpus_wrapper": 39.128450000021076,
+      "corpus_jit": 30.229229999960694,
+      "corpus_verify_jit": 110.01767000003326,
+      "corpus_compiled": 13.293820000015444,
+      "corpus_graph": 5.516740000004461,
+      "compiled_graph": 6.078739999964,
+      "eager": 418.46694000000184
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 61.24099999738064,
+      "corpus_jit": 49.49599999903853,
+      "corpus_verify_jit": 127.12250000035397,
+      "corpus_compiled": 27.610500001884475,
+      "corpus_graph": 16.360000000048558,
+      "compiled_graph": 17.60999999689261,
+      "eager": 458.4210000011524,
+      "compiled": 117.99249999810968
+     },
+     "repeated": {
+      "corpus_wrapper": 40.59308000002204,
+      "corpus_jit": 31.282459999957272,
+      "corpus_verify_jit": 111.5077099999695,
+      "corpus_compiled": 12.906510000050275,
+      "corpus_graph": 5.218929999983857,
+      "compiled_graph": 6.2476499999775115,
+      "eager": 414.9801500000194,
+      "compiled": 93.80618000001562
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 48.326499999973294,
+      "corpus_verify_jit": 123.24800000129699,
+      "corpus_compiled": 27.41099999781227,
+      "corpus_graph": 15.93549999867605,
+      "compiled_graph": 15.625500001448245,
+      "eager": 459.24650000017664,
+      "compiled": 119.36800000000858,
+      "corpus_wrapper": 59.92600000226389
+     },
+     "repeated": {
+      "corpus_jit": 29.846620000029134,
+      "corpus_verify_jit": 112.41112000000442,
+      "corpus_compiled": 13.032819999949652,
+      "corpus_graph": 5.546939999945266,
+      "compiled_graph": 6.07024999993655,
+      "eager": 419.7382699999963,
+      "compiled": 95.22380999996471,
+      "corpus_wrapper": 37.890320000002475
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 124.13849999859394,
+      "corpus_compiled": 26.94100000155686,
+      "corpus_graph": 15.771000001052471,
+      "compiled_graph": 16.609999995864655,
+      "eager": 453.1209999960595,
+      "compiled": 119.12749999964944,
+      "corpus_wrapper": 60.06599999963669,
+      "corpus_jit": 49.91100000140136
+     },
+     "repeated": {
+      "corpus_verify_jit": 112.18192000001181,
+      "corpus_compiled": 12.977909999989379,
+      "corpus_graph": 5.422429999981659,
+      "compiled_graph": 6.168549999969741,
+      "eager": 424.74200000000906,
+      "compiled": 97.83196999997301,
+      "corpus_wrapper": 38.74844999998572,
+      "corpus_jit": 30.019619999990255
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 453.1209999960595,
+     "compiled": 119.12749999964944,
+     "corpus_wrapper": 60.06599999963669,
+     "corpus_jit": 49.49599999903853,
+     "corpus_verify_jit": 127.12250000035397,
+     "corpus_compiled": 26.94100000155686,
+     "corpus_graph": 16.210999998378384,
+     "compiled_graph": 16.829999999856682
+    },
+    "repeated": {
+     "eager": 418.46694000000184,
+     "compiled": 95.25979999999379,
+     "corpus_wrapper": 39.128450000021076,
+     "corpus_jit": 30.019619999990255,
+     "corpus_verify_jit": 111.5077099999695,
+     "corpus_compiled": 13.032819999949652,
+     "corpus_graph": 5.452430000048025,
+     "compiled_graph": 6.164350000048557
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 40.65899999999942,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.634999999999991,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.2630000000001473,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.68100000000004,
+      "Memcpy DtoD (Device -> Device)": 1.1184999999999263,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1525000000000318,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.4080000000000155,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 0.9950000000000045,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.502500000000282,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.559500000000071,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5190000000000055,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.6949999999999363
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 3.7714999999999463,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_view_0": 1.47199999999998,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.1844999999999573,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.1044999999999163
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 1.607499999999959,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.607499999999959
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 1.6219999999998436,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.6219999999998436
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 1.6234999999999786,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.6234999999999786
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 1.6200000000000045,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.6200000000000045
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 3.483999999999753,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_view_0": 1.3754999999999882,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.055499999999995,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.024500000000046
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 55.30240014195442,
+     "median": 55.615998804569244,
+     "p80": 56.121598929166794
+    },
+    "compiled": {
+     "p20": 8.25599953532219,
+     "median": 8.48000030964613,
+     "p80": 9.119999594986439
+    },
+    "compiled_graph": {
+     "p20": 8.00000037997961,
+     "median": 8.576000109314919,
+     "p80": 9.292799979448318
+    },
+    "corpus_jit": {
+     "p20": 5.216000135987997,
+     "median": 5.375999957323074,
+     "p80": 6.111999973654747
+    },
+    "corpus_graph": {
+     "p20": 5.439999978989363,
+     "median": 6.207999773323536,
+     "p80": 7.046400010585785
+    }
+   }
+  },
+  {
+   "T": 8,
+   "D": 128,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 56873,
+     "k_cache": 3493,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 24450,
+     "k_cache": 3493,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 438.6204999988763,
+      "compiled": 118.1975000008606,
+      "corpus_wrapper": 59.021500000255855,
+      "corpus_jit": 47.62600000063344,
+      "corpus_verify_jit": 165.40400000053523,
+      "corpus_compiled": 28.116000002853525,
+      "corpus_graph": 15.339999997365794,
+      "compiled_graph": 15.340499999183521
+     },
+     "repeated": {
+      "eager": 403.4641799999861,
+      "compiled": 93.88297999997519,
+      "corpus_wrapper": 39.1899499999937,
+      "corpus_jit": 29.243200000053093,
+      "corpus_verify_jit": 145.8291400000178,
+      "corpus_compiled": 12.681000000043241,
+      "corpus_graph": 5.2093300000422005,
+      "compiled_graph": 5.669140000037487
+     }
+    },
+    {
+     "single": {
+      "compiled": 119.5230000021752,
+      "corpus_wrapper": 59.261500002349976,
+      "corpus_jit": 47.980999994479134,
+      "corpus_verify_jit": 162.48350000225287,
+      "corpus_compiled": 27.600499997504357,
+      "corpus_graph": 15.23500000288891,
+      "compiled_graph": 15.335500002322533,
+      "eager": 434.4060000001093
+     },
+     "repeated": {
+      "compiled": 92.72684000002585,
+      "corpus_wrapper": 39.64526000004298,
+      "corpus_jit": 28.663500000050135,
+      "corpus_verify_jit": 148.487700000004,
+      "corpus_compiled": 12.86270999997896,
+      "corpus_graph": 5.222320000015657,
+      "compiled_graph": 5.936339999976781,
+      "eager": 402.656059999984
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 60.36150000099383,
+      "corpus_jit": 47.685999998492434,
+      "corpus_verify_jit": 165.25399999878232,
+      "corpus_compiled": 28.006000004410225,
+      "corpus_graph": 15.895500002471863,
+      "compiled_graph": 16.58000000048787,
+      "eager": 440.05999999896517,
+      "compiled": 118.27799999863942
+     },
+     "repeated": {
+      "corpus_wrapper": 38.504529999983106,
+      "corpus_jit": 31.427959999987817,
+      "corpus_verify_jit": 148.66390999998202,
+      "corpus_compiled": 12.56329999996808,
+      "corpus_graph": 5.474230000004354,
+      "compiled_graph": 5.764140000010798,
+      "eager": 405.61304000000575,
+      "compiled": 92.07563000003915
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 48.351000000224076,
+      "corpus_verify_jit": 165.7345000047883,
+      "corpus_compiled": 26.01550000136399,
+      "corpus_graph": 14.974999999139982,
+      "compiled_graph": 16.02499999719953,
+      "eager": 443.8360000023067,
+      "compiled": 117.74749999560186,
+      "corpus_wrapper": 59.946499998631
+     },
+     "repeated": {
+      "corpus_jit": 29.4002100000057,
+      "corpus_verify_jit": 148.1286900000356,
+      "corpus_compiled": 12.70331000000624,
+      "corpus_graph": 5.197130000027528,
+      "compiled_graph": 6.027840000015772,
+      "eager": 409.00401999998337,
+      "compiled": 93.36565999994662,
+      "corpus_wrapper": 37.944319999994036
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 165.73450000123557,
+      "corpus_compiled": 27.755999997935987,
+      "corpus_graph": 15.040000000965392,
+      "compiled_graph": 16.424999998321255,
+      "eager": 439.7660000030612,
+      "compiled": 119.35250000050246,
+      "corpus_wrapper": 59.44100000121466,
+      "corpus_jit": 48.54050000346888
+     },
+     "repeated": {
+      "corpus_verify_jit": 145.5392299999403,
+      "corpus_compiled": 12.733610000026374,
+      "corpus_graph": 4.950809999968442,
+      "compiled_graph": 6.140540000032502,
+      "eager": 403.1106700000464,
+      "compiled": 91.1977100000172,
+      "corpus_wrapper": 37.58222000001865,
+      "corpus_jit": 30.18702999995071
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 439.7660000030612,
+     "compiled": 118.27799999863942,
+     "corpus_wrapper": 59.44100000121466,
+     "corpus_jit": 47.980999994479134,
+     "corpus_verify_jit": 165.40400000053523,
+     "corpus_compiled": 27.755999997935987,
+     "corpus_graph": 15.23500000288891,
+     "compiled_graph": 16.02499999719953
+    },
+    "repeated": {
+     "eager": 403.4641799999861,
+     "compiled": 92.72684000002585,
+     "corpus_wrapper": 38.504529999983106,
+     "corpus_jit": 29.4002100000057,
+     "corpus_verify_jit": 148.1286900000356,
+     "corpus_compiled": 12.70331000000624,
+     "corpus_graph": 5.2093300000422005,
+     "compiled_graph": 5.936339999976781
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 41.41350000000017,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.7124999999998636,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.25,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.7285000000000537,
+      "Memcpy DtoD (Device -> Device)": 1.233000000000061,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.15300000000002,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.4039999999999964,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0240000000001146,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.4990000000000236,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.5874999999999773,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5329999999999018,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.737500000000182
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 4.253500000000599,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.6005000000001246,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.375,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.2800000000003138
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 1.7935000000001082,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.7935000000001082
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 1.80700000000013,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.80700000000013
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 1.7934999999999945,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.7934999999999945
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 1.8075000000000045,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 1.8075000000000045
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 3.8369999999999322,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.4730000000000132,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.2170000000000982,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.1355000000000928
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 56.51199817657471,
+     "median": 57.16799944639206,
+     "p80": 57.71519988775253
+    },
+    "compiled": {
+     "p20": 9.593600407242775,
+     "median": 9.727999567985535,
+     "p80": 10.432000271975994
+    },
+    "compiled_graph": {
+     "p20": 9.414399974048138,
+     "median": 9.79200005531311,
+     "p80": 10.623999871313572
+    },
+    "corpus_jit": {
+     "p20": 5.95200015231967,
+     "median": 6.240000016987324,
+     "p80": 6.816000211983919
+    },
+    "corpus_graph": {
+     "p20": 6.207999773323536,
+     "median": 6.800000090152025,
+     "p80": 7.692799903452396
+    }
+   }
+  },
+  {
+   "T": 32,
+   "D": 128,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 1958,
+     "k_cache": 29343,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 2016,
+     "k_cache": 29343,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 441.4310000058208,
+      "compiled": 121.74800000153141,
+      "corpus_wrapper": 58.647000003020366,
+      "corpus_jit": 47.81599999859054,
+      "corpus_verify_jit": 281.2070000004496,
+      "corpus_compiled": 27.23100000068257,
+      "corpus_graph": 15.755500001546352,
+      "compiled_graph": 16.54100000081371
+     },
+     "repeated": {
+      "eager": 404.5659100000165,
+      "compiled": 92.64145000003055,
+      "corpus_wrapper": 39.695070000007604,
+      "corpus_jit": 29.250810000007732,
+      "corpus_verify_jit": 271.1710700000225,
+      "corpus_compiled": 13.049120000019343,
+      "corpus_graph": 4.937120000008122,
+      "compiled_graph": 6.0766499999687085
+     }
+    },
+    {
+     "single": {
+      "compiled": 119.34800000190648,
+      "corpus_wrapper": 59.22149999904036,
+      "corpus_jit": 48.255999995916454,
+      "corpus_verify_jit": 284.0769999998827,
+      "corpus_compiled": 26.146000003279823,
+      "corpus_graph": 15.270500000497123,
+      "compiled_graph": 16.7705000002627,
+      "eager": 437.9950000021893
+     },
+     "repeated": {
+      "compiled": 92.6975499999827,
+      "corpus_wrapper": 38.85734000000696,
+      "corpus_jit": 29.858019999977614,
+      "corpus_verify_jit": 270.7579699999485,
+      "corpus_compiled": 12.77400999995848,
+      "corpus_graph": 5.088919999991504,
+      "compiled_graph": 5.68194000003075,
+      "eager": 399.4620800000348
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 58.851000002135834,
+      "corpus_jit": 47.900999998518046,
+      "corpus_verify_jit": 280.24150000049985,
+      "corpus_compiled": 27.610500001884475,
+      "corpus_graph": 15.590499998552332,
+      "compiled_graph": 16.881000000523727,
+      "eager": 439.1910000016708,
+      "compiled": 118.75249999704351
+     },
+     "repeated": {
+      "corpus_wrapper": 41.13310000001036,
+      "corpus_jit": 31.096949999991352,
+      "corpus_verify_jit": 264.91953000004287,
+      "corpus_compiled": 13.191820000031385,
+      "corpus_graph": 4.879820000027735,
+      "compiled_graph": 5.959249999989424,
+      "eager": 400.3966100000156,
+      "compiled": 93.20546000004981
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 50.06649999828028,
+      "corpus_verify_jit": 279.6714999995231,
+      "corpus_compiled": 26.76600000128815,
+      "corpus_graph": 14.43049999849677,
+      "compiled_graph": 15.530499997140623,
+      "eager": 431.16050000335804,
+      "compiled": 118.60749999925702,
+      "corpus_wrapper": 60.431000001415214
+     },
+     "repeated": {
+      "corpus_jit": 31.28436000004342,
+      "corpus_verify_jit": 262.0119600000237,
+      "corpus_compiled": 12.5878000000057,
+      "corpus_graph": 5.491229999989855,
+      "compiled_graph": 5.954949999988912,
+      "eager": 404.16349999993884,
+      "compiled": 94.30008999999018,
+      "corpus_wrapper": 41.88632000001746
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 282.9319999975155,
+      "corpus_compiled": 25.680500002067674,
+      "corpus_graph": 14.64049999810868,
+      "compiled_graph": 15.64099999740165,
+      "eager": 442.78549999887673,
+      "compiled": 120.33799999855432,
+      "corpus_wrapper": 60.707000002935274,
+      "corpus_jit": 49.36600000249314
+     },
+     "repeated": {
+      "corpus_verify_jit": 262.8049600000537,
+      "corpus_compiled": 13.93864000000633,
+      "corpus_graph": 5.252520000027516,
+      "compiled_graph": 6.309850000008055,
+      "eager": 413.93663000000913,
+      "compiled": 95.85762000000386,
+      "corpus_wrapper": 40.4038799999995,
+      "corpus_jit": 30.973949999975044
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 439.1910000016708,
+     "compiled": 119.34800000190648,
+     "corpus_wrapper": 59.22149999904036,
+     "corpus_jit": 48.255999995916454,
+     "corpus_verify_jit": 281.2070000004496,
+     "corpus_compiled": 26.76600000128815,
+     "corpus_graph": 15.270500000497123,
+     "compiled_graph": 16.54100000081371
+    },
+    "repeated": {
+     "eager": 404.16349999993884,
+     "compiled": 93.20546000004981,
+     "corpus_wrapper": 40.4038799999995,
+     "corpus_jit": 30.973949999975044,
+     "corpus_verify_jit": 264.91953000004287,
+     "corpus_compiled": 13.049120000019343,
+     "corpus_graph": 5.088919999991504,
+     "compiled_graph": 5.959249999989424
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 44.32000000000005,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 1.84050000000002,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.406500000000051,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 1.9165000000000418,
+      "Memcpy DtoD (Device -> Device)": 1.8254999999999768,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1514999999999418,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.3769999999999527,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0084999999999127,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.47199999999998,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.560000000000059,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5049999999999955,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.8740000000000236
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 5.018999999999949,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.726500000000044,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.82000000000005,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.472500000000025
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 2.6054999999999495,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.6054999999999495
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 2.592499999999916,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.592499999999916
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 2.58949999999993,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.58949999999993
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 2.589999999999975,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 2.589999999999975
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 4.73599999999999,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.5679999999999836,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 1.8389999999999986,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.3420000000000414
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 61.38880029320717,
+     "median": 62.04799935221672,
+     "p80": 62.87360191345215
+    },
+    "compiled": {
+     "p20": 11.839999817311764,
+     "median": 12.256000190973282,
+     "p80": 13.279999606311321
+    },
+    "compiled_graph": {
+     "p20": 11.801599897444248,
+     "median": 12.815999798476696,
+     "p80": 13.248000293970108
+    },
+    "corpus_jit": {
+     "p20": 7.840000092983246,
+     "median": 8.832000195980072,
+     "p80": 9.958400204777718
+    },
+    "corpus_graph": {
+     "p20": 7.795199938118457,
+     "median": 8.54399986565113,
+     "p80": 9.727999567985535
+    }
+   }
+  },
+  {
+   "T": 64,
+   "D": 128,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 29318,
+     "k_cache": 12711,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 15664,
+     "k_cache": 12711,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 440.15499999616736,
+      "compiled": 124.91349999876888,
+      "corpus_wrapper": 60.301500003134834,
+      "corpus_jit": 49.396499996134935,
+      "corpus_verify_jit": 439.5509999994829,
+      "corpus_compiled": 26.65499999565668,
+      "corpus_graph": 14.295999999802689,
+      "compiled_graph": 16.305500000868278
+     },
+     "repeated": {
+      "eager": 404.95532000001333,
+      "compiled": 94.80290000006164,
+      "corpus_wrapper": 39.89816000000701,
+      "corpus_jit": 30.23892999998168,
+      "corpus_verify_jit": 426.884350000023,
+      "corpus_compiled": 12.952910000052498,
+      "corpus_graph": 4.890409999944723,
+      "compiled_graph": 6.851360000013074
+     }
+    },
+    {
+     "single": {
+      "compiled": 122.61350000031257,
+      "corpus_wrapper": 60.86650000014515,
+      "corpus_jit": 48.8210000000322,
+      "corpus_verify_jit": 441.6910000024643,
+      "corpus_compiled": 26.90500000213092,
+      "corpus_graph": 14.289999999306247,
+      "compiled_graph": 16.285500002766184,
+      "eager": 433.98549999906777
+     },
+     "repeated": {
+      "compiled": 93.74696999998378,
+      "corpus_wrapper": 41.67071000004796,
+      "corpus_jit": 30.583639999974817,
+      "corpus_verify_jit": 435.51766000000214,
+      "corpus_compiled": 12.996909999998252,
+      "corpus_graph": 5.2129299999847944,
+      "compiled_graph": 6.859870000042179,
+      "eager": 401.47803000003535
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 60.211499999240914,
+      "corpus_jit": 48.73149999795601,
+      "corpus_verify_jit": 439.65549999924747,
+      "corpus_compiled": 26.985499999909734,
+      "corpus_graph": 14.260000000376749,
+      "compiled_graph": 15.875499997264342,
+      "eager": 435.39050000163115,
+      "compiled": 121.33799999958228
+     },
+     "repeated": {
+      "corpus_wrapper": 40.71258999999827,
+      "corpus_jit": 29.2600200000237,
+      "corpus_verify_jit": 417.6095300000071,
+      "corpus_compiled": 13.231420000039407,
+      "corpus_graph": 5.24132000002453,
+      "compiled_graph": 6.879769999983409,
+      "eager": 407.30818000000113,
+      "compiled": 94.6447000000461
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 49.290999999840324,
+      "corpus_verify_jit": 437.48050000047556,
+      "corpus_compiled": 27.075999998515954,
+      "corpus_graph": 14.680500001418295,
+      "compiled_graph": 16.909999999370484,
+      "eager": 450.12100000008104,
+      "compiled": 118.33799999649841,
+      "corpus_wrapper": 58.70600000079662
+     },
+     "repeated": {
+      "corpus_jit": 29.46262000001809,
+      "corpus_verify_jit": 415.79509000001735,
+      "corpus_compiled": 13.158519999976193,
+      "corpus_graph": 5.046719999981519,
+      "compiled_graph": 6.871570000015481,
+      "eager": 411.9841899999699,
+      "compiled": 93.9681799999903,
+      "corpus_wrapper": 39.69216000001552
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 443.17599999743607,
+      "corpus_compiled": 27.640999999078986,
+      "corpus_graph": 14.660499999763488,
+      "compiled_graph": 16.68550000388791,
+      "eager": 432.52999999765507,
+      "compiled": 121.91800000138642,
+      "corpus_wrapper": 60.38700000132735,
+      "corpus_jit": 49.0459999973325
+     },
+     "repeated": {
+      "corpus_verify_jit": 422.9270599999779,
+      "corpus_compiled": 13.620630000019673,
+      "corpus_graph": 5.085629999967978,
+      "compiled_graph": 6.897969999997144,
+      "eager": 415.0056699999993,
+      "compiled": 96.072330000041,
+      "corpus_wrapper": 41.11728999994568,
+      "corpus_jit": 29.701829999950746
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 435.39050000163115,
+     "compiled": 121.91800000138642,
+     "corpus_wrapper": 60.301500003134834,
+     "corpus_jit": 49.0459999973325,
+     "corpus_verify_jit": 439.65549999924747,
+     "corpus_compiled": 26.985499999909734,
+     "corpus_graph": 14.295999999802689,
+     "compiled_graph": 16.305500000868278
+    },
+    "repeated": {
+     "eager": 407.30818000000113,
+     "compiled": 94.6447000000461,
+     "corpus_wrapper": 40.71258999999827,
+     "corpus_jit": 29.701829999950746,
+     "corpus_verify_jit": 422.9270599999779,
+     "corpus_compiled": 13.158519999976193,
+     "corpus_graph": 5.085629999967978,
+     "compiled_graph": 6.871570000015481
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 47.397000000000105,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 2.030499999999961,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 1.58400000000006,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 2.1610000000000014,
+      "Memcpy DtoD (Device -> Device)": 1.9190000000000964,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.15199999999993,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.3759999999999764,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0230000000000246,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.4725000000000819,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 2.5924999999999727,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.5360000000000582,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 3.97950000000003
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 6.363000000000113,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.9875000000000114,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 2.494000000000028,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.8859999999999673
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 3.5850000000000364,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.5850000000000364
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 3.599999999999966,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.599999999999966
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 3.5860000000000127,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.5860000000000127
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 3.643000000000029,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 3.643000000000029
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 6.001500000000021,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 1.8559999999999945,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 2.36850000000004,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 1.79200000000003
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 68.44799965620041,
+     "median": 68.78400221467018,
+     "p80": 69.37599927186966
+    },
+    "compiled": {
+     "p20": 14.841600321233273,
+     "median": 15.296000055968761,
+     "p80": 16.102399677038193
+    },
+    "compiled_graph": {
+     "p20": 15.411200001835823,
+     "median": 15.744000673294067,
+     "p80": 16.48000068962574
+    },
+    "corpus_jit": {
+     "p20": 16.92800037562847,
+     "median": 17.40800030529499,
+     "p80": 17.952000722289085
+    },
+    "corpus_graph": {
+     "p20": 16.87679998576641,
+     "median": 17.27999933063984,
+     "p80": 17.734400555491447
+    }
+   }
+  },
+  {
+   "T": 256,
+   "D": 128,
+   "max_ulp_vs_eager": {
+    "corpus_wrapper": {
+     "q": 56332,
+     "k_cache": 94900,
+     "v_cache": 0
+    },
+    "compiled": {
+     "q": 57535,
+     "k_cache": 94900,
+     "v_cache": 0
+    }
+   },
+   "errors": {},
+   "trials": [
+    {
+     "single": {
+      "eager": 422.68500000020026,
+      "compiled": 116.76799999804643,
+      "corpus_wrapper": 58.031999998320316,
+      "corpus_jit": 47.62649999889845,
+      "corpus_verify_jit": 1360.0329999974292,
+      "corpus_compiled": 28.060499992932364,
+      "corpus_graph": 17.620999997802755,
+      "compiled_graph": 24.15999999527685
+     },
+     "repeated": {
+      "eager": 397.3694399999772,
+      "compiled": 92.20013000003746,
+      "corpus_wrapper": 39.674460000043155,
+      "corpus_jit": 30.43794000006983,
+      "corpus_verify_jit": 1345.6519399998967,
+      "corpus_compiled": 13.268320000037193,
+      "corpus_graph": 9.711029999976972,
+      "compiled_graph": 14.711349999885215
+     }
+    },
+    {
+     "single": {
+      "compiled": 119.60799999854999,
+      "corpus_wrapper": 58.77649999774803,
+      "corpus_jit": 48.29099999881237,
+      "corpus_verify_jit": 1359.487999998521,
+      "corpus_compiled": 28.24050000782563,
+      "corpus_graph": 17.550999999116357,
+      "compiled_graph": 23.940999994920276,
+      "eager": 436.4205000015886
+     },
+     "repeated": {
+      "compiled": 92.5917400000742,
+      "corpus_wrapper": 38.68883999999184,
+      "corpus_jit": 31.293859999976803,
+      "corpus_verify_jit": 1367.2603499999525,
+      "corpus_compiled": 13.485319999944068,
+      "corpus_graph": 9.63612999996144,
+      "compiled_graph": 14.755959999916968,
+      "eager": 398.0887500000563
+     }
+    },
+    {
+     "single": {
+      "corpus_wrapper": 58.07650000377862,
+      "corpus_jit": 47.96100000703518,
+      "corpus_verify_jit": 1361.6379999916717,
+      "corpus_compiled": 26.810500003193738,
+      "corpus_graph": 17.589999998790518,
+      "compiled_graph": 24.13100000353552,
+      "eager": 431.4154999960351,
+      "compiled": 115.12799999735535
+     },
+     "repeated": {
+      "corpus_wrapper": 39.501360000002705,
+      "corpus_jit": 28.77350000005663,
+      "corpus_verify_jit": 1351.2159600000473,
+      "corpus_compiled": 12.567400000023099,
+      "corpus_graph": 9.607230000057143,
+      "compiled_graph": 14.75335999998606,
+      "eager": 405.0085200000808,
+      "compiled": 93.14815999999837
+     }
+    },
+    {
+     "single": {
+      "corpus_jit": 49.21099999677381,
+      "corpus_verify_jit": 1372.1184999937464,
+      "corpus_compiled": 27.135500005215363,
+      "corpus_graph": 18.310999990944765,
+      "compiled_graph": 24.75000000856653,
+      "eager": 432.5250000007941,
+      "compiled": 115.00299999056551,
+      "corpus_wrapper": 59.68150000512651
+     },
+     "repeated": {
+      "corpus_jit": 28.99790000000735,
+      "corpus_verify_jit": 1354.5250299999623,
+      "corpus_compiled": 13.3501300000205,
+      "corpus_graph": 9.628440000000182,
+      "compiled_graph": 14.726560000042355,
+      "eager": 403.7293800000441,
+      "compiled": 90.55239999995024,
+      "corpus_wrapper": 39.05834999997637
+     }
+    },
+    {
+     "single": {
+      "corpus_verify_jit": 1370.5229999985136,
+      "corpus_compiled": 26.27549999800749,
+      "corpus_graph": 17.71050000343166,
+      "compiled_graph": 24.23549999974739,
+      "eager": 429.18599999808293,
+      "compiled": 115.9830000005968,
+      "corpus_wrapper": 58.49699999771474,
+      "corpus_jit": 46.53100000240329
+     },
+     "repeated": {
+      "corpus_verify_jit": 1344.0128900001014,
+      "corpus_compiled": 12.724110000021938,
+      "corpus_graph": 9.634639999944739,
+      "compiled_graph": 14.723959999969338,
+      "eager": 406.6033600000196,
+      "compiled": 93.61186999996107,
+      "corpus_wrapper": 39.617360000079316,
+      "corpus_jit": 28.486389999926587
+     }
+    }
+   ],
+   "summary": {
+    "single": {
+     "eager": 431.4154999960351,
+     "compiled": 115.9830000005968,
+     "corpus_wrapper": 58.49699999771474,
+     "corpus_jit": 47.96100000703518,
+     "corpus_verify_jit": 1361.6379999916717,
+     "corpus_compiled": 27.135500005215363,
+     "corpus_graph": 17.620999997802755,
+     "compiled_graph": 24.15999999527685
+    },
+    "repeated": {
+     "eager": 403.7293800000441,
+     "compiled": 92.5917400000742,
+     "corpus_wrapper": 39.501360000002705,
+     "corpus_jit": 28.99790000000735,
+     "corpus_verify_jit": 1351.2159600000473,
+     "corpus_compiled": 13.268320000037193,
+     "corpus_graph": 9.634639999944739,
+     "compiled_graph": 14.726560000042355
+    }
+   },
+   "device_warm": {
+    "eager": {
+     "kernel_us_warm": 74.98200000000031,
+     "per_kernel_us": {
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, f": 3.344000000000051,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int": 2.9265000000000327,
+      "void at::native::(anonymous namespace)::CatArrayBatchedCopy_vectorized<at::native::(anonymous namespace)::OpaqueType<4u>": 3.8845000000000027,
+      "Memcpy DtoD (Device -> Device)": 4.9465000000000146,
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<int>, std::array<char*, 2ul>, false>": 1.1684999999998809,
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:": 1.6970000000000027,
+      "void (anonymous namespace)::elementwise_kernel_with_index<int, at::native::arange_cuda_out(c10::Scalar const&, c10::Scal": 1.0245000000001028,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::binary_interna": 1.7290000000000418,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<at::native:": 3.391499999999951,
+      "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::remainder_kern": 1.7290000000000418,
+      "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_impl<at::nat": 5.4809999999999945
+     },
+     "kernels_per_call": 24.0
+    },
+    "compiled": {
+     "kernel_us_warm": 15.142500000000041,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 3.8225000000001046,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 5.940999999999917,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 5.446000000000026
+     },
+     "kernels_per_call": 3.0
+    },
+    "corpus_wrapper": {
+     "kernel_us_warm": 9.738,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.738
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_jit": {
+     "kernel_us_warm": 9.788499999999999,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.788499999999999
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_compiled": {
+     "kernel_us_warm": 9.783500000000117,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.783500000000117
+     },
+     "kernels_per_call": 1.0
+    },
+    "corpus_graph": {
+     "kernel_us_warm": 9.847499999999968,
+     "per_kernel_us": {
+      "decoding_fused_rotary_embedding_kernel": 9.847499999999968
+     },
+     "kernels_per_call": 1.0
+    },
+    "compiled_graph": {
+     "kernel_us_warm": 14.117000000000019,
+     "per_kernel_us": {
+      "triton_poi_fused__to_copy_add_arange_cat_floor_divide_index_index_put_mul_remainder_slice_sub_unsqueeze_0": 3.6860000000000355,
+      "triton_poi_fused_add_cat_mul_slice_sub_unsqueeze_1": 5.531500000000051,
+      "triton_poi_fused_add_cat_copy__mul_slice_sub_unsqueeze_2": 4.915000000000077
+     },
+     "kernels_per_call": 3.0
+    }
+   },
+   "device_flushed": {
+    "eager": {
+     "p20": 114.13119733333588,
+     "median": 115.29599875211716,
+     "p80": 116.54400080442429
+    },
+    "compiled": {
+     "p20": 46.79679870605469,
+     "median": 47.39199951291084,
+     "p80": 48.27519878745079
+    },
+    "compiled_graph": {
+     "p20": 45.63840106129646,
+     "median": 46.592000871896744,
+     "p80": 47.359999269247055
+    },
+    "corpus_jit": {
+     "p20": 36.19199991226196,
+     "median": 37.13599964976311,
+     "p80": 38.39360028505325
+    },
+    "corpus_graph": {
+     "p20": 37.42080032825471,
+     "median": 38.36800158023834,
+     "p80": 39.51359912753105
+    }
+   }
+  }
+ ],
+ "input_hashes": {
+  "VeriTile/Triton/Launch/Blocked1DConfig.lean": "5ff24deda455e815b2d79961e625f4f60af14516d85880f275320b610b0edb0d",
+  "VeriTile/Triton/Launch/Blocked1D.lean": "f0b38a3ffa4ffb4c917cf92aba3bf371b3df3cb6b76e1ce1ff3a43084ce05695",
+  "VeriTile/Triton/Launch/Serial.lean": "f79aef0c55c04905e544fff60db59b3e5ba78a4498180f1934e7dcc6eacb5776",
+  "VeriTile/Triton/Launch/Blocked1DWrapper.lean": "92df92ced8e73d359083c338047a6873bf1ac703a7488370dd603a3fa911d4ee",
+  "VeriTile/Triton/Launch/Blocked1DFlat.lean": "237d3a678750a4607f0385470d62647671054c4044ac79e2e55071983a8e9a35",
+  "VeriTile/Triton/Launch/StridedUnary.lean": "6cfd224c1f3b9e412204082fca822b7912a26c9b69de74735043efd3cf2c1043",
+  "VeriTile/Triton/Launch/StridedUnaryFlat.lean": "e1c4eff26fb8fd441749c42369bc8d9d494674fb62be9b9a77a425fedf159bcd",
+  "VeriTile/Triton/Launch/Line3.lean": "dd3ae33e5f4e82b692e1796f087c083be62cc624939b6bc856a0773065351155",
+  "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean": "f37c4c3bf78859fbcd1c4e7c688f270ef2099345c5d2b48be04a9358842b28d5",
+  "VeriTile/Triton/Launch/Composition.lean": "7ce16f4722db273da33ec11aa7d22b2e9ab1173450a5af786524b3dd11e768eb",
+  "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
+  "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
+  "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "b18f22ac68eb733572960449291d155b6b80b57f2903d6176f7c51020935015b",
+  "VeriTile/Triton/Launch/Relational.lean": "a08287db2c2724bb1dc9a96f43ab3bef18a94a0799ba4c6586ce6d87fda3a77f",
+  "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean": "b77f0ff3f250b4563271127d972185ea8e7aa25ba40c0fecacf8edc6aca2445f",
+  "VeriTile/Triton/Launch.lean": "8690dd6f04cfb1fe8439ad6eb4693e92bee38f75bd6732556f3c2f6957eef214",
+  "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
+  "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
+  "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
+  "bench/tritonbench_g/add_example/improvement/add_example_empty_like.py": "13f6ebce13260a1bbed4d7db7c774da36f6d39d73d770b61bbc2831a83b69e97",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest.json": "25cfe028ed2eb04b93cd3d0ac815dae5f166a81349a977e7a74100dac281afa4",
+  "bench/tritonbench_g/add_example/improvement/add_example_block64.py": "2ddfefb4f3254a4bff46e311875f3e98b03f16b38ca0da092c8a98505d606ce2",
+  "bench/tritonbench_g/add_example/improvement/launch_manifest_block64.json": "fe493b4e3146658a90b9fb69e63e0bea8adbc9a1de96bb89b03b1943353bfaf4",
+  "bench/tritonbench_g/vector_addition_custom/vector_addition_custom.py": "a1e1a05555a7d42a6cee871847907ef6e6fbe6834ac0088d186921d994a10957",
+  "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
+  "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
+  "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
+  "scripts/launch_local_check.py": "cd7673259adf50d563958232b0b7fa3ce7a8dacfd43270cbeab3ffbe1496ee40",
+  "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
+  "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
+  "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
+  "scripts/test_launch_check.py": "61df5a2a7996d1d60d1d92f4bbcf80a0c4979418f909a8a690d9cca4ccaf72de",
+  "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
+  "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
+  "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
+  "bench/audit_source.py": "6affdf98768923461f2281218ca1372e6bcb69456f9357db48168f1d17f9fd3f",
+  "bench/tritonbench_g/add_example/improvement/add_relu_fused.py": "1721d008dc13c60cf1793ee6fc5b964ec5ab3cd2fca4f89c50bed76c59558437",
+  "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
+  "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
+  "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
+  "scripts/launch_fast.py": "4cb9756fdd76c12986feccd55ac5281b16a44fa7c46e85b9fe801c423fbbae09",
+  "scripts/launch_latency.py": "0ee7714a7d268a1a99070753f646acbb4ac857c6afb583aeb6c5f9add0bec858",
+  "scripts/launch_latency_modal.py": "3ab511b5ed80899a43a8e22dc2be12c38e7cd4d96501ab728f5d239a7c2e4de1",
+  "scripts/launch_probe.py": "8f70f96aac9d37483000a75b470d2b80845123e9b1554100d632d76ca8e8ac34",
+  "scripts/launch_select.py": "e7bb7f15796384d923ce000ce8d39aa8fe17736708c5a93b7bb8f997a70b9071",
+  "scripts/launch_rotary.py": "bce6838220f71f07aaa2dc3ab04ac156741963e4836c064c441c5ad389625387",
+  "scripts/launch_rotary_modal.py": "5b389133b5d33a9047c909a9e91b800a98f35d2fa5a21cb4af23c42770063fd2",
+  "bench/tritonbench_g/add_example/improvement/relu_masked.py": "d70dae157e8fe56bd5218ae6262a12e580faab8519a81267e0b90b5d3f7fc51a",
+  "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py": "5ce7107b2e57167e62682d51a302b72677d194b8c59c8735acf33d3bbcb0ad1c",
+  "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py": "3581c60f75eb5314c472d4e9ccfd2c0cc8c6a089352352247258c8cbabe7f630",
+  "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
+  "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
+  "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
+ }
+}
