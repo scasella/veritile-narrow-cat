@@ -41,8 +41,10 @@ Timing method:
 
 **Host caveat:** the Modal container reported a single vCPU of unidentified model
 (`cpu` field in the JSON). Absolute host latencies are therefore specific to this host.
-The decision cost 43 µs here against about 6 µs on an M4 Pro. What transfers is the
-ranking and the ratios between candidates measured on the same host.
+The decision cost 43 µs here against about 6 µs on an M4 Pro. The rankings and ratios
+below were measured on this host. A host with a different CPU can change the relative
+weight of checking, dispatch and allocation enough to change both, so they should be
+re-measured on a representative deployment host before they are relied on.
 
 The contract check (metadata extraction and decision) was **56%** of the call. On this
 host the decision alone costs 43 µs; on the Mac it was about 6 µs. Triton's JIT
@@ -60,12 +62,14 @@ dispatch costs 11 µs over a precompiled launch.
   obligations.
 - JIT dispatch is kept. A cached compiled kernel is specialised on pointer alignment
   and `n % 16`, and reusing it for other arguments would be silently wrong.
-- Block rule: 256 below 2^24 elements, 64 at or above.
+- Block rule: 256 below 2^24 = 16,777,216 elements, 64 at or above.
 - Observable behaviour is unchanged: it returns a fresh output and rejects the same
   inputs.
 
 **Prepared-buffer API** (`prepare_add_relu(x, y, out, block, graph)`), a separate API:
-- The caller owns `out`, which is overwritten on every `run()`.
+- Ownership: the caller allocates `x`, `y` and `out` and owns their lifetime. The plan
+  keeps references to them, which keeps the storage alive but does not stop anyone else
+  from resizing, re-storing or writing them. `out` is overwritten on every `run()`.
 - `prepare` decides the full contract once and compiles the kernel for exactly these
   arguments.
 - `run` revalidates a metadata snapshot of the three buffers (data pointer, shape,
@@ -78,7 +82,18 @@ dispatch costs 11 µs over a precompiled launch.
   - With pointers and `n` unchanged, Triton's specialisation is unchanged.
 - On the GPU: a resize or a storage swap is refused (`PlanInvalidated`); changing only
   the contents still runs correctly.
-- Not thread-safe.
+- Execution contract (the caller's obligations; the plan does not enforce them):
+  - The snapshot check runs before each launch. The metadata must also stay unchanged
+    while that launch is executing on the GPU: no resize, `set_` or reallocation of the
+    three buffers until it has completed.
+  - Runs are ordered on the stream that is current at `run()`. Two runs of one plan, or
+    runs of plans sharing a buffer, must not overlap on different streams. The caller
+    writes new inputs only after the previous run's reads, and reads `out` only after
+    the run, in stream order or after a synchronisation.
+  - A plan is not thread-safe.
+- Scope of "all input values": all values within the exact-ℝ model of the theorem. The
+  metadata check establishes the metadata-dependent conditions only. It says nothing
+  about IEEE behaviour: NaN, the sign of zero, and rounding are outside the model.
 
 ## 3. Results (run 2, final code; median of trials, µs)
 
@@ -199,12 +214,15 @@ The remaining floor is synchronize + JIT dispatch + allocation.
 ## 7. Remaining assumptions
 
 - Metadata extraction (`raw_meta` / `tensor_meta`) is trusted.
-- `fast_ew2` and the mirror are tested against Lean, not proved equal to it.
+- `fast_ew2` and the mirror are tested against Lean (differential tests), not proved
+  equal to it. The fallback to the full mirror runs only on rejection, so a false
+  acceptance by `fast_ew2` would bypass it; the differential tests are the only
+  protection against that.
 - The kernel-source binding: the body equals the Lean text, and roles are read by the
   unchanged recognizer from a projection.
 - Triton's compiler and its specialisation rules are trusted. The prepared plan relies
   on unchanged arguments implying an unchanged specialisation.
-- CUDA-graph replay reproduces the captured launch. The plan owns its buffers; nothing
-  else may reallocate them between runs.
+- CUDA-graph replay reproduces the captured launch at the captured addresses; the
+  caller's execution contract above keeps those addresses valid.
 - Model level: typed element-sized cells, exact-ℝ arithmetic, and merge semantics for
   programs (TA-sched / TA-compose).
