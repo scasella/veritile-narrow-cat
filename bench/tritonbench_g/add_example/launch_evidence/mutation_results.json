@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-25T19:41:22Z",
- "elapsed_s": 37.7,
+ "generated": "2026-09-26T00:19:34Z",
+ "elapsed_s": 39.2,
  "counts": {
   "accepted": 13,
   "violated_obligation": 12,
@@ -24,8 +24,10 @@
   "bench/tritonbench_g/add_example/AddExample.lean": "ce57b8271ba09a4b34311c4040a23a1ea1f04c3c03a837ec1e49eb87aa436360",
   "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "a2b82cd751377f0b87ebbfca8e62f2695c7364b9031ca69408f70748065d4844",
   "bench/tests/Blocked1DLaunchWitnesses.lean": "2a4e424eeebad5f7372d67ad9a1fc3e4845d3058ca74a98ebe84e5940f60f6bc",
-  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "95d43e33ae40d3823ada1b117a32ad2edcaa0df2b2d83a2fed24dd52f3d4340f",
-  "VeriTile/Triton/Launch.lean": "cfaee6047cdfde888b962fa49d8b5450a66eb4788ad483b3ac36233aedd9ef5d",
+  "bench/tritonbench_g/add_example/improvement/AddReluFused.lean": "b18f22ac68eb733572960449291d155b6b80b57f2903d6176f7c51020935015b",
+  "VeriTile/Triton/Launch/Relational.lean": "a08287db2c2724bb1dc9a96f43ab3bef18a94a0799ba4c6586ce6d87fda3a77f",
+  "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean": "b77f0ff3f250b4563271127d972185ea8e7aa25ba40c0fecacf8edc6aca2445f",
+  "VeriTile/Triton/Launch.lean": "8690dd6f04cfb1fe8439ad6eb4693e92bee38f75bd6732556f3c2f6957eef214",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
   "bench/tritonbench_g/add_example/launch_manifest.json": "d7fb7d12d9d5627201afd5e53a3391cb4f1f5aeb5dab2c6f8165ea23f329e700",
@@ -37,11 +39,11 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "bcca7aee66c4f7a27807559307a382d6abb29e9dfec8529ef051a39f42621d94",
+  "scripts/launch_local_check.py": "38f1a7537c2f9bfeb8ea2c71bc2b3e877314958bba31b6b73d6d61da79cbe454",
   "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
-  "scripts/test_launch_check.py": "08b659aba67cc3d29d2ee539914aa80fb6ac9bfc20bbf0a67cc3674d872670f3",
+  "scripts/test_launch_check.py": "61df5a2a7996d1d60d1d92f4bbcf80a0c4979418f909a8a690d9cca4ccaf72de",
   "scripts/launch_interpret.py": "b6cc44d687da823f06d8d9ad6a29ed6823aa6ba2b1d17eb108e3c441c1d184f2",
   "scripts/launch_gpu.py": "54f87dea73c5073942b3c7e2e09763c13a87c838887d4950478a95fef29e3847",
   "scripts/launch_gpu_modal.py": "864cc9b20f61c0119583258df3638c7ef26a9ffb93decbc0fb842f4562f3ff0d",
@@ -50,6 +52,14 @@
   "scripts/launch_fused.py": "af4ada9a356df2331f2894f46c2383b231f8d888c682e39dc9e574472a1fba23",
   "scripts/launch_bench.py": "462b24fe6e1d32172c1c64289e7011be7294ec8029a9fd2c5a4a486e54d20ffb",
   "scripts/launch_bench_modal.py": "164268b88960a7cae1b4f2613268e62a6b6df9616d3e251958ba17a7d6a9fe80",
+  "scripts/launch_fast.py": "4cb9756fdd76c12986feccd55ac5281b16a44fa7c46e85b9fe801c423fbbae09",
+  "scripts/launch_latency.py": "0ee7714a7d268a1a99070753f646acbb4ac857c6afb583aeb6c5f9add0bec858",
+  "scripts/launch_latency_modal.py": "3ab511b5ed80899a43a8e22dc2be12c38e7cd4d96501ab728f5d239a7c2e4de1",
+  "scripts/launch_probe.py": "8f70f96aac9d37483000a75b470d2b80845123e9b1554100d632d76ca8e8ac34",
+  "scripts/launch_select.py": "e7bb7f15796384d923ce000ce8d39aa8fe17736708c5a93b7bb8f997a70b9071",
+  "bench/tritonbench_g/add_example/improvement/relu_masked.py": "d70dae157e8fe56bd5218ae6262a12e580faab8519a81267e0b90b5d3f7fc51a",
+  "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py": "5ce7107b2e57167e62682d51a302b72677d194b8c59c8735acf33d3bbcb0ad1c",
+  "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py": "3581c60f75eb5314c472d4e9ccfd2c0cc8c6a089352352247258c8cbabe7f630",
   "lean-toolchain": "651c8accb402b0c071cd336e9d3dc0a55516b1bfb434ddc4801f14936785b1d2",
   "lake-manifest.json": "de981cfa9d3ed8d548669570dde19d20b103c081d0772c0184d6e401f9fe96f7",
   "lakefile.toml": "1ac4f1b8ea573202d625d8e60fb9db872f1a5945c1c7a8853d344a91f4f62996"
@@ -404,14 +414,14 @@
    "category": "pipeline",
    "mutation": "weaken GridLaunchedOrdinary.h_disjoint in pinned code",
    "outcome": "evidence_rejection",
-   "detail": "pinned upstream code altered in VeriTile/Triton/Launch/Composition.lean (before-final-end)"
+   "detail": "undeclared change: bench/tritonbench_g/add_example.zip; pinned upstream code altered in VeriTile/Triton/Launch/Composition.lean (before-final-end)"
   },
   {
    "id": "E10_pinned_source_edit",
    "category": "pipeline",
    "mutation": "BLOCK_SIZE = 8 in add_example.py (scratch copy)",
    "outcome": "evidence_rejection",
-   "detail": "pinned source differs from upstream: bench/tritonbench_g/add_example/add_example.py"
+   "detail": "undeclared change: bench/tritonbench_g/add_example.zip; pinned source differs from upstream: bench/tritonbench_g/add_example/add_example.py"
   },
   {
    "id": "E8_tool_unavailable",

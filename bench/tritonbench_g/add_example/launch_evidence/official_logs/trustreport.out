@@ -368,6 +368,12 @@ VeriTile.Triton.Elementwise2.launchDim0_not_covered: axiom footprint ⊆ standar
 VeriTile.Triton.Blocked1D.mergeFrames_liftFrames: axiom footprint ⊆ standard base ✓  ([propext,
  Quot.sound,
  Classical.choice])
+VeriTile.Triton.Blocked1D.fused_agrees_two_launch: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
+VeriTile.Triton.Blocked1D.launch_of_programRuns: axiom footprint ⊆ standard base ✓  ([propext,
+ Quot.sound,
+ Classical.choice])
 VeriTile.Triton.Kernel.runSerial_agrees_merge: axiom footprint ⊆ standard base ✓  ([propext,
  Quot.sound,
  Classical.choice])
