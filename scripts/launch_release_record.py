@@ -198,7 +198,8 @@ def main() -> int:
                         ("block_search.json", "block search (checked end-to-end, small/medium + held-out sizes)"),
                         ("validation.json", "validation of the stage-9 checked-execution changes"),
                         ("workload_probe.json", "workload probe (selection evidence)"),
-                        ("fast_check_differential.json", "fast Elementwise2.check vs mirror and Lean")):
+                        ("fast_check_differential.json", "fast Elementwise2.check vs mirror and Lean"),
+                        ("rotary_bench.json", "rotary + paged KV-cache go/no-go (run 2: formulation robustness)")):
         ev = load(fname)
         if ev:
             ok = ev.get("correct", ev.get("correctness_ok", not (ev.get("mismatches_vs_mirror") or
