@@ -88,7 +88,7 @@ REGISTRIES = ("bench/tritonbench_g/coverage_review.json", "bench/tritonbench_g/p
               "scripts/kernel-manifest.tsv", "VeriTile/Meta/TrustReport.lean",
               "bench/tritonbench_g/_spec-sheets/")
 # Modified upstream Lean files: original code must survive verbatim (additions only).
-ADDITIVE = {"VeriTile/Triton/Launch.lean": "prefix",
+ADDITIVE = {"VeriTile/Triton/Launch.lean": "prefix", "README.md": "suffix",
             "VeriTile/Triton/Launch/Composition.lean": "before-final-end",
             "bench/tritonbench_g/add_example/AddExample.lean": "namespace-body",
             "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean": "namespace-body",
@@ -626,6 +626,8 @@ def pin_integrity(root: Path) -> list[str]:
         cur = (root / f).read_text()
         if mode == "prefix":
             ok = cur.startswith(orig.rstrip("\n"))
+        elif mode == "suffix":   # fork notice prepended; the upstream text must survive verbatim as the tail
+            ok = cur.rstrip("\n").endswith(orig.rstrip("\n"))
         elif mode == "before-final-end":
             ok = cur.startswith(orig[:orig.rstrip().rindex("end Kernel")])
         else:

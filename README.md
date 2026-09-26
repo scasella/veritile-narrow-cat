@@ -1,3 +1,58 @@
+# VeriTile — fork with verified Triton launch checking and an Inductor optimization
+
+> **This is a fork.** VeriTile was created by **Zenan Li** ([Lizn-zn/VeriTile](https://github.com/Lizn-zn/VeriTile),
+> MIT License; see [`LICENSE`](./LICENSE)). Everything below the next horizontal rule is the original project's
+> README, and the docs site it links to describes the original project. All credit for VeriTile itself — the
+> Lean 4 Triton DSL, its semantics and theorem surfaces, and the 173 ported TritonBench-G kernels with proofs —
+> belongs to its author. This fork is not affiliated with or endorsed by the original author, and its additions have
+> not been upstreamed.
+>
+> **Fork point:** upstream commit `95a01f59` ("Refactor audit source helpers and shared scatter-store proofs",
+> 2026-09-24). The fork adds 146 files and modifies 13. Modified upstream Lean files keep their original code
+> verbatim; the fork's gate (`scripts/launch_local_check.py`) enforces that.
+
+## What this fork adds
+
+**1. A verified host-launch layer for Triton kernels** (`VeriTile/Triton/Launch/`, `bench/tritonbench_g/add_example/`)
+- **Launch proofs.** Lean proofs that a 1-D blocked, masked launch covers its output exactly
+  (`Blocked1D`, `Serial`, `Line3`, `StridedUnary`). There is also a flat-memory placement bridge, and a
+  kernel-agnostic relational result for fused-versus-unfused launches (`Relational.lean`).
+- **Whole-wrapper contracts.** Contracts for `add_example`, `vector_addition_custom` and a strided ReLU consumer,
+  connected to a checked Python invocation.
+- **Gate** (`scripts/launch_local_check.py`):
+  - freeze-from-`sorry` statement snapshots;
+  - axiom audits;
+  - an upstream-pin check;
+  - per-evidence dependency hashes.
+
+**2. Optimization studies with proofs** (`bench/optimizations/`)
+- **`cat_repack/`: a standalone fast-division kernel** for pytorch/pytorch#189940 (dynamic nested `cat`),
+  proved correct. It includes `VeriTile/Triton/Launch/FastDiv.lean` (magic-number division, 32-bit exact).
+- **`inductor_divmod/`: a guarded rewrite of Inductor's own generated kernel.** It isolates two effects: narrowing
+  its size arguments to `int32` helped, and computing fast division inside the kernel did not.
+- **`inductor_narrow/`: the main result.**
+  - **`NarrowCat.lean`** proves that declaring the kernel's seven size arguments `int32` instead of `int64`
+    preserves every observable of every lane. The proof is stated over the kernel's actual integer semantics,
+    extracted from the emitted source, under facts Inductor already holds.
+  - **`RULE.md`** states the rule and all of its premises.
+  - **`CONFIRM.md`** holds the pre-registered measurement on one L4: 26–30% less warm-sequence time than the
+    emitted kernel, bitwise-identical output.
+  - **`upstream/`** holds a small opt-in PyTorch patch (`config.triton.narrow_proven_size_args`), validated at
+    PyTorch `6aa9e2fc`.
+
+**Where to start**
+- [`bench/optimizations/inductor_narrow/README.md`](./bench/optimizations/inductor_narrow/README.md)
+- [`RULE.md`](./bench/optimizations/inductor_narrow/RULE.md)
+- [`NarrowCat.lean`](./bench/optimizations/inductor_narrow/NarrowCat.lean)
+
+**Scope and caveats**
+- **Measurements.** One NVIDIA L4 (Modal), warm cache.
+- **Evidence.** All evidence JSON files are in `bench/tritonbench_g/add_example/launch_evidence/`.
+- **Floating point.** No claim is made. Payloads are treated symbolically, or over exact reals.
+- **Trust assumptions.** They are listed where they apply, for example in `RULE.md`.
+
+---
+
 # VeriTile
 
 📖 **Docs site:** [lizn-zn.github.io/VeriTile/](https://lizn-zn.github.io/VeriTile/) (bench cookbook, status, architecture). Run locally: `./site/scripts/dev.sh`.
