@@ -34,6 +34,8 @@ Median T (ms): B0 600.7, N 482.8, N1 443.9. Overall confirmed (median ≥ 1.03 a
 | 3500xodd | 264.2 | 215.6 | 198.5 | 1.056 | 1.030 – 1.109 | non-regression shown |
 | 1536xissue | 220.9 | 181.1 | 171.5 | 1.059 | 1.023 – 1.095 | non-regression shown |
 
+The µs columns are medians over triples of each variant's time; the N/N1 column is the median over triples of the paired ratio S_N(t)/S_N1(t), the pre-registered statistic. These are different statistics, so dividing the displayed medians need not give the paired median (e.g. 3000xodd: 160.8/155.0 ≈ 1.04 against a paired median of 1.10). Per-process and per-order slices are in SENSITIVITY.md (non-gating). The CIs describe variability within this experiment only, not across machines, days or compiler revisions.
+
 Median SM clock per variant during measured blocks (MHz): {'B0': 1110.0, 'N': 1166.25, 'N1': 945.0}
 
 ## Upstream patch on the pinned nightly (CUDA), correctness only

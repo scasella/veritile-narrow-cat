@@ -166,3 +166,28 @@ Not measured: other GPUs (including the issue's H100), other programs, or cold L
     SHA-256, and the symbolic checks.
   - On the pinned CUDA nightly it applies, passes 4/4 upstream tests on an L4, and is bitwise at 14 shapes.
   - Binding tests connect the patch's recognizer, the extractor, and the Lean `catValue`.
+
+## 6. Stage 15: review package (no new measurement, no proof change)
+
+- **N1 is adopted for its supported opt-in domain.** Guarded N is now a historical comparator. The proof target is
+  frozen until reviewers have given direction.
+- **Two bodies of evidence, kept separate.** The performance numbers (§2, §5) were measured on torch 2.14 / Triton 3.8
+  with a local prototype of the rule. The upstream patch was correctness-tested on pinned `main` 6aa9e2fc; it has
+  **not** been timed there.
+- **`REPORT.md`** is the full report for reviewers. It keeps the negative results (fast division, the stage-13
+  selection) and asks three review questions: the recognition layer, the symbolic-premise connection, and rollout.
+- **`SENSITIVITY.md`** (non-gating; same data) slices the stage-14 confirmation by process and by variant order.
+  The sequence ratio N/N1 stays 1.084–1.096 in every slice. Single blocks at the smallest shapes vary widely
+  (0.82–1.26 at 2500 × odd), so only the paired medians and CIs are informative there. CONFIRM.md now explains why
+  the paired-ratio median differs from the ratio of displayed medians.
+- **Operating conditions.** The confirmation used a different sustained-load protocol from stage 13, so its absolute
+  times are reported separately. The difference is consistent with changed operating conditions; its causes were not
+  separately isolated.
+- **Designed, not run: `scripts/launch_patch_perf.py`** (+ `_modal`). It times the patch itself, flag off versus on,
+  at 6aa9e2fc on one L4. It is paired and pre-registered, and records compile cost (time in the eligibility check
+  for the target and for four unrelated kernels, first-call time, graphs, guards), autotuned configs, and cubin
+  hashes from a private Triton cache. A CPU codegen dry run in the local nightly image showed:
+  - OFF gives `i64` and ON gives `i32` on the target;
+  - the four unrelated kernels are rejected and keep their signatures;
+  - normalized guard text is equal OFF and ON.
+  Running it needs a new explicit allowance.
