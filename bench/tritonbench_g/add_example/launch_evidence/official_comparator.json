@@ -2,7 +2,7 @@
  "exit_code": 0,
  "environment": "Docker Desktop 7.0.12-linuxkit arm64 VM on macOS; ubuntu:24.04 container, systemd PID 1, --privileged --cgroupns=host; Landlock ABI 8; systemd --user sandbox with RestrictAddressFamilies=~AF_UNIX verified (negative control: AF_UNIX socket -> EAFNOSUPPORT)",
  "tools": "scripts/setup-comparator.sh pins: comparator 2a00b30d, landrun 5283024a; Go 1.26.8 (sha256-pinned)",
- "audited_commit": "d2b430298a50cf3435aa4dc6d3b96d13331ee38c",
+ "audited_commit": "c290928c4507d2ba873b9533074ab2b0e02560c9",
  "commands": [
   "check_comparator.py --file bench/tritonbench_g/add_example/AddExample.lean --trust",
   "check_comparator.py --file bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean --trust",
@@ -11,10 +11,11 @@
   "check_comparator.py --file bench/tritonbench_g/add_example/improvement/AddReluFused.lean --trust",
   "check_comparator.py --file bench/tritonbench_g/add_example/improvement/AddReluRelational.lean --trust",
   "check_comparator.py --file bench/optimizations/cat_repack/CatRepack.lean --trust",
+  "check_comparator.py --file bench/optimizations/inductor_divmod/InductorDivmod.lean --trust",
   "check_comparator.py --library"
  ],
  "results": {
-  "comparator-check-5cf6y8lz/File_5d9fb086b26eabe5587aa7be-a_vzu_c_": {
+  "comparator-check-0iutulpw/File_5d9fb086b26eabe5587aa7be-j7uq2jte": {
    "source": "bench/tritonbench_g/add_example/improvement/AddReluFused.lean",
    "mode": "source-replay",
    "theorem_count": 40,
@@ -22,39 +23,7 @@
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
   },
-  "comparator-check-bketq1f4/File_1703a39fb50fd4921926c685-kzb624dv": {
-   "source": "bench/tritonbench_g/add_example/AddExample.lean",
-   "mode": "source-replay",
-   "theorem_count": 48,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-cw1uco68/File_c55c6efcac6cf60aa87bc1a9-zzvdao5h": {
-   "source": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
-   "mode": "source-replay",
-   "theorem_count": 355,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-da3o_7pi/File_ec20d19f4a7fe8214248393a-4wftq16b": {
-   "source": "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
-   "mode": "source-replay",
-   "theorem_count": 35,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-fqymgdp4/File_d3d8431bb20df0f5dd4f61aa-gkupzj73": {
-   "source": "bench/tests/Blocked1DLaunchWitnesses.lean",
-   "mode": "source-replay",
-   "theorem_count": 27,
-   "comparator_exit": 0,
-   "accepted": true,
-   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
-  },
-  "comparator-check-mnm4a09r/Library-_85p91r1": {
+  "comparator-check-1w1h4l9r/Library-nww909qv": {
    "source": "proven library manifest",
    "mode": "source-replay",
    "theorem_count": 138,
@@ -62,7 +31,31 @@
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
   },
-  "comparator-check-nhy7y412/File_a81e5ae8f50f10aef21d231c-xiu0la8h": {
+  "comparator-check-1xw5gnhl/File_d3d8431bb20df0f5dd4f61aa-jfo_qdga": {
+   "source": "bench/tests/Blocked1DLaunchWitnesses.lean",
+   "mode": "source-replay",
+   "theorem_count": 27,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-4zsjar5m/File_c55c6efcac6cf60aa87bc1a9-p0cjb7s4": {
+   "source": "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
+   "mode": "source-replay",
+   "theorem_count": 355,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-8ku7pxji/File_5f945fbbff6ce9d29e0e376a-2_sdph4u": {
+   "source": "bench/optimizations/inductor_divmod/InductorDivmod.lean",
+   "mode": "source-replay",
+   "theorem_count": 18,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-9fd0mdyf/File_a81e5ae8f50f10aef21d231c-j925rmwa": {
    "source": "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
    "mode": "source-replay",
    "theorem_count": 29,
@@ -70,7 +63,23 @@
    "accepted": true,
    "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
   },
-  "comparator-check-xgi76kz8/File_7ba51ffb4de06a3dfbc5d3aa-y6270lw1": {
+  "comparator-check-_magnpmd/File_1703a39fb50fd4921926c685-279lo3o6": {
+   "source": "bench/tritonbench_g/add_example/AddExample.lean",
+   "mode": "source-replay",
+   "theorem_count": 48,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-gs3_4j70/File_ec20d19f4a7fe8214248393a-7_0q73xk": {
+   "source": "bench/tritonbench_g/vector_addition_custom/VectorAdditionCustom.lean",
+   "mode": "source-replay",
+   "theorem_count": 35,
+   "comparator_exit": 0,
+   "accepted": true,
+   "comparator_sha256": "ddbe5775b9773b06c6e8c8befdffdf7b4f8dce3e246ebc2eb31113ca8e808dcc"
+  },
+  "comparator-check-ndqncel6/File_7ba51ffb4de06a3dfbc5d3aa-87sy5pn1": {
    "source": "bench/optimizations/cat_repack/CatRepack.lean",
    "mode": "source-replay",
    "theorem_count": 79,
@@ -111,6 +120,7 @@
   "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean": "b77f0ff3f250b4563271127d972185ea8e7aa25ba40c0fecacf8edc6aca2445f",
   "VeriTile/Triton/Launch/FastDiv.lean": "1fa61171b049a463db6a317dea9c4bf0a8fc538c7db3b05021abda2a90dd325a",
   "bench/optimizations/cat_repack/CatRepack.lean": "1c7504a08dcaea9665f8b95cd99dac9f388c1fa92d5ba7bfab80718e7dcf3fae",
+  "bench/optimizations/inductor_divmod/InductorDivmod.lean": "c56d8dbc050423f9184373b4918e9e9710989538dae8e8fb0dff4b62ee0c0f2f",
   "VeriTile/Triton/Launch.lean": "d25f4fe444a8eea79deb75826692b6f2d04c36e5b4d660b220529890d505e4eb",
   "bench/tritonbench_g/add_example/add_example.py": "4f2314d163aed2aab3a0dce796534c0c24145d506750da93349044640e62f913",
   "bench/tritonbench_g/add_example/CONTRACT.md": "848ba29b56bf6c450f7f962c04c46622691c6703130cdd8859958d5ceb458d5f",
@@ -123,7 +133,7 @@
   "bench/tritonbench_g/vector_addition_custom/launch_manifest.json": "e3a735d296556ada6266e24511d8cad9d4fccf7248afb1a94a06b0c5aa0a5816",
   "bench/tritonbench_g/relu_strided_buffer/relu_strided_buffer.py": "7d0b0a748a9fb80585ad145eb9b6d1ad3810a31a9d6de63d3df7637a728e7b08",
   "scripts/launch_check.py": "78111c3c278b3bd26f996b5209ffdcc8a8a3506b2da50894843a25229a6c4db1",
-  "scripts/launch_local_check.py": "ac7a78dced270829448d1cb0bbfff918dcdf3674d89f8bf29af438d2704fba99",
+  "scripts/launch_local_check.py": "b4892656f2616fb125c6c09d64f83aa7d41f24cfc6f13dd45d5ee9933da149d4",
   "scripts/launch_invoke.py": "075dfaab82e1efe6ddf585414d54bbaf3cc6ac37cf9dea16b7b785083235de8f",
   "scripts/launch_emulate.py": "eedf61ea3f6215bb3511c42bee38fbf955de415eaf37dac2559d69fef99b831c",
   "scripts/launch_mutation_suite.py": "63b7e6ae0dae87d84bbbc5d58c2c5fd9c7e32d78003597f6e32c442f47d40979",
@@ -147,6 +157,12 @@
   "scripts/launch_cat_modal.py": "db4990b8a21ec1c71cdcebdc1bdf98073d99e7f5d5364639cd250a15340e6d1a",
   "scripts/launch_addrelu_followup.py": "a704c1d89a27d2dbac23fa51f8dbae05c7e22ff0c02d2a790939e64f8e1218c0",
   "bench/optimizations/cat_repack/cat_repack.py": "9598a46e091ab71a62558fd014d039a7f83db7341ae77440221e22958a96f19d",
+  "scripts/inductor_divmod.py": "8881e847b709c9ef998c40abf7d95b3909d77d4a843cfc42704e445976f87267",
+  "scripts/test_inductor_divmod.py": "e6b11de927271cc35b250ac87cf8ac05ae576417c12f2f49554c58898b42a429",
+  "bench/optimizations/inductor_divmod/fixtures/pointwise_cat_preview.py": "344ce3b2469225d7a5b6afa2c0001244c45443add7afe228419b45a12ec2a095",
+  "bench/optimizations/inductor_divmod/local_checks.py": "919100d54417a1a6f5c619ee85fc06c069d606fbfe73cdb36ee5be302e498ae9",
+  "scripts/launch_inductor_divmod.py": "38cdbd3d85fd3d1ae093db639bda847f38542fddb267689757327c7b2fe943fd",
+  "scripts/launch_inductor_divmod_modal.py": "cafadbeb532a5b4be88d22576dc7c47c2c0fee7b91038591f6b111d7e2af69ed",
   "bench/tritonbench_g/add_example/improvement/relu_masked.py": "d70dae157e8fe56bd5218ae6262a12e580faab8519a81267e0b90b5d3f7fc51a",
   "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py": "5ce7107b2e57167e62682d51a302b72677d194b8c59c8735acf33d3bbcb0ad1c",
   "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py": "3581c60f75eb5314c472d4e9ccfd2c0cc8c6a089352352247258c8cbabe7f630",
