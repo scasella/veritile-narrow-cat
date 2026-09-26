@@ -1,0 +1,98 @@
+{
+ "B0": {
+  "XBLOCK=1024": {
+   "instructions": 1864,
+   "IMAD": 614,
+   "IMAD.HI/WIDE": 94,
+   "I2F/F2I/MUFU (division sequences)": 30,
+   "CALL": 16,
+   "BRA": 17,
+   "LDG": 64,
+   "STG": 8,
+   "resource_usage": "REG:90 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "XBLOCK=512": {
+   "instructions": 1008,
+   "IMAD": 338,
+   "IMAD.HI/WIDE": 62,
+   "I2F/F2I/MUFU (division sequences)": 18,
+   "CALL": 8,
+   "BRA": 9,
+   "LDG": 32,
+   "STG": 4,
+   "resource_usage": "REG:48 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  }
+ },
+ "N": {
+  "XBLOCK=1024": {
+   "instructions": 1192,
+   "IMAD": 393,
+   "IMAD.HI/WIDE": 41,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 0,
+   "BRA": 1,
+   "LDG": 64,
+   "STG": 8,
+   "resource_usage": "REG:56 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "XBLOCK=512": {
+   "instructions": 624,
+   "IMAD": 205,
+   "IMAD.HI/WIDE": 21,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 0,
+   "BRA": 1,
+   "LDG": 32,
+   "STG": 4,
+   "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  }
+ },
+ "F": {
+  "XBLOCK=1024": {
+   "instructions": 1696,
+   "IMAD": 508,
+   "IMAD.HI/WIDE": 71,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 1,
+   "BRA": 3,
+   "LDG": 64,
+   "STG": 8,
+   "resource_usage": "REG:92 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "XBLOCK=512": {
+   "instructions": 952,
+   "IMAD": 268,
+   "IMAD.HI/WIDE": 43,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 1,
+   "BRA": 3,
+   "LDG": 32,
+   "STG": 4,
+   "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  }
+ },
+ "NF": {
+  "XBLOCK=1024": {
+   "instructions": 1336,
+   "IMAD": 428,
+   "IMAD.HI/WIDE": 55,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 1,
+   "BRA": 3,
+   "LDG": 64,
+   "STG": 8,
+   "resource_usage": "REG:64 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  },
+  "XBLOCK=512": {
+   "instructions": 792,
+   "IMAD": 236,
+   "IMAD.HI/WIDE": 35,
+   "I2F/F2I/MUFU (division sequences)": 3,
+   "CALL": 1,
+   "BRA": 3,
+   "LDG": 32,
+   "STG": 4,
+   "resource_usage": "REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:504 TEXTURE:0 SURFACE:0 SAMPLER:0"
+  }
+ }
+}
