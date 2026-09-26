@@ -56,7 +56,8 @@ NEW_LEAN = ["VeriTile/Triton/Launch/Blocked1DConfig.lean",
             "VeriTile/Triton/Launch/Relational.lean",
             "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
             "VeriTile/Triton/Launch/FastDiv.lean",
-            "bench/optimizations/cat_repack/CatRepack.lean"]
+            "bench/optimizations/cat_repack/CatRepack.lean",
+            "bench/optimizations/inductor_divmod/InductorDivmod.lean"]
 VAC = "VeriTile.Bench.TritonBenchG.VectorAdditionCustom"
 WIT = "VeriTile.Bench.Tests.Blocked1DLaunchWitnesses"
 # (file, namespace for the inventory, theorems that must be axiom-clean, required inventory)
@@ -119,6 +120,7 @@ WRAPPER_THEOREMS = [f"VeriTile.Bench.TritonBenchG.AddExample.{t}" for t in (
 FUSED = "VeriTile.Bench.TritonBenchG.AddReluFused"
 REL = "VeriTile.Bench.TritonBenchG.AddReluRelational"
 CAT = "VeriTile.Bench.Optimizations.CatRepack"
+IDM = "VeriTile.Bench.Optimizations.InductorDivmod"
 AUDIT_TARGETS = [
     ("bench/tritonbench_g/add_example/AddExample.lean", "VeriTile.Bench.TritonBenchG.AddExample",
      HEADLINES + ["VeriTile.Bench.TritonBenchG.AddExample.add_kernel_launch_initial_output_irrelevant"]
@@ -162,6 +164,10 @@ AUDIT_TARGETS = [
      + [f"VeriTile.Triton.FastDiv.{t}" for t in ("magic_quotient", "magic_lt", "sum_lt", "bitvec_quotient",
                                                 "shiftFor_spec")],
      ["cat_repack_launch_correctness"]),
+    ("bench/optimizations/inductor_divmod/InductorDivmod.lean", IDM,
+     [f"{IDM}.{t}" for t in ("kernel_divmod", "kMagic_eq", "int64_in_range", "shiftCount_le",
+                            "shiftCount_eq_shiftFor")],
+     ["kernel_divmod"]),
     ("bench/tests/Blocked1DLaunchWitnesses.lean", WIT,
      [f"{WIT}.{t}" for t in ["testCase1_pre", "emptyCase_pre", "i32_n_truncated", "i32_offset_wraps",
                             "unmasked_store_frame_violation", "offbyone_mask_frame_violation",
@@ -301,6 +307,11 @@ CAT_SURFACE_PRINTS = [
     "#check @VeriTile.Bench.Optimizations.CatRepack.nestedCat_eq_flat",
     "#check @VeriTile.Bench.Optimizations.CatRepack.repack_lane_correct",
     "#check @VeriTile.Bench.Optimizations.CatRepack.cat_repack_launch_correctness"]
+# In-kernel fast divmod for Inductor's dynamic cat kernel (frozen from its sorry state, stage 12).
+DIVMOD_SURFACE_PRINTS = [
+    f"#print {IDM}.shiftCount", f"#print {IDM}.kMagic", f"#print {IDM}.kQuot",
+    f"#check @{IDM}.shiftCount_eq_shiftFor", f"#check @{IDM}.shiftCount_le", f"#check @{IDM}.int64_in_range",
+    f"#check @{IDM}.kMagic_eq", f"#check @{IDM}.kernel_divmod"]
 # (frozen snapshot name, file, prints)
 SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluStridedBuffer.lean",
              RELU_SURFACE_PRINTS),
@@ -313,7 +324,9 @@ SURFACES = [("relu_surface.txt", "bench/tritonbench_g/relu_strided_buffer/ReluSt
              FUSED_SURFACE_PRINTS),
             ("relational_surface.txt", "bench/tritonbench_g/add_example/improvement/AddReluRelational.lean",
              REL_SURFACE_PRINTS),
-            ("cat_surface.txt", "bench/optimizations/cat_repack/CatRepack.lean", CAT_SURFACE_PRINTS)]
+            ("cat_surface.txt", "bench/optimizations/cat_repack/CatRepack.lean", CAT_SURFACE_PRINTS),
+            ("divmod_surface.txt", "bench/optimizations/inductor_divmod/InductorDivmod.lean",
+             DIVMOD_SURFACE_PRINTS)]
 
 
 def sha(p: Path) -> str:
@@ -352,6 +365,10 @@ def input_files() -> list:
                         "scripts/launch_rotary.py", "scripts/launch_rotary_modal.py",
                         "scripts/launch_cat.py", "scripts/launch_cat_modal.py", "scripts/launch_addrelu_followup.py",
                         "bench/optimizations/cat_repack/cat_repack.py",
+                        # Inductor-integrated fast divmod (stage 12)
+                        "scripts/inductor_divmod.py", "scripts/test_inductor_divmod.py",
+                        "bench/optimizations/inductor_divmod/fixtures/pointwise_cat_preview.py",
+                        "bench/optimizations/inductor_divmod/local_checks.py",
                         "bench/tritonbench_g/add_example/improvement/relu_masked.py",
                         "bench/tritonbench_g/rmsnorm_fused/rmsnorm_fused.py",
                         "bench/tritonbench_g/fused_rotary_embedding/fused_rotary_embedding.py",

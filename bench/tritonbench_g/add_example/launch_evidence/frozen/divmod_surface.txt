@@ -1,0 +1,32 @@
+def VeriTile.Bench.Optimizations.InductorDivmod.shiftCount : ℕ → ℕ :=
+fun d => (List.filter (fun j => decide (2 ^ j < d)) (List.range 32)).length
+def VeriTile.Bench.Optimizations.InductorDivmod.kMagic : ℕ → ℕ :=
+fun d => 2 ^ 32 * (2 ^ VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d - d) / d + 1
+def VeriTile.Bench.Optimizations.InductorDivmod.kQuot : ℕ → ℕ → ℕ :=
+fun d x =>
+  ((VeriTile.Triton.FastDiv.umulhi32 (BitVec.ofNat 32 x)
+          (BitVec.ofNat 32 (VeriTile.Bench.Optimizations.InductorDivmod.kMagic d)) +
+        BitVec.ofNat 32 x) >>>
+      VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d).toNat
+@VeriTile.Bench.Optimizations.InductorDivmod.shiftCount_eq_shiftFor : ∀ {d : ℕ},
+  0 < d → d ≤ 2 ^ 31 → VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d = VeriTile.Triton.FastDiv.shiftFor d
+@VeriTile.Bench.Optimizations.InductorDivmod.shiftCount_le : ∀ {d : ℕ},
+  0 < d → d ≤ 2 ^ 31 → VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d ≤ 31
+@VeriTile.Bench.Optimizations.InductorDivmod.int64_in_range : ∀ {d : ℕ},
+  0 < d →
+    d < 2 ^ 31 →
+      d ≤ 2 ^ VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d ∧
+        2 ^ 32 * (2 ^ VeriTile.Bench.Optimizations.InductorDivmod.shiftCount d - d) < 2 ^ 63
+@VeriTile.Bench.Optimizations.InductorDivmod.kMagic_eq : ∀ {d : ℕ},
+  0 < d →
+    d < 2 ^ 31 →
+      VeriTile.Bench.Optimizations.InductorDivmod.kMagic d = VeriTile.Triton.FastDiv.magic d ∧
+        VeriTile.Bench.Optimizations.InductorDivmod.kMagic d < 2 ^ 32
+@VeriTile.Bench.Optimizations.InductorDivmod.kernel_divmod : ∀ {d x : ℕ},
+  0 < d →
+    d < 2 ^ 31 →
+      x < 2 ^ 31 →
+        VeriTile.Bench.Optimizations.InductorDivmod.kQuot d x = x / d ∧
+          x - VeriTile.Bench.Optimizations.InductorDivmod.kQuot d x * d = x % d ∧
+            VeriTile.Bench.Optimizations.InductorDivmod.kQuot d x < 2 ^ 31 ∧
+              VeriTile.Bench.Optimizations.InductorDivmod.kQuot d x * d ≤ x
