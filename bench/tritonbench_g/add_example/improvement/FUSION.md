@@ -1,5 +1,10 @@
 # Fused float32 add + ReLU — measured optimization experiment
 
+> **Superseded in part by `INVOCATION.md` (stage 9):**
+> - The selected general API now uses block 256 below 2^24 elements (64 at and above)
+>   with a faster contract decision.
+> - Regression 1's host-cost split is measured there: the check was 56% of a small call.
+
 One device (NVIDIA L4, CC 8.9, driver 580.95.05), Triton 3.8.0, torch 2.14.0+cu130,
 one Modal call. Raw results: `launch_evidence/relu_tune.json`,
 `launch_evidence/fusion_bench.json` (every timing sample summary, kernel names,

@@ -39,6 +39,11 @@ Timing method:
 | + contract decision (full mirror) | 112.7 | 43.1 |
 | full checked call | 118.2 | 5.5 |
 
+**Host caveat:** the Modal container reported a single vCPU of unidentified model
+(`cpu` field in the JSON). Absolute host latencies are therefore specific to this host.
+The decision cost 43 µs here against about 6 µs on an M4 Pro. What transfers is the
+ranking and the ratios between candidates measured on the same host.
+
 The contract check (metadata extraction and decision) was **56%** of the call. On this
 host the decision alone costs 43 µs; on the Mac it was about 6 µs. Triton's JIT
 dispatch costs 11 µs over a precompiled launch.
@@ -103,6 +108,10 @@ Repeated (per call):
 itself was not timed as a unit. Its per-size timings are those of the configuration it
 selects; every element is computed independently, so outputs are bitwise identical
 across block sizes.
+
+**Against the reviewer's target** (at least a 2× reduction of small-input checked-call
+latency): **met back to back** (1.95–2.17×), **not met for single calls** (1.63–1.84×).
+The remaining floor is synchronize + JIT dispatch + allocation.
 
 **Gains:**
 - **General checked API:** 1.63–1.84× faster for single calls at n ≤ 3M (1.32× at 2^22),
@@ -172,7 +181,22 @@ across block sizes.
 - **Numerical contract unchanged:** exact ℝ; NaN and the sign of zero are outside it.
   No eager fallback is used anywhere, because eager differs on NaN sums and −0.0.
 
-## 6. Remaining assumptions
+## 6. Not attempted, and a procedural slip
+
+- Integrating the kernel into `torch.compile` (user-defined Triton kernel or
+  `triton_op`) as an overhead-reduction route was not attempted.
+- `latency_ladder.json` and `block_search.json` (run 1) are marked stale by the
+  freshness rule. `AddReluFused.lean`, one of their hashed dependencies, was edited
+  while run 1 was in flight (to add the block-general theorem). The kernel text they
+  read is unchanged. They are superseded by `validation.json` (run 2, final code).
+  Lesson: don't edit a hashed dependency during a run.
+- The relational instance restates three kernels and re-derives their per-program runs
+  (about 200 lines of the same unrolling), because bench files cannot import each other.
+  The reusable part is the kernel-agnostic `Launch/Relational.lean`. The instance's
+  input hypotheses are `readMem`-level (observations), deliberately weaker than the
+  typed-cell wrapper headlines.
+
+## 7. Remaining assumptions
 
 - Metadata extraction (`raw_meta` / `tensor_meta`) is trusted.
 - `fast_ew2` and the mirror are tested against Lean, not proved equal to it.
