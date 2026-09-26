@@ -191,3 +191,16 @@ Not measured: other GPUs (including the issue's H100), other programs, or cold L
   - the four unrelated kernels are rejected and keep their signatures;
   - normalized guard text is equal OFF and ON.
   Running it needs a new explicit allowance.
+- **Preflight before any GPU spend (reviewer's four points).** The harness was amended and then frozen. It has not
+  been run.
+  - (A) Compile timing is labelled "framework-warmed, target-cold first-call latency". It is valid only if a kernel
+    and a graph are compiled inside the timed call. The program order and cache policy are fixed and recorded; the
+    remote caches are forced off.
+  - (B) Each measured OFF and ON callable is bound to the autotuner that actually runs. The binding records its
+    compiled ks types (`i64` for OFF, `i32` for ON), its selected launcher, and the SHA-256 of the selected cubin
+    (`TRITON_CACHE_DIR/<cache_hash>/`). It is checked before and after the measured blocks.
+  - (C) The rule's premises are a validity condition for ON: the shape environment's `numel <= 2147483647`, lower
+    bounds ≥ 1, and the bound in the final guard text. Guard-text equality stays a reported finding. Normalization
+    no longer masks bounds.
+  - (D) The outcome labels are exhaustive, with the thresholds unchanged. "Meets the predeclared benefit
+    criterion" does not mean ≥ 3% with 95% confidence. What each outcome triggers is declared in the docstring.
